@@ -35,8 +35,9 @@ const screens = {
       <button class="btn ghost" data-act="reset" style="margin-top:12px">Сбросить день</button>
       <p class="caption" style="margin-top:24px">Каркас</p>
       <div class="seg">
-        <button class="btn" data-shell="fixed" aria-pressed="${m.shell === 'fixed'}">fixed inset 0</button>
-        <button class="btn" data-shell="dvh" aria-pressed="${m.shell === 'dvh'}">100dvh</button>
+        <button class="btn" data-shell="plus" aria-pressed="${m.shell === 'plus'}">plus</button>
+        <button class="btn" data-shell="fixed" aria-pressed="${m.shell === 'fixed'}">fixed</button>
+        <button class="btn" data-shell="dvh" aria-pressed="${m.shell === 'dvh'}">dvh</button>
       </div>
       <p class="caption">Клавиатура</p>
       <div class="seg">
@@ -45,7 +46,7 @@ const screens = {
       </div>
       <p class="caption">Пинок вьюпорта при старте</p>
       <div class="seg">
-        ${['off', 'scale', 'zoom'].map(k => `<button class="btn" data-kick="${k}" aria-pressed="${store.get('dbg.kick', 'scale') === k}">${k}</button>`).join('')}
+        ${['off', 'scale', 'zoom'].map(k => `<button class="btn" data-kick="${k}" aria-pressed="${store.get('dbg.kick', 'off') === k}">${k}</button>`).join('')}
       </div>
       <button class="btn ghost" data-act="kick">Пнуть сейчас</button>
       <p class="caption" style="margin-top:16px">Тест клавиатуры: голый input</p>
@@ -98,7 +99,7 @@ function updateDbg() {
     `standalone: ${m.standalone}\nscreen: ${m.screen}  inner: ${m.inner}\nvisualViewport: ${m.vv}\n` +
     `vh ${m.heights.vh} lvh ${m.heights.lvh} svh ${m.heights.svh} dvh ${m.heights.dvh} fill ${m.heights.fill}\n` +
     `safe-area t/r/b/l: ${m.insets.t} ${m.insets.r} ${m.insets.b} ${m.insets.l}\n` +
-    `gap: ${m.gap}  --kb: ${m.kb}  (${document.documentElement.dataset.kb})\nshell: ${m.shell}  kb: ${m.kbmode}`;
+    `gap: ${m.gap}  plus: ${document.documentElement.style.getPropertyValue('--plus')}  app-h: ${document.documentElement.style.getPropertyValue('--app-h')}\n--kb: ${m.kb}  (${document.documentElement.dataset.kb})\nshell: ${m.shell}  kb: ${m.kbmode}`;
 }
 onViewportChange(updateDbg);
 
@@ -108,7 +109,7 @@ app.addEventListener('click', e => {
   if (t.dataset.tab) { tab = t.dataset.tab; store.set('tab', tab); render(); }
   else if (t.dataset.act === 'can') store.set('cans', Math.min(MAX_CANS, store.get('cans', 0) + 1));
   else if (t.dataset.act === 'reset') store.set('cans', 0);
-  else if (t.dataset.act === 'kick') kickViewport(store.get('dbg.kick', 'scale') === 'off' ? 'scale' : undefined);
+  else if (t.dataset.act === 'kick') kickViewport(store.get('dbg.kick', 'off') === 'off' ? 'scale' : undefined);
   else if (t.dataset.kick) { setKick(t.dataset.kick); render(); }
   else if (t.dataset.shell) { setShell(t.dataset.shell); render(); }
   else if (t.dataset.kbmode) { setKbMode(t.dataset.kbmode); render(); }

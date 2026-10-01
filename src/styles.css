@@ -44,6 +44,10 @@ body {
 :root[data-shell='fixed'] body { position: fixed; inset: 0; }
 :root[data-shell='fixed'] #app { position: absolute; inset: 0; }
 
+/* Вариант «plus»: высота корня = visualViewport + gap (метод из старого рабочего проекта) */
+:root[data-shell='plus'] body { position: fixed; top: 0; left: 0; right: 0; height: var(--app-h); }
+:root[data-shell='plus'] #app { position: absolute; inset: 0; }
+
 /* Вариант B (для сравнения на телефоне): flex на 100dvh */
 :root[data-shell='dvh'] body { position: static; }
 :root[data-shell='dvh'] #app { position: relative; height: 100dvh; }

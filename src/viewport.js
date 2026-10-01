@@ -60,6 +60,7 @@ function computeGap() {
   return gap > 0 && gap <= 80 ? gap : 0;
 }
 
+let lastGap = 0;
 let baseH = vv ? vv.height : innerHeight;
 let baseW = vv ? vv.width : innerWidth;
 let ticking = false;
@@ -73,10 +74,14 @@ function sync() {
 
   const kb = editing ? Math.max(0, Math.round(baseH - vv.height)) : 0;
   if (!editing) {
-    const gap = computeGap();
-    root.style.setProperty('--gap', gap + 'px');
-    if (gap) root.dataset.gap = ''; else delete root.dataset.gap;
+    lastGap = computeGap();
+    if (lastGap) root.dataset.gap = ''; else delete root.dataset.gap;
   }
+  // plus (из старого рабочего проекта): корень = видимая область + gap. Тогда полоса закрыта и маскировать нечего (--gap = 0).
+  const plus = root.dataset.shell === 'plus';
+  root.style.setProperty('--gap', (plus ? 0 : lastGap) + 'px');
+  root.style.setProperty('--plus', lastGap + 'px');
+  root.style.setProperty('--app-h', Math.round(vv.height + vv.offsetTop + (editing ? 0 : lastGap)) + 'px');
   root.style.setProperty('--kb', kb + 'px');
   root.dataset.kb = kb > 80 ? 'open' : 'closed';
 
@@ -98,7 +103,7 @@ const who = t => t && t.tagName ? t.tagName.toLowerCase() + (t.id ? '#' + t.id :
 
 // Принудительный пересчёт вьюпорта (аналог «подёргать зум/потянуть вниз»).
 // scale: initial-scale 1 → 1.001 → 1; zoom: на миг ограничиваем масштаб, как делает жест.
-export function kickViewport(variant = store.get('dbg.kick', 'scale')) {
+export function kickViewport(variant = store.get('dbg.kick', 'off')) {
   const m = document.querySelector('meta[name=viewport]');
   if (!m || variant === 'off') return;
   const orig = m.dataset.orig || m.content;
@@ -123,7 +128,7 @@ export const onViewportChange = fn => listeners.add(fn);
 const schedule = () => { if (!ticking) { ticking = true; requestAnimationFrame(sync); } };
 
 export function initViewport() {
-  root.dataset.shell = store.get('dbg.shell', 'fixed');   // fixed | dvh
+  root.dataset.shell = store.get('dbg.shell', 'plus');    // plus | fixed | dvh
   root.dataset.kbmode = store.get('dbg.kbmode', 'pan');   // pan | resize
   root.dataset.kb = 'closed';
 
