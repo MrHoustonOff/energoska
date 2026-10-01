@@ -42,6 +42,16 @@
     return () => clearInterval(t);
   });
 
+  /**
+   * Вход через «Пароли»/Face ID заполняет оба поля: клавиатура больше не нужна, закрываем её (как тап вне поля).
+   * Если заполнено только одно поле, клавиатуру не трогаем: пароль ещё надо ввести.
+   */
+  function autofilled() {
+    setTimeout(() => {
+      if (login && password && document.activeElement instanceof HTMLInputElement) document.activeElement.blur();
+    }, 450);
+  }
+
   /** Любое изменение поля убирает ошибку (блокировка остаётся: её снимает только время). */
   const edited = () => { problem = null; };
 
@@ -85,11 +95,11 @@
     {/if}
 
     <Field
-      label="Логин" bind:value={login} bind:input={loginEl} invalid={badLogin} disabled={locked} readonly={busy} oninput={edited}
+      label="Логин" bind:value={login} bind:input={loginEl} invalid={badLogin} disabled={locked} readonly={busy} oninput={edited} onautofill={autofilled}
       autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck={false} enterkeyhint="next"
     />
     <Field
-      label="Пароль" type="password" reveal bind:value={password} bind:input={passwordEl} invalid={badPassword} disabled={locked} readonly={busy} oninput={edited}
+      label="Пароль" type="password" reveal bind:value={password} bind:input={passwordEl} invalid={badPassword} disabled={locked} readonly={busy} oninput={edited} onautofill={autofilled}
       autocomplete="current-password" enterkeyhint="go"
     />
 

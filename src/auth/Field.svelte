@@ -13,8 +13,10 @@
     reveal?: boolean;
     value?: string;
     input?: HTMLInputElement | null;
+    /** Поле заполнено автоматически (связка ключей, Face ID). */
+    onautofill?: () => void;
   }
-  let { label, invalid = false, ok = false, reveal = false, value = $bindable(''), input = $bindable(null), type = 'text', oninput, onbeforeinput, onanimationstart, ...rest }: Props = $props();
+  let { label, invalid = false, ok = false, reveal = false, value = $bindable(''), input = $bindable(null), type = 'text', onautofill, oninput, onbeforeinput, onanimationstart, ...rest }: Props = $props();
   let shown = $state(false);
 
   /**
@@ -34,6 +36,7 @@
   }
   function autofilled() {
     autofillUntil = Date.now() + 1500;
+    onautofill?.();
     timers.forEach(clearTimeout);
     timers = [0, 120, 400, 900].map(ms => setTimeout(collapse, ms));  // iOS ставит выделение с задержкой
   }
