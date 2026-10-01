@@ -80,6 +80,8 @@ let rafId = 0;        // отложенный sync (не чаще раза в к
 let extTimer = 0;     // страховка: если клавиатура так и не появилась, запас снимаем
 let revealTimers = []; // отложенные докрутки поля
 let lastRevealTarget = null; // последняя цель докрутки, чтобы не повторять одно и то же
+let lastFocusAt = 0;         // когда в последний раз сфокусировали поле (performance.now)
+let clearing = false;        // идёт снятие запаса (чтобы не запускать его дважды)
 
 const listeners = new Set();
 /** Подписаться на любое изменение размеров/состояния клавиатуры (для обновления отладочных цифр). */
@@ -192,14 +194,41 @@ function setExt(px) {
  * дёрнет прокрутку. Если страница так и не вернулась (бывает при сбое плавной прокрутки), ждём до 1.5 с.
  */
 function clearExt() {
+  if (clearing) return;
+  clearing = true;
   clearTimeout(extTimer);
   const tryClear = attempt => {
-    if (root.dataset.kb === 'open' || isEditable(document.activeElement)) return; // снова вводят: оставляем
+    // Оставляем запас, только если клавиатура открыта или в поле только что (меньше секунды назад) начали ввод.
+    // Раньше тут стояло «пока есть фокус в поле»: после ухода в фон фокус остаётся, а клавиатуры нет,
+    // и запас, спрятанная панель и сдвиг страницы зависали навсегда (то же с аппаратной клавиатурой).
+    const justFocused = isEditable(document.activeElement) && performance.now() - lastFocusAt < 1000;
+    if (root.dataset.kb === 'open' || justFocused) { clearing = false; return; }
     if (scrollY > 1 && attempt < 10) { setTimeout(() => tryClear(attempt + 1), 150); return; }
     delete root.dataset.ext;
     stickTabbar();
+    clearing = false;
   };
   setTimeout(() => tryClear(0), 300);
+}
+
+/**
+ * Приложение уходит в фон: iOS сама прячет клавиатуру, но ФОКУС в поле остаётся. Если ничего не сделать,
+ * состояние «идёт ввод» (запас под клавиатуру, спрятанная панель вкладок, смещённая страница) застревает,
+ * и по возвращении экран выглядит так, будто он стоит на клавиатуре, которой уже нет.
+ * Поэтому при уходе снимаем фокус и сразу чистим всё: приложения на экране нет, анимации ждать не нужно.
+ */
+function dropInputState() {
+  clearTimeout(extTimer);
+  revealTimers.forEach(clearTimeout);
+  revealTimers = [];
+  const active = document.activeElement;
+  if (isEditable(active)) active.blur();
+  delete root.dataset.edit;
+  delete root.dataset.ext;
+  root.dataset.kb = 'closed';
+  clearing = false;
+  stickTabbar();
+  window.scrollTo(0, 0);
 }
 
 // ───────────────────────── Докрутка поля ─────────────────────────
@@ -268,6 +297,9 @@ function sync() {
     }
   }
 
+  // Самолечение: запас остался, а ввода нет и клавиатура не открыта (потерялось какое-то событие): снимаем.
+  if (!editing && root.dataset.ext && root.dataset.kb !== 'open') clearExt();
+
   if (kb > 80) {
     // Запоминаем высоту клавиатуры: на следующем фокусе запас включится заранее, до прихода размеров от iOS.
     if (Math.abs(store.get('kbh', 0) - kb) > 10) store.set('kbh', kb);
@@ -290,14 +322,27 @@ export function initViewport() {
 
   // Возврат из фона / поворот / восстановление страницы из кэша: окно могло измениться, пока нас не было.
   const reset = () => {
-    baseH = vv ? vv.height : innerHeight;
+    // Базовую высоту пересчитываем заново только при повороте; иначе не даём ей уменьшиться
+    // (на возврате из фона vv.height может на миг оказаться «клавиатурным», и все расчёты клавиатуры поплыли бы).
+    const turned = !vv || Math.abs(vv.width - baseW) > 1;
     baseW = vv ? vv.width : innerWidth;
+    baseH = turned ? (vv ? vv.height : innerHeight) : Math.max(baseH, vv.height);
     window.scrollTo(0, 0);
     sync();
+    // Вернулись в приложение: если в поле остался старый фокус, а клавиатуры нет, снимаем его.
+    // Свежий фокус (тапнули уже после возврата) не трогаем.
+    const returnedAt = performance.now();
+    setTimeout(() => {
+      const a = document.activeElement;
+      if (isEditable(a) && root.dataset.kb !== 'open' && lastFocusAt < returnedAt - 300) a.blur();
+    }, 400);
   };
   window.addEventListener('pageshow', reset);
   window.addEventListener('orientationchange', () => setTimeout(reset, 300));
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reset(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') dropInputState(); else reset();
+  });
+  window.addEventListener('pagehide', dropInputState);
 
   // Размеры от iOS приходят событиями visualViewport.
   if (vv) {
@@ -308,6 +353,7 @@ export function initViewport() {
   // ФОКУС в поле: всё, что можно, делаем сразу, не дожидаясь размеров от iOS.
   document.addEventListener('focusin', e => {
     if (!isEditable(e.target)) return; // дата/время/список: клавиатуры нет, логика не нужна
+    lastFocusAt = performance.now();
     root.dataset.edit = '1';           // панель вкладок уезжает вниз сразу
     lastRevealTarget = null;
     revealTimers.forEach(clearTimeout);
