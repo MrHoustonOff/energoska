@@ -119,7 +119,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Энергоська">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">  <!-- НЕ black-translucent, см. предупреждение ниже -->
 
   <meta name="format-detection" content="telephone=no">
 
@@ -137,6 +137,7 @@
 
 **Пояснения:**
 - `viewport-fit=cover` + `black-translucent` = контент рисуется под статус-баром, а вы сами отступаете `env(safe-area-inset-top)`. Это основа «дизайн во весь экран» `[DOC]/[COMM]`.
+- 🛑 **ПРОВЕРЕНО НА УСТРОЙСТВЕ (iPhone 844pt, standalone):** `black-translucent` + `viewport-fit=cover` даёт `innerHeight = screen.height − safe-area-top` (797 из 844) и **неустранимую чёрную полосу снизу** (WebKit #301108). Обходы через `screen.height`, `100lvh`, `100vh`, `fill-available`, `overflow: visible` не работают, нижняя полоса вне WebView. Рабочее решение: `content="black"` (окно во весь экран, статус-бар непрозрачный). Мета читается при установке: иконку удалить и добавить заново.
 - ⚠ **Регрессия iOS 26.1** `[BUG]`: на этой версии `black-translucent` не давал рисовать под статус-баром. **Проектируйте шапку так, чтобы она выглядела корректно в обоих случаях**: цвет `html`/`body` вверху совпадает с цветом шапки, и тогда даже при «возврате» места статус-баром различие не видно.
 - `apple-touch-icon` **обязателен**: iOS исторически не использует иконки из manifest `[COMM]`.
 - Критичный инлайновый фон нужен, чтобы при холодном старте не было белой/чёрной вспышки.

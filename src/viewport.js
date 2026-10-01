@@ -35,17 +35,10 @@ export function probeHeights() {
   return out;
 }
 
-// Полная высота экрана в текущей ориентации. screen.* не зависит от бага вьюпорта.
-export function screenHeight() {
-  const long = Math.max(screen.width, screen.height), short = Math.min(screen.width, screen.height);
-  return innerHeight >= innerWidth ? long : short;
-}
-
 export function readMetrics() {
   return {
     screen: `${screen.width}×${screen.height}`,
     heights: probeHeights(),
-    appH: root.style.getPropertyValue('--app-h') || '-',
     standalone: isStandalone(),
     inner: `${innerWidth}×${innerHeight}`,
     vv: vv ? `${Math.round(vv.width)}×${Math.round(vv.height)} @${Math.round(vv.offsetTop)}` : 'нет',
@@ -68,9 +61,6 @@ function sync() {
   if (!editing) baseH = Math.max(baseH, vv.height); // база растёт только без клавиатуры
 
   const kb = editing ? Math.max(0, Math.round(baseH - vv.height)) : 0;
-  // «Дыра» снизу: окно короче экрана на высоту статус-бара. Берём высоту от экрана, а не от вьюпорта.
-  // Клавиатура её не меняет: screen.* константа.
-  root.style.setProperty('--app-h', Math.max(innerHeight, screenHeight()) + 'px');
   root.style.setProperty('--kb', kb + 'px');
   root.dataset.kb = kb > 80 ? 'open' : 'closed';
 
@@ -87,7 +77,7 @@ export const onViewportChange = fn => listeners.add(fn);
 const schedule = () => { if (!ticking) { ticking = true; requestAnimationFrame(sync); } };
 
 export function initViewport() {
-  root.dataset.shell = store.get('dbg.shell', 'screen');  // screen | fixed | vh | dvh
+  root.dataset.shell = store.get('dbg.shell', 'fixed');   // fixed | dvh
   root.dataset.kbmode = store.get('dbg.kbmode', 'pan');   // pan | resize
   root.dataset.kb = 'closed';
 

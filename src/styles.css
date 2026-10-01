@@ -36,14 +36,6 @@ body {
 :root[data-shell='fixed'] body { position: fixed; inset: 0; }
 :root[data-shell='fixed'] #app { position: absolute; inset: 0; }
 
-/* Вариант «screen» (по умолчанию): высота от screen.height, лечит окно короче экрана на высоту статус-бара */
-:root[data-shell='screen'] body { position: fixed; top: 0; left: 0; right: 0; height: var(--app-h); }
-:root[data-shell='screen'] #app { position: absolute; inset: 0; }
-
-/* Вариант «vh»: 100vh */
-:root[data-shell='vh'] body { position: fixed; top: 0; left: 0; right: 0; height: 100vh; }
-:root[data-shell='vh'] #app { position: absolute; inset: 0; }
-
 /* Вариант B (для сравнения на телефоне): flex на 100dvh */
 :root[data-shell='dvh'] body { position: static; }
 :root[data-shell='dvh'] #app { position: relative; height: 100dvh; }
