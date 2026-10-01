@@ -134,7 +134,7 @@
     {#if passwordMsg}
       <Msg kind="error">{passwordMsg}</Msg>
     {:else if !password}
-      <Msg>Минимум 8 символов. Лучше длинная фраза — iPhone может придумать надёжный пароль сам</Msg>
+      <Msg>Минимум 8 символов</Msg>
     {/if}
     {#if password}
       <div class="au-meter" data-level={strength}>
