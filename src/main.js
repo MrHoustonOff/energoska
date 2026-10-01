@@ -55,7 +55,7 @@ const screens = {
       <p class="caption" style="margin-top:16px">Бисект клавиатуры (страницы)</p>
       <div class="seg">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<a class="btn ghost lnk" href="/kb/${n}.html">${n}</a>`).join('')}</div>
       <p class="caption" style="margin-top:16px">Отключить куски кода (перезагрузка), проверь голый input</p>
-      <div class="seg">${[['events', 'события'], ['vv', 'vv-слушатели'], ['log', 'журнал']].map(([k, n]) => `<button class="btn" data-off="${k}" aria-pressed="${isOff(k)}">${n}</button>`).join('')}</div>
+      <div class="seg">${[['all', 'ВСЁ'], ['events', 'события'], ['vv', 'vv'], ['log', 'журнал']].map(([k, n]) => `<button class="btn" data-off="${k}" aria-pressed="${isOff(k)}">${n}</button>`).join('')}</div>
       <p class="caption" style="margin-top:16px">Тест клавиатуры: голый input</p>
       <input id="bare" placeholder="тапни сюда" style="background:#fff;color:#000">
       <div class="card" style="margin-top:12px"><p class="caption">Диагностика</p><pre class="dbg" id="dbg"></pre></div>
@@ -90,8 +90,8 @@ function render() {
   document.querySelectorAll('.tab').forEach(b => {
     if (b.dataset.tab === tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
-  const keep = screen.dataset.tab === tab ? screen.scrollTop : 0; // перерисовка той же вкладки не должна телепортировать вверх
-  screen.dataset.tab = tab;
+  const keep = screen.dataset.cur === tab ? screen.scrollTop : 0; // перерисовка той же вкладки не должна телепортировать вверх
+  screen.dataset.cur = tab;
   screen.innerHTML = screens[tab]();
   screen.scrollTop = keep;
   app.classList.toggle('form-screen', tab === 'form');
@@ -114,7 +114,8 @@ onViewportChange(updateDbg);
 
 app.addEventListener('click', e => {
   const t = e.target.closest('[data-tab],[data-act],[data-shell],[data-kbmode],[data-kick],[data-off]');
-  if (!t) return;
+  // closest() доходит до <html>, у которого свои data-shell/data-kbmode: такие совпадения не наши
+  if (!t || !app.contains(t)) return;
   if (t.dataset.tab) { tab = t.dataset.tab; store.set('tab', tab); render(); }
   else if (t.dataset.act === 'can') store.set('cans', Math.min(MAX_CANS, store.get('cans', 0) + 1));
   else if (t.dataset.act === 'reset') store.set('cans', 0);

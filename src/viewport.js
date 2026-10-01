@@ -137,6 +137,14 @@ export function toggleOff(n) {
 }
 
 export function initViewport() {
+  // Флаг «всё»: полностью без стартового кода (проверка, не он ли мешает фокусу)
+  if (isOff('all')) {
+    root.dataset.shell = store.get('dbg.shell', 'old');
+    root.dataset.kbmode = 'pan';
+    root.dataset.kb = 'closed';
+    root.style.setProperty('--app-h', innerHeight + 'px');
+    return;
+  }
   root.dataset.shell = store.get('dbg.shell', 'old');     // old | plus | fixed | dvh
   root.dataset.kbmode = store.get('dbg.kbmode', 'pan');   // pan | resize
   root.dataset.kb = 'closed';
