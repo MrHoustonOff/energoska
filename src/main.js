@@ -1,8 +1,12 @@
 import './styles.css';
 import * as store from './store.js';
-import { initViewport, metrics, liveLine, recording, getKbm, setKbm, onViewportChange } from './viewport.js';
+import { initViewport, metrics, liveLine, recording, getKbm, setKbm, snap, onViewportChange } from './viewport.js';
+import * as eventlog from './eventlog.js';
 
+const root = document.documentElement;
+if (store.get('redbg', true)) root.dataset.redbg = ''; // отладочный красный фон, выключается на «Итоге»
 initViewport();
+eventlog.add(`=== запуск: standalone=${navigator.standalone === true} screen=${screen.width}x${screen.height} режим=${getKbm()} ${snap()}`);
 
 const ICONS = {
   start: '<path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>',
@@ -23,7 +27,7 @@ app.innerHTML = `
     <button class="tab" data-tab="${id}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[id]}</svg>${name}</button>`).join('')}
   </nav>
   <div class="rotate">Поверни телефон вертикально</div>`;
-const screen = document.getElementById('screen');
+const scrollEl = document.getElementById('screen');
 
 const answers = () => store.get('ans', {});
 const yn = id => `
@@ -94,6 +98,14 @@ const screens = {
     const a = answers();
     const mark = v => v === 'ok' ? '<b class="ok">✓</b>' : v === 'bad' ? '<b class="bad">✗</b>' : '<b class="no">—</b>';
     return `
+      <p class="caption">Отладка</p>
+      <div class="seg">
+        <button class="btn" data-act="redbg" aria-pressed="${'redbg' in root.dataset}">Красный фон</button>
+        <button class="btn" data-act="copylog">Копировать лог</button>
+      </div>
+      <p class="caption">Лог (последние строки)</p>
+      <div class="card logbox"><pre class="dbg" id="log"></pre></div>
+      <button class="btn ghost" data-act="clearlog" style="margin-bottom:16px">Очистить лог</button>
       <p class="caption">Режим клавиатуры</p>
       <div class="seg">${[['native', 'родной'], ['fixed', 'фикс'], ['fluid', 'текущий']].map(([k, n]) => `<button class="btn" data-setkbm="${k}" aria-pressed="${getKbm() === k}">${n}</button>`).join('')}</div>
       <p class="caption">Результат</p>
@@ -115,10 +127,45 @@ function render() {
   document.querySelectorAll('.tab').forEach(b => {
     if (b.dataset.tab === tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
-  screen.innerHTML = screens[tab]();
-  screen.scrollTop = 0;
+  scrollEl.innerHTML = screens[tab]();
+  scrollEl.scrollTop = 0;
   updateDbg();
 }
+
+let logT = 0;
+function renderLog() {
+  const el = document.getElementById('log');
+  if (!el) return;
+  const l = eventlog.getLines();
+  el.textContent = l.slice(-30).join('\n') || '—';
+  const box = el.parentElement; box.scrollTop = box.scrollHeight;
+}
+// Лог обновляем с задержкой: правка страницы в момент касания не должна мешать самому касанию
+eventlog.onAdd(() => { if (tab === 'sum') { clearTimeout(logT); logT = setTimeout(renderLog, 600); } });
+
+function fullReport() {
+  return [
+    '--- метрики ---', metrics(),
+    '--- запись: клавиатура открывается ---', recording('open'),
+    '--- запись: клавиатура закрывается ---', recording('close'),
+    '--- ответы ---', JSON.stringify(answers()),
+    '--- лог (' + eventlog.getLines().length + ' строк) ---', ...eventlog.getLines(),
+  ].join('\n');
+}
+
+// Кого тапнули: тип, название, подпись
+function desc(el) {
+  if (!el || !el.tagName) return '?';
+  const t = el.closest?.('input,textarea,select,.field,button,a,.tab') || el;
+  const cap = t.previousElementSibling?.classList?.contains('caption') ? t.previousElementSibling.textContent.trim() : '';
+  const name = t.id || t.getAttribute?.('name') || cap || t.getAttribute?.('placeholder') || t.dataset?.ph || (t.textContent || '').trim().slice(0, 24);
+  const kind = t.tagName.toLowerCase() + (t.tagName === 'INPUT' ? `[${t.type}]` : '') + (t.isContentEditable && t.tagName === 'DIV' ? '[ce]' : '');
+  return `${kind} "${name}"`;
+}
+const quiet = () => tab === 'sum'; // на «Итоге» лог не пишем, чтобы не менять страницу под пальцем
+document.addEventListener('pointerdown', e => { if (!quiet()) eventlog.add(`тап   ${tab}  ${desc(e.target)}  @${Math.round(e.clientX)},${Math.round(e.clientY)}  ${snap()}`); }, true);
+document.addEventListener('focusin', e => { if (!quiet()) eventlog.add(`фокус ${tab}  ${desc(e.target)}  ${snap()}`); }, true);
+document.addEventListener('focusout', e => { if (!quiet()) eventlog.add(`уход  ${tab}  ${desc(e.target)} -> ${desc(e.relatedTarget)}  ${snap()}`); }, true);
 
 function updateDbg() {
   const el = document.getElementById('dbg');
@@ -126,6 +173,7 @@ function updateDbg() {
   const ro = document.getElementById('rec-open'), rc = document.getElementById('rec-close');
   if (ro) ro.textContent = recording('open');
   if (rc) rc.textContent = recording('close');
+  renderLog();
 }
 const live = document.getElementById('live');
 const updateLive = () => { live.textContent = liveLine(); };
@@ -135,7 +183,7 @@ updateLive();
 app.addEventListener('click', e => {
   const t = e.target.closest('[data-tab],[data-ans],[data-act],[data-setkbm]');
   if (!t || !app.contains(t)) return; // closest() может дойти до <html>
-  if (t.dataset.tab) { tab = t.dataset.tab; store.set('tab', tab); render(); }
+  if (t.dataset.tab) { eventlog.add(`вкладка ${tab} -> ${t.dataset.tab}`); tab = t.dataset.tab; store.set('tab', tab); render(); }
   else if (t.dataset.ans) {
     const [id, v] = t.dataset.ans.split(':');
     store.set('ans', { ...answers(), [id]: v });
@@ -146,6 +194,19 @@ app.addEventListener('click', e => {
     document.getElementById('count').textContent = store.get('count', 0);
   }
   else if (t.dataset.setkbm) setKbm(t.dataset.setkbm);
+  else if (t.dataset.act === 'redbg') {
+    const on = !('redbg' in root.dataset);
+    if (on) root.dataset.redbg = ''; else delete root.dataset.redbg;
+    store.set('redbg', on); t.setAttribute('aria-pressed', String(on));
+  }
+  else if (t.dataset.act === 'copylog') {
+    const btn = t;
+    eventlog.copyText(fullReport()).then(ok => {
+      btn.textContent = ok ? 'Скопировано ✓' : 'Не вышло, выдели текст вручную';
+      setTimeout(() => { btn.textContent = 'Копировать лог'; }, 2200);
+    });
+  }
+  else if (t.dataset.act === 'clearlog') { eventlog.clear(); renderLog(); }
   else if (t.dataset.act === 'clear') { store.set('ans', {}); render(); }
 });
 

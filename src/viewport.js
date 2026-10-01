@@ -2,11 +2,12 @@
 // Каркас: высота = visualViewport + gap. Клавиатура НЕ меняет размер окна: она накрывает низ, а поле заранее
 // уезжает вверх плавной прокруткой (iOS присылает новые размеры с задержкой ~90 мс, ждать их = рывок).
 import * as store from './store.js';
+import { add as logAdd } from './eventlog.js';
 
 const root = document.documentElement;
 const vv = window.visualViewport;
 const isEditable = el =>
-  !!el && el.matches?.('input, textarea, select, [contenteditable=""], [contenteditable="true"]');
+  !!el && el.matches?.('input, textarea, select, [contenteditable=""], [contenteditable="true"]') && !el.hasAttribute('data-nokb');
 
 const listeners = new Set();
 export const onViewportChange = fn => listeners.add(fn);
@@ -57,6 +58,9 @@ function safeAreaInsets() {
 }
 
 // Короткая строка для шапки: окно · видимая область @ сдвиг
+// Снимок состояния для лога
+export const snap = () => `in${innerHeight} vv${vv ? Math.round(vv.height) : '-'}@${vv ? Math.round(vv.offsetTop) : '-'} y${Math.round(scrollY)} kb:${root.dataset.kb}`;
+
 export const liveLine = () => `${innerHeight}·${vv ? Math.round(vv.height) : '-'}@${vv ? Math.round(vv.offsetTop) : '-'}${root.dataset.kb === 'open' ? ' kb' : ''}`;
 
 export function metrics() {
@@ -129,6 +133,7 @@ function sync() {
   root.dataset.kb = kb > 80 ? 'open' : 'closed';
   if (was !== root.dataset.kb) {
     mark('kb=' + root.dataset.kb);
+    logAdd(`клавиатура ${root.dataset.kb === 'open' ? 'ОТКРЫЛАСЬ' : 'закрылась'}  ${snap()}`);
     if (root.dataset.kb === 'closed' && was === 'open') setTimeout(() => { if (root.dataset.kb === 'closed') releasePad(); }, 250);
   }
 
