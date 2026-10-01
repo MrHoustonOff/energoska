@@ -1,6 +1,6 @@
 import './styles.css';
 import * as store from './store.js';
-import { initViewport, metrics, liveLine, onViewportChange } from './viewport.js';
+import { initViewport, metrics, liveLine, recording, onViewportChange } from './viewport.js';
 
 initViewport();
 
@@ -12,7 +12,7 @@ const ICONS = {
 };
 const TABS = [['start', 'Старт'], ['kb', 'Ввод'], ['scroll', 'Скролл'], ['sum', 'Итог']];
 const TITLES = { start: '1. Запуск', kb: '2. Клавиатура', scroll: '3. Скролл', sum: 'Итог' };
-const CHECKS = [['start', 'Запуск без полос'], ['data', 'Данные сохранились'], ['kb', 'Клавиатура открыта'], ['kb2', 'После клавиатуры'], ['scroll', 'Скролл']];
+const CHECKS = [['start', 'Запуск без полос'], ['data', 'Данные сохранились'], ['kb', 'Клавиатура открыта'], ['kb2', 'После клавиатуры'],['smooth', 'Клавиатура плавно'], ['scroll', 'Скролл']];
 
 const app = document.getElementById('app');
 app.innerHTML = `
@@ -53,7 +53,9 @@ const screens = {
     <p class="caption">Заметка</p>
     <textarea name="note" enterkeyhint="done" placeholder="Что-нибудь напиши"></textarea>
     <p class="hint">Закрой клавиатуру тапом по пустому месту. Всё встало на место, чёрной линии нет?</p>
-    ${yn('kb2')}`,
+    ${yn('kb2')}
+    <p class="hint">Открой и закрой клавиатуру ещё раз. Экран движется плавно, без рывка?</p>
+    ${yn('smooth')}`,
 
   scroll: () => `
     <p class="hint">Потяни список вверх и вниз до конца. Двигается только список, шапка и панель стоят?</p>
@@ -68,6 +70,10 @@ const screens = {
       ${CHECKS.map(([id, name]) => `<div class="sum"><span>${name}</span>${mark(a[id])}</div>`).join('')}
       <p class="caption" style="margin-top:24px">Для скриншота</p>
       <div class="card"><pre class="dbg" id="dbg"></pre></div>
+      <p class="caption">Запись: клавиатура открывается</p>
+      <div class="card"><pre class="dbg" id="rec-open"></pre></div>
+      <p class="caption">Запись: клавиатура закрывается</p>
+      <div class="card"><pre class="dbg" id="rec-close"></pre></div>
       <button class="btn ghost" data-act="clear">Сбросить ответы</button>`;
   },
 };
@@ -87,6 +93,9 @@ function render() {
 function updateDbg() {
   const el = document.getElementById('dbg');
   if (el) el.textContent = metrics();
+  const ro = document.getElementById('rec-open'), rc = document.getElementById('rec-close');
+  if (ro) ro.textContent = recording('open');
+  if (rc) rc.textContent = recording('close');
 }
 const live = document.getElementById('live');
 const updateLive = () => { live.textContent = liveLine(); };

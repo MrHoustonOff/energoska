@@ -8,6 +8,17 @@ const isEditable = el =>
 const listeners = new Set();
 export const onViewportChange = fn => listeners.add(fn);
 
+// Запись «что и когда пришло от iOS» вокруг фокуса: нужна, чтобы настраивать плавность по цифрам, а не вслепую.
+const rec = { open: [], close: [] };
+let cur = null, t0 = 0;
+function startRec(kind) { cur = rec[kind]; cur.length = 0; t0 = performance.now(); setTimeout(() => { if (cur === rec[kind]) cur = null; }, 1400); }
+function mark(tag) {
+  if (!cur || !vv) return;
+  if (cur.length > 60) return;
+  cur.push(`+${Math.round(performance.now() - t0)} ${tag} in${innerHeight} vv${Math.round(vv.height)}@${Math.round(vv.offsetTop)} y${Math.round(scrollY)}`);
+}
+export const recording = kind => rec[kind].join('\n') || '—';
+
 let gap = 0;
 let baseH = vv ? vv.height : innerHeight;
 let baseW = vv ? vv.width : innerWidth;
@@ -58,7 +69,9 @@ function sync() {
   if (!editing) { baseH = Math.max(baseH, vv.height); gap = computeGap(); }
 
   const kb = editing ? Math.max(0, Math.round(baseH - vv.height)) : 0;
+  const was = root.dataset.kb;
   root.dataset.kb = kb > 80 ? 'open' : 'closed';
+  if (was !== root.dataset.kb) mark('kb=' + root.dataset.kb);
   root.style.setProperty('--app-h', Math.round(vv.height + vv.offsetTop + (editing ? 0 : gap)) + 'px');
   // клавиатура открыта: каркас = видимая область + зона под плавающей панелью ^ v ✓ (её iOS в visualViewport не включает,
   // но панель прозрачная и контент под ней должен продолжаться, а не обрываться чёрным). Сдвиг панорамы гасим transform'ом.
@@ -80,8 +93,9 @@ function ensureVisible(el) {
   const under = parseFloat(root.style.getPropertyValue('--kbx')) || 0; // поле держим над панелью ^ v ✓
   const r = el.getBoundingClientRect(), c = sc.getBoundingClientRect(), pad = 24;
   const bottom = c.bottom - under;
-  if (r.bottom > bottom - pad) sc.scrollTop += r.bottom - (bottom - pad);
-  else if (r.top < c.top + pad) sc.scrollTop -= (c.top + pad) - r.top;
+  // scrollTo с smooth едет на композиторе, а не рывком; повторные вызовы безвредны (если поле на месте, ничего не делаем)
+  if (r.bottom > bottom - pad) { sc.scrollTo({ top: sc.scrollTop + r.bottom - (bottom - pad), behavior: 'smooth' }); mark('fit'); }
+  else if (r.top < c.top + pad) sc.scrollTo({ top: sc.scrollTop - ((c.top + pad) - r.top), behavior: 'smooth' });
 }
 
 export function initViewport() {
@@ -95,13 +109,18 @@ export function initViewport() {
   window.addEventListener('orientationchange', () => setTimeout(reset, 300));
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reset(); });
 
-  if (vv) { vv.addEventListener('resize', schedule); vv.addEventListener('scroll', schedule); }
+  if (vv) {
+    vv.addEventListener('resize', () => { mark('vv.resize'); schedule(); });
+    vv.addEventListener('scroll', () => { mark('vv.scroll'); schedule(); });
+  }
 
   document.addEventListener('focusin', e => {
+    if (isEditable(e.target)) { startRec('open'); mark('focusin'); }
     schedule();
     if (isEditable(e.target)) [120, 450].forEach(t => setTimeout(() => { if (document.activeElement === e.target) ensureVisible(e.target); }, t));
   });
   document.addEventListener('focusout', () => {
+    startRec('close'); mark('focusout');
     // после закрытия клавиатуры вьюпорт мог не вернуться (чёрная линия до скролла)
     setTimeout(() => { if (!isEditable(document.activeElement)) { window.scrollTo(0, 0); sync(); } }, 60);
   });
