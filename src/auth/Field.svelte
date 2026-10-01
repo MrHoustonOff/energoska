@@ -14,14 +14,34 @@
     value?: string;
     input?: HTMLInputElement | null;
   }
-  let { label, invalid = false, ok = false, reveal = false, value = $bindable(''), input = $bindable(null), type = 'text', ...rest }: Props = $props();
+  let { label, invalid = false, ok = false, reveal = false, value = $bindable(''), input = $bindable(null), type = 'text', oninput, onanimationstart, ...rest }: Props = $props();
   let shown = $state(false);
+
+  /**
+   * iOS после автозаполнения («Пароли», Face ID) оставляет вставленный текст выделенным (синие ручки). Это выглядит как ошибка:
+   * ставим курсор в конец. Автозаполнение узнаём по input без обычного ввода и по анимации-метке :-webkit-autofill (auth.css).
+   * Только для поля в фокусе: setSelectionRange на чужом поле может забрать фокус.
+   */
+  function collapseSelection(el: HTMLInputElement) {
+    setTimeout(() => {
+      if (document.activeElement !== el) return;
+      try { el.setSelectionRange(el.value.length, el.value.length); } catch { /* тип поля не поддерживает выделение */ }
+    }, 0);
+  }
+  const handleInput = (e: any) => {
+    if (!e.inputType || e.inputType === 'insertReplacementText') collapseSelection(e.currentTarget);
+    oninput?.(e);
+  };
+  const handleAnimation = (e: any) => {
+    if (e.animationName === 'au-autofill') collapseSelection(e.currentTarget);
+    onanimationstart?.(e);
+  };
 </script>
 
 <div class="au-fld" class:invalid class:disabled={rest.disabled}>
   <label>
     <span class="au-cap">{label}</span>
-    <input bind:this={input} bind:value type={reveal && shown ? 'text' : type} placeholder={label} aria-invalid={invalid} {...rest} />
+    <input bind:this={input} bind:value type={reveal && shown ? 'text' : type} placeholder={label} aria-invalid={invalid} oninput={handleInput} onanimationstart={handleAnimation} {...rest} />
   </label>
   {#if ok}
     <svg class="au-tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" /></svg>
