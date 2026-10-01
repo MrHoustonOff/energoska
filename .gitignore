@@ -1,3 +1,5 @@
 node_modules
 dist
 .DS_Store
+# ключи VAPID и подписки для теста пушей (секреты, не коммитить)
+.push/

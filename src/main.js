@@ -7,6 +7,7 @@ import './styles.css';
 import * as store from './store.js';
 import * as eventlog from './eventlog.js';
 import { initViewport, metrics, liveLine, recording, snap, onViewportChange } from './viewport.js';
+import { registerWorker, pushStatus, enablePush, scheduleTest } from './push.js';
 
 const root = document.documentElement;
 
@@ -88,6 +89,17 @@ app.innerHTML = `
     <p class="caption">Редактируемый блок</p>
     <div class="field" contenteditable="true" data-ph="contenteditable"></div>
 
+    <!-- Тест push-уведомлений. Описание: docs-src/push-test.md. Тапы внутри этого блока в лог не пишутся. -->
+    <section id="push">
+      <p class="caption" style="margin-top:24px">Уведомления (тест)</p>
+      <p class="hint">1) «Включить» и разреши. 2) «Тест через 10 с» и сразу закрой приложение: через 10 секунд придёт уведомление.</p>
+      <div class="row">
+        <button class="btn" data-act="push-enable">Включить</button>
+        <button class="btn" data-act="push-test">Тест через 10 с</button>
+      </div>
+      <div class="card"><pre class="dbg" id="push-status">…</pre></div>
+    </section>
+
     <!-- Отладка. Тапы внутри этого блока в лог не пишутся (см. ниже), чтобы не засорять его. -->
     <section id="debug">
       <p class="caption" style="margin-top:24px">Отладка</p>
@@ -139,8 +151,8 @@ function describe(el) {
   return `${kind} "${name}"`;
 }
 
-/** События внутри отладочного блока в лог не пишем. */
-const inDebug = e => !!e.target?.closest?.('#debug');
+/** События внутри отладочных блоков (отладка, тест уведомлений) в лог не пишем. */
+const inDebug = e => !!e.target?.closest?.('#debug, #push');
 
 // capture=true: слушаем в фазе погружения, чтобы увидеть событие раньше любых обработчиков.
 document.addEventListener('pointerdown', e => {
@@ -172,6 +184,17 @@ function renderReport() {
   ].join('\n');
 }
 
+// ───────────────────────── Уведомления (тест) ─────────────────────────
+// Воркер регистрируем сразу при старте (только в безопасном контексте, то есть по HTTPS); подписка по нажатию кнопки.
+registerWorker();
+
+const pushStatusEl = document.getElementById('push-status');
+/** Показать статус и (необязательно) строку с результатом последнего действия. */
+async function renderPushStatus(extra = '') {
+  pushStatusEl.textContent = (await pushStatus()) + (extra ? `\n→ ${extra}` : '');
+}
+renderPushStatus();
+
 // ───────────────────────── Кнопки отладки ─────────────────────────
 // Один делегированный обработчик. Ищем data-act и проверяем, что элемент внутри приложения:
 // closest() может дойти до <html>, а у него свои data-атрибуты (раньше это приводило к ложным срабатываниям).
@@ -180,6 +203,13 @@ app.addEventListener('click', e => {
   if (!btn || !app.contains(btn)) return;
 
   switch (btn.dataset.act) {
+    case 'push-enable':
+      // Запрос разрешения должен стартовать прямо в обработчике нажатия (жест пользователя): никаких await до него.
+      enablePush().then(r => renderPushStatus(r.message));
+      break;
+    case 'push-test':
+      scheduleTest(10).then(r => renderPushStatus(r.message));
+      break;
     case 'redbg': {
       const on = !('redbg' in root.dataset);
       if (on) root.dataset.redbg = ''; else delete root.dataset.redbg;
