@@ -42,9 +42,6 @@ body {
   padding-right: var(--sar);
   background: #000; /* ВРЕМЕННО (отладка): цвет приложения */
 }
-/* родной режим: страница удлиняется на высоту клавиатуры, под её стеклом остаётся приложение, а не край документа */
-:root[data-kbm='native'][data-ext] #app { height: calc(var(--app-h) + var(--kbext, 0px)); }
-
 /* режим fixed: каркас привязан к экрану и не зависит от размера окна (iOS сжимает окно, а каркас не перестраивается) */
 :root[data-kbm='fixed'] #app { position: fixed; top: 0; left: 0; right: 0; height: var(--app-h); }
 
