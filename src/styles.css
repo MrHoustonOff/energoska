@@ -46,7 +46,7 @@ body {
   background: var(--bg);
 }
 /* родной режим: страница удлиняется на высоту клавиатуры, под её стеклом остаётся приложение, а не край документа */
-:root[data-kbm='native'][data-ext] #app { height: calc(var(--app-h) + var(--kbext, 0px)); }
+:root[data-kbm='native'][data-ext] body { padding-bottom: var(--kbext, 0px); } /* хвост под клавиатуру: список не растёт, пол прокрутки не меняется */
 
 /* режим fixed: каркас привязан к экрану и не зависит от размера окна (iOS сжимает окно, а каркас не перестраивается) */
 :root[data-kbm='fixed'] #app { position: fixed; top: 0; left: 0; right: 0; height: var(--app-h); }
@@ -58,11 +58,8 @@ body {
 /* клавиатура: окно НЕ сжимаем (рывок). Она накрывает низ, а списку добавляется запас снизу (--kbpad) для докрутки поля */
 :root:not([data-kbm='native'])[data-kb='open'] #app { transform: translateY(var(--vvy)); } /* только если iOS сдвинул панораму */
 #app { transition: transform .32s cubic-bezier(.22, .9, .3, 1); } /* iOS присылает конечный сдвиг сразу, а сам едет ~300 мс: гасим сдвиг плавно, а не скачком */
-:root[data-pad] .screen-scroll { padding-bottom: calc(var(--space-6) + var(--kbpad, 0px)); }
+:root[data-pad] .screen-scroll { padding-bottom: calc(var(--tab-h, 94px) + var(--space-6) + var(--kbpad, 0px)); }
 :root[data-edit] .tabbar, :root[data-kb='open'] .tabbar { opacity: 0; pointer-events: none; }
-/* панель не занимает место в потоке на время ввода: иначе её слот (94 pt) остаётся пустым и обрезает список над клавиатурой.
-   Она остаётся на том же месте (absolute bottom:0), поэтому визуально ничего не двигается, просто гаснет. */
-:root[data-edit] .tabbar, :root[data-kb='open'] .tabbar { position: absolute; left: 0; right: 0; bottom: 0; }
 
 /* ───── Шапка и панель: safe-area ровно один раз, в самих компонентах ───── */
 .header {
@@ -80,18 +77,18 @@ body {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: var(--space-2) var(--space-4) var(--space-6);
+  padding: var(--space-2) var(--space-4) calc(var(--tab-h, 94px) + var(--space-6)); /* запас под панель вкладок */
   scrollbar-width: none;
 }
 .screen-scroll::-webkit-scrollbar { display: none; }
 
 .tabbar {
-  flex: none;
+  position: absolute; left: 0; right: 0; bottom: 0; /* всегда поверх, не в потоке: на фокусе вёрстка не пересчитывается */
   display: flex;
   padding: var(--space-2) var(--space-2) max(var(--sab), var(--space-2));
   background: var(--surface-100);
   box-shadow: var(--shadow-panel);
-  transition: opacity .15s;
+  transition: opacity .18s;
 }
 .tab {
   flex: 1; min-height: var(--tap);

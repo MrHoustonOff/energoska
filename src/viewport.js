@@ -112,7 +112,6 @@ function clearExt() {
     if (root.dataset.kb === 'open' || isEditable(document.activeElement)) return;
     if (scrollY > 1 && n < 10) { setTimeout(() => tryClear(n + 1), 150); return; }
     delete root.dataset.ext;
-    delete root.dataset.edit;
   };
   setTimeout(() => tryClear(0), 300);
 }
@@ -129,6 +128,14 @@ function revealNative(el) {
   lastWin = target;
   window.scrollTo({ top: target, behavior: 'smooth' });
   mark('reveal');
+}
+
+// Докрутку делаем ПОСЛЕ того, как iOS закончил свою (она приходит мгновенно на ~+100 мс): иначе мы двигаем страницу поверх неё
+let revealT = [];
+function scheduleReveal() {
+  if (revealT.length) return;
+  revealT = [260, 700].map(t => setTimeout(() => revealNative(document.activeElement), t));
+  setTimeout(() => { revealT = []; }, 800);
 }
 
 function releasePad() {
@@ -177,14 +184,14 @@ function sync() {
     const h = Math.round(vv.height + vv.offsetTop + gap);
     if (h > baseH * 0.8) fullH = h; // закрытие клавиатуры: vv ещё мал, это не новый размер окна
     delete root.dataset.editing;
-    if (MODE !== 'native') delete root.dataset.edit; // в родном режиме снимает clearExt, когда страница уже вернулась
+    delete root.dataset.edit; // панель вкладок возвращается сразу
   }
   root.style.setProperty('--app-h', fullH + 'px');
   root.style.setProperty('--vvy', Math.round(vv.offsetTop) + 'px'); // если iOS всё же сдвинул панораму, гасим transform'ом
 
   if (kb > 80) {
     if (Math.abs(store.get('kbh', 0) - kb) > 10) store.set('kbh', kb);
-    if (MODE === 'native') { setExt(kb); revealNative(document.activeElement); }
+    if (MODE === 'native') { setExt(kb); scheduleReveal(); }
     else {
       root.style.setProperty('--kbpad', kb + 'px');
       root.dataset.pad = '1';
@@ -223,6 +230,7 @@ export function initViewport() {
       extTimer = setTimeout(() => { if (root.dataset.kb !== 'open') clearExt(); }, 900); // клавиатуры нет (аппаратная)
     }
     lastWin = null;
+    revealT.forEach(clearTimeout); revealT = [];
     startRec('open'); mark('focusin');
     preposition(e.target);
     schedule();

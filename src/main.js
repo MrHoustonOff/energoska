@@ -28,6 +28,9 @@ app.innerHTML = `
   </nav>
   <div class="rotate">Поверни телефон вертикально</div>`;
 const scrollEl = document.getElementById('screen');
+// высота панели вкладок нужна списку для нижнего запаса (панель лежит поверх, не в потоке)
+const tabbar = document.querySelector('.tabbar');
+new ResizeObserver(() => root.style.setProperty('--tab-h', tabbar.offsetHeight + 'px')).observe(tabbar);
 
 const answers = () => store.get('ans', {});
 const yn = id => `
