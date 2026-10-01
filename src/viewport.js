@@ -126,12 +126,14 @@ function sync() {
   }
 
   // Высота каркаса. Документ не должен быть выше окна: iOS сжимает окно при клавиатуре и иначе прокручивает документ
-  // (шапка улетает). Поэтому при вводе каркас следует за innerHeight; верх экрана не меняется, меняется нижний край под клавиатурой.
+  // до дна (шапка улетает). Из JS успеть нельзя (мы всегда на кадр позже), поэтому на время ввода высоту отдаём CSS:
+  // html/body/#app = 100% окна (см. data-editing в styles.css), и они сжимаются в том же кадре, что и окно.
   if (!editing) {
     const h = Math.round(vv.height + vv.offsetTop + gap);
     if (h > baseH * 0.8) fullH = h; // закрытие клавиатуры: vv ещё мал, это не новый размер окна
+    delete root.dataset.editing;
   }
-  root.style.setProperty('--app-h', (editing ? Math.min(fullH, innerHeight + gap) : fullH) + 'px');
+  root.style.setProperty('--app-h', fullH + 'px');
   root.style.setProperty('--vvy', Math.round(vv.offsetTop) + 'px'); // если iOS всё же сдвинул панораму, гасим transform'ом
 
   if (kb > 80) {
@@ -163,6 +165,7 @@ export function initViewport() {
 
   document.addEventListener('focusin', e => {
     if (!isEditable(e.target)) return;
+    root.dataset.editing = '1'; // до того, как iOS начнёт сжимать окно
     startRec('open'); mark('focusin');
     preposition(e.target);
     schedule();

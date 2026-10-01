@@ -42,6 +42,10 @@ body {
   padding-right: var(--sar);
   background: var(--bg);
 }
+/* пока в поле ввод: высота целиком от окна (в одном кадре с его сжатием), иначе iOS прокрутит документ до дна */
+:root[data-editing] body { min-height: 0; }
+:root[data-editing] #app { height: 100%; }
+
 /* клавиатура: окно НЕ сжимаем (рывок). Она накрывает низ, а списку добавляется запас снизу (--kbpad) для докрутки поля */
 :root[data-kb='open'] #app { transform: translateY(var(--vvy)); } /* только если iOS сдвинул панораму */
 #app { transition: transform .32s cubic-bezier(.22, .9, .3, 1); } /* iOS присылает конечный сдвиг сразу, а сам едет ~300 мс: гасим сдвиг плавно, а не скачком */
