@@ -513,7 +513,7 @@ components:
       properties:
         id: { $ref: '#/components/schemas/Uuid' }
         timezone: { type: string, description: 'IANA, например `Europe/Minsk`' }
-        day_boundary_hour: { type: integer, minimum: 0, maximum: 6, description: 'Час, с которого начинается новый день (0 = полночь)' }
+        day_boundary_hour: { type: integer, minimum: 0, maximum: 6, description: 'Час, с которого начинается новый день (решено: 4 = с 04:00)' }
         members:
           type: array
           items: { $ref: '#/components/schemas/Member' }

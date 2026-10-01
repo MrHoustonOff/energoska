@@ -8,7 +8,10 @@ describe('лимит энергетиков', () => {
 
 describe('граница суток', () => {
   it.each(dayScenarios)('$name', s => expect(localDay(s.at, s.tz, s.boundary)).toBe(s.expect));
-  it('по умолчанию полночь по Минску', () => expect(localDay('2026-10-02T21:00:00Z')).toBe('2026-10-03'));
+  it('по умолчанию день начинается в 04:00 по Минску', () => {
+    expect(localDay('2026-10-02T21:00:00Z')).toBe('2026-10-02');
+    expect(localDay('2026-10-03T01:00:00Z')).toBe('2026-10-03');
+  });
 });
 
 describe('оценка', () => {

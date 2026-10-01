@@ -82,9 +82,9 @@ export function registerDataContract(setup: () => Harness) {
     });
     it('граница суток: соседние моменты по обе стороны попадают в разные дни, счётчик не переходит', async () => {
       const { a, e } = await withDrinks();
-      const before = '2026-10-02T20:59:59Z', after = '2026-10-02T21:00:00Z'; // полночь по Минску, если граница 0:00
+      const before = '2026-10-03T00:59:59Z', after = '2026-10-03T01:00:00Z'; // 04:00 по Минску: граница суток
       const dayBefore = localDay(before), dayAfter = localDay(after);
-      await take(a, e.id, before); await take(a, e.id, before.replace('59:59', '59:58'));
+      await take(a, e.id, before); await take(a, e.id, '2026-10-03T00:59:58Z');
       const next = await take(a, e.id, after);
       expect(next.local_day).toBe(dayAfter);
       expect((await a.intakes.daySummary(dayBefore)).energy_count).toBe(dayBefore === dayAfter ? 3 : 2);

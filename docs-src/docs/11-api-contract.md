@@ -37,7 +37,7 @@ UUIDv7 создаёт клиент · повтор POST с тем же `id` бе
 - Блокировка входа: 5 неудач → 60 с (`LOGIN_*` в `constants.ts`; точные значения — открытый вопрос №5).
 
 ## Открытые вопросы (одна константа, безопасное умолчание)
-`src/domain/constants.ts`: `DAY_BOUNDARY_HOUR = 0` (полночь) и `DEFAULT_TIMEZONE = 'Europe/Minsk'`. Пояс хранится у пары (`PATCH /couple`), час границы пока общий для всех пар.
+`src/domain/constants.ts`: `DAY_BOUNDARY_HOUR = 4` (новый день с 04:00, решено владельцем) и `DEFAULT_TIMEZONE = 'Europe/Minsk'`. Пояс хранится у пары (`PATCH /couple`), час границы пока общий для всех пар.
 
 ## Как добавить новый блок
 1. Эндпоинты и схемы в `api/openapi.yaml`, `npm run api:types`.
