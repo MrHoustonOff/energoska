@@ -83,7 +83,7 @@ let lastRevealTarget = null; // последняя цель докрутки, ч
 
 const listeners = new Set();
 /** Подписаться на любое изменение размеров/состояния клавиатуры (для обновления отладочных цифр). */
-export const onViewportChange = fn => listeners.add(fn);
+export const onViewportChange = fn => { listeners.add(fn); return () => listeners.delete(fn); };
 
 // ───────────────────────── Запись событий (для отладки) ─────────────────────────
 // Две «ленты»: что происходило вокруг открытия и вокруг закрытия клавиатуры, с миллисекундами от начала.
