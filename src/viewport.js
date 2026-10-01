@@ -144,6 +144,7 @@ function sync() {
     const h = Math.round(vv.height + vv.offsetTop + gap);
     if (h > baseH * 0.8) fullH = h; // закрытие клавиатуры: vv ещё мал, это не новый размер окна
     delete root.dataset.editing;
+    delete root.dataset.edit;
   }
   root.style.setProperty('--app-h', fullH + 'px');
   root.style.setProperty('--vvy', Math.round(vv.offsetTop) + 'px'); // если iOS всё же сдвинул панораму, гасим transform'ом
@@ -180,6 +181,7 @@ export function initViewport() {
 
   document.addEventListener('focusin', e => {
     if (!isEditable(e.target)) return;
+    root.dataset.edit = '1'; // панель вкладок выходит из потока сразу (иначе её место обрезает список)
     if (MODE === 'fluid') root.dataset.editing = '1'; // до того, как iOS начнёт сжимать окно
     startRec('open'); mark('focusin');
     preposition(e.target);
