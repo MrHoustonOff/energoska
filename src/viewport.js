@@ -66,7 +66,7 @@ export function metrics() {
 // ───── клавиатура: запас снизу + плавная докрутка поля ─────
 const kbPad = () => parseFloat(root.style.getPropertyValue('--kbpad')) || 0;
 
-function ensureVisible(el) {
+function ensureVisible(el, instant = false) {
   const sc = el.closest('.screen-scroll');
   if (!sc || !vv) return;
   const open = root.dataset.kb === 'open';
@@ -80,8 +80,9 @@ function ensureVisible(el) {
   else if (r.top < c.top + pad) target = sc.scrollTop - ((c.top + pad) - r.top);
   if (target === null || (lastFit !== null && Math.abs(target - lastFit) < 2)) return;
   lastFit = target;
-  sc.scrollTo({ top: target, behavior: 'smooth' }); // на композиторе, без рывка
-  mark('fit');
+  // instant: на фокусе ставим поле на место ДО решения iOS (оно приходит через ~90 мс); иначе iOS сдвинет всю страницу сам
+  sc.scrollTo({ top: target, behavior: instant ? 'auto' : 'smooth' });
+  mark(instant ? 'fit!' : 'fit');
 }
 
 function releasePad() {
@@ -101,7 +102,7 @@ function preposition(el) {
   root.style.setProperty('--kbpad', K + 'px');
   root.dataset.pad = '1';
   lastFit = null;
-  ensureVisible(el);
+  ensureVisible(el, true);
   clearTimeout(padTimer);
   padTimer = setTimeout(() => { if (root.dataset.kb !== 'open') releasePad(); }, 900); // клавиатуры нет (аппаратная)
 }

@@ -44,6 +44,7 @@ body {
 }
 /* клавиатура: окно НЕ сжимаем (рывок). Она накрывает низ, а списку добавляется запас снизу (--kbpad) для докрутки поля */
 :root[data-kb='open'] #app { transform: translateY(var(--vvy)); } /* только если iOS сдвинул панораму */
+#app { transition: transform .32s cubic-bezier(.22, .9, .3, 1); } /* iOS присылает конечный сдвиг сразу, а сам едет ~300 мс: гасим сдвиг плавно, а не скачком */
 :root[data-pad] .screen-scroll { padding-bottom: calc(var(--space-6) + var(--kbpad, 0px)); }
 :root[data-kb='open'] .tabbar { opacity: 0; pointer-events: none; }
 
