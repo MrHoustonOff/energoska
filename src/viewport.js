@@ -22,8 +22,30 @@ export function readSafeAreaInsets() {
   return r;
 }
 
+// Разные способы спросить у iOS высоту окна: в баге чёрной полосы они расходятся
+export function probeHeights() {
+  const out = {};
+  for (const [k, v] of [['vh', '100vh'], ['lvh', '100lvh'], ['svh', '100svh'], ['dvh', '100dvh'], ['fill', '-webkit-fill-available']]) {
+    const d = document.createElement('div');
+    d.style.cssText = `position:absolute;visibility:hidden;pointer-events:none;width:1px;height:${v}`;
+    document.body.appendChild(d);
+    out[k] = d.offsetHeight;
+    d.remove();
+  }
+  return out;
+}
+
+// Полная высота экрана в текущей ориентации. screen.* не зависит от бага вьюпорта.
+export function screenHeight() {
+  const long = Math.max(screen.width, screen.height), short = Math.min(screen.width, screen.height);
+  return innerHeight >= innerWidth ? long : short;
+}
+
 export function readMetrics() {
   return {
+    screen: `${screen.width}×${screen.height}`,
+    heights: probeHeights(),
+    appH: root.style.getPropertyValue('--app-h') || '-',
     standalone: isStandalone(),
     inner: `${innerWidth}×${innerHeight}`,
     vv: vv ? `${Math.round(vv.width)}×${Math.round(vv.height)} @${Math.round(vv.offsetTop)}` : 'нет',
@@ -46,6 +68,9 @@ function sync() {
   if (!editing) baseH = Math.max(baseH, vv.height); // база растёт только без клавиатуры
 
   const kb = editing ? Math.max(0, Math.round(baseH - vv.height)) : 0;
+  // «Дыра» снизу: окно короче экрана на высоту статус-бара. Берём высоту от экрана, а не от вьюпорта.
+  // Клавиатура её не меняет: screen.* константа.
+  root.style.setProperty('--app-h', Math.max(innerHeight, screenHeight()) + 'px');
   root.style.setProperty('--kb', kb + 'px');
   root.dataset.kb = kb > 80 ? 'open' : 'closed';
 
@@ -62,7 +87,7 @@ export const onViewportChange = fn => listeners.add(fn);
 const schedule = () => { if (!ticking) { ticking = true; requestAnimationFrame(sync); } };
 
 export function initViewport() {
-  root.dataset.shell = store.get('dbg.shell', 'fixed');   // fixed | dvh
+  root.dataset.shell = store.get('dbg.shell', 'screen');  // screen | fixed | vh | dvh
   root.dataset.kbmode = store.get('dbg.kbmode', 'pan');   // pan | resize
   root.dataset.kb = 'closed';
 

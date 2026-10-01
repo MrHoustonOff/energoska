@@ -35,6 +35,10 @@ const screens = {
       <button class="btn ghost" data-act="reset" style="margin-top:12px">Сбросить день</button>
       <p class="caption" style="margin-top:24px">Каркас</p>
       <div class="seg">
+        <button class="btn" data-shell="screen" aria-pressed="${m.shell === 'screen'}">screen</button>
+        <button class="btn" data-shell="vh" aria-pressed="${m.shell === 'vh'}">100vh</button>
+      </div>
+      <div class="seg">
         <button class="btn" data-shell="fixed" aria-pressed="${m.shell === 'fixed'}">fixed inset 0</button>
         <button class="btn" data-shell="dvh" aria-pressed="${m.shell === 'dvh'}">100dvh</button>
       </div>
@@ -85,7 +89,9 @@ function updateDbg() {
   if (!el) return;
   const m = readMetrics();
   el.textContent =
-    `standalone: ${m.standalone}\ninner: ${m.inner}\nvisualViewport: ${m.vv}\n` +
+    `standalone: ${m.standalone}\nscreen: ${m.screen}  inner: ${m.inner}\nvisualViewport: ${m.vv}\n` +
+    `vh ${m.heights.vh} lvh ${m.heights.lvh} svh ${m.heights.svh} dvh ${m.heights.dvh} fill ${m.heights.fill}\n` +
+    `app-h: ${m.appH}\n` +
     `safe-area t/r/b/l: ${m.insets.t} ${m.insets.r} ${m.insets.b} ${m.insets.l}\n` +
     `--kb: ${m.kb}  (${document.documentElement.dataset.kb})\nshell: ${m.shell}  kb: ${m.kbmode}`;
 }
