@@ -60,8 +60,11 @@ function sync() {
   const kb = editing ? Math.max(0, Math.round(baseH - vv.height)) : 0;
   root.dataset.kb = kb > 80 ? 'open' : 'closed';
   root.style.setProperty('--app-h', Math.round(vv.height + vv.offsetTop + (editing ? 0 : gap)) + 'px');
-  // клавиатура открыта: каркас = видимая область, сдвиг панорамы гасим transform'ом
-  root.style.setProperty('--vvh', Math.round(vv.height) + 'px');
+  // клавиатура открыта: каркас = видимая область + зона под плавающей панелью ^ v ✓ (её iOS в visualViewport не включает,
+  // но панель прозрачная и контент под ней должен продолжаться, а не обрываться чёрным). Сдвиг панорамы гасим transform'ом.
+  const under = editing && kb > 80 ? Math.max(0, Math.min(100, Math.round(innerHeight - vv.height))) : 0;
+  root.style.setProperty('--vvh', Math.round(vv.height + under) + 'px');
+  root.style.setProperty('--kbx', under + 'px');
   root.style.setProperty('--vvy', Math.round(vv.offsetTop) + 'px');
   // окно сжимается постепенно: поле надо возвращать в видимую зону после КАЖДОГО изменения размера
   if (editing && root.dataset.kb === 'open') ensureVisible(document.activeElement);
@@ -74,8 +77,10 @@ const schedule = () => { if (!raf) raf = requestAnimationFrame(sync); };
 function ensureVisible(el) {
   const sc = el.closest('.screen-scroll');
   if (!sc) return;
+  const under = parseFloat(root.style.getPropertyValue('--kbx')) || 0; // поле держим над панелью ^ v ✓
   const r = el.getBoundingClientRect(), c = sc.getBoundingClientRect(), pad = 24;
-  if (r.bottom > c.bottom - pad) sc.scrollTop += r.bottom - (c.bottom - pad);
+  const bottom = c.bottom - under;
+  if (r.bottom > bottom - pad) sc.scrollTop += r.bottom - (bottom - pad);
   else if (r.top < c.top + pad) sc.scrollTop -= (c.top + pad) - r.top;
 }
 
