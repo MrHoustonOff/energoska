@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 import pushDev from './tools/push-dev-plugin.mjs';
 
 // Режимы:
@@ -15,5 +16,5 @@ export default defineConfig(({ mode }) => ({
   },
   preview: { host: true, port: 4173 },
   build: { target: 'es2020' },
-  plugins: [pushDev()],         // dev-заглушка отправки push; в сборку не попадает (apply: 'serve')
+  plugins: [svelte(), pushDev()],         // dev-заглушка отправки push; в сборку не попадает (apply: 'serve')
 }));

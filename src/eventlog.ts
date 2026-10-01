@@ -3,15 +3,15 @@
 // Зачем: на iPhone нет DevTools, а поведение клавиатуры нельзя воспроизвести в эмуляции.
 // Лог хранится в localStorage (переживает перезапуск приложения) и копируется в буфер кнопкой на странице,
 // после чего его можно отправить разработчику как текст.
-import * as store from './store.js';
+import * as store from './store';
 
 /** Максимум строк. Старые вытесняются. */
 const MAX = 400;
 
-let lines = store.get('log', []);
-let saveTimer = 0;
+let lines: string[] = store.get<string[]>('log', []);
+let saveTimer: ReturnType<typeof setTimeout> | undefined;
 
-const pad = (n, len = 2) => String(n).padStart(len, '0');
+const pad = (n: number, len = 2) => String(n).padStart(len, '0');
 
 /** Время с миллисекундами: порядок событий важен, поэтому нужна точность. */
 function stamp() {
@@ -20,7 +20,7 @@ function stamp() {
 }
 
 /** Добавить строку в лог. */
-export function add(text) {
+export function add(text: string): void {
   lines.push(`${stamp()}  ${text}`);
   if (lines.length > MAX) lines.splice(0, lines.length - MAX);
   // В localStorage пишем не на каждый тап, а пачкой: запись синхронная и может притормозить касание.
@@ -44,7 +44,7 @@ export function clear() {
  * локальной сети, поэтому есть запасной путь через временное поле и execCommand('copy').
  * Временное поле помечено data-nokb: оно не считается полем ввода (иначе сработает логика клавиатуры).
  */
-export async function copyText(text) {
+export async function copyText(text: string): Promise<boolean> {
   try {
     if (navigator.clipboard?.writeText && window.isSecureContext) {
       await navigator.clipboard.writeText(text);

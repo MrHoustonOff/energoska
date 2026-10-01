@@ -81,7 +81,7 @@
 
 | Компонент | Где | Что делает |
 |---|---|---|
-| Клиент | `src/push.js`, блок в `src/screens/lab.js` | Разрешение, регистрация воркера, подписка, кнопки, статус, пишет шаги в лог |
+| Клиент | `src/push.js`, блок в `src/screens/Lab.svelte` | Разрешение, регистрация воркера, подписка, кнопки, статус, пишет шаги в лог |
 | Service worker | `public/sw.js` | Принимает `push`, показывает уведомление; по нажатию открывает приложение. **Не кэширует и не перехватывает fetch** |
 | Dev-заглушка | `tools/push-dev-plugin.mjs` (подключена в `vite.config.js`) | Ключи VAPID, хранение подписки, отложенная отправка. Живёт только в `npm run dev` |
 | Туннель | `cloudflared` (внешняя утилита) | Даёт HTTPS-адрес для телефона |
@@ -251,7 +251,7 @@ HTTPS: да
 |---|---|
 | `public/sw.js` | Service worker: `push`, `notificationclick` |
 | `src/push.js` | Клиент: разрешение, подписка, тест, статус |
-| `src/screens/lab.js` | Кнопки и статус в Лаборатории |
+| `src/screens/Lab.svelte` | Кнопки и статус в Лаборатории |
 | `tools/push-dev-plugin.mjs` | Dev-заглушка: ключи, подписки, отложенная отправка |
 | `vite.config.js` | Подключение заглушки, `allowedHosts`, режим `tunnel` |
 | `package.json` | Скрипт `dev:tunnel`, зависимость `web-push` |

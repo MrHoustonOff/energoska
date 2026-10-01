@@ -8,11 +8,11 @@
 const PREFIX = 'energoska:';
 
 /** Кэш в памяти: читаем localStorage один раз на ключ. */
-const state = {};
+const state: Record<string, unknown> = {};
 /** Подписчики на любые изменения: fn(key, value). */
-const subs = new Set();
+const subs = new Set<(key: string, value: unknown) => void>();
 
-function read(key, fallback) {
+function read<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(PREFIX + key);
     return raw === null ? fallback : JSON.parse(raw);
@@ -22,13 +22,13 @@ function read(key, fallback) {
 }
 
 /** Прочитать значение; если его нет, вернуть fallback. */
-export function get(key, fallback) {
+export function get<T>(key: string, fallback: T): T {
   if (!(key in state)) state[key] = read(key, fallback);
-  return state[key];
+  return state[key] as T;
 }
 
 /** Записать значение и оповестить подписчиков. */
-export function set(key, value) {
+export function set(key: string, value: unknown): void {
   state[key] = value;
   try {
     localStorage.setItem(PREFIX + key, JSON.stringify(value));
@@ -39,7 +39,7 @@ export function set(key, value) {
 }
 
 /** Подписаться на изменения. Возвращает функцию отписки. */
-export function subscribe(fn) {
+export function subscribe(fn: (key: string, value: unknown) => void): () => void {
   subs.add(fn);
-  return () => subs.delete(fn);
+  return () => { subs.delete(fn); };
 }

@@ -37,8 +37,8 @@
 //  - innerHeight при открытой клавиатуре «гуляет» (844 → 797 → 441 → 614…), поэтому на него нельзя опираться.
 //  - Высоту клавиатуры определяем как baseH − visualViewport.height (baseH: высота видимой области без клавиатуры).
 //  - Поля без клавиатуры (дата, время, список) вьюпорт не меняют; для них наша логика не запускается.
-import * as store from './store.js';
-import { add as logAdd } from './eventlog.js';
+import * as store from './store';
+import { add as logAdd } from './eventlog';
 
 const root = document.documentElement;
 const vv = window.visualViewport;

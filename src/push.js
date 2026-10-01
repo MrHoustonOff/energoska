@@ -6,7 +6,7 @@
 //   3. Нажатие «Тест через 10 с» → сервер ждёт 10 секунд и шлёт push → воркер показывает уведомление (приложение может быть закрыто).
 //
 // Все шаги пишутся в общий лог (eventlog), чтобы по кнопке «Копировать лог» было видно, где остановилось.
-import * as eventlog from './eventlog.js';
+import * as eventlog from './eventlog';
 
 const log = text => eventlog.add(`push   ${text}`);
 

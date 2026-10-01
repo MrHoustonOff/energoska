@@ -58,14 +58,14 @@ npm run dev          # в консоли появится Network: http://192.16
 index.html                 мета-теги PWA, критичный фон до загрузки стилей
 public/                    manifest, иконки, sw.js (service worker только для push)
 src/
-  main.js                  точка входа: сборка частей
-  viewport.js              ВЫСОТА ОКНА И КЛАВИАТУРА на iOS (заморожено, подробные комментарии в начале файла)
-  shell.js                 оболочка: шапка, список, панель вкладок, переходы между экранами
+  main.ts                  точка входа: сборка частей
+  App.svelte               оболочка: шапка, список, панель вкладок, переходы между экранами
+  viewport.js              ВЫСОТА ОКНА И КЛАВИАТУРА на iOS (заморожено; viewport.d.ts: типы)
   styles.css               каркас и стили (подробные комментарии)
-  debug.js, eventlog.js    отладка: лог тапов/фокуса, копирование отчёта, красный фон
-  push.js                  клиентская часть push (разрешение, подписка, тест)
-  store.js                 Mock-Store (localStorage)
-  screens/                 экраны: home, placeholders (cans, add, stats), more, lab (Лаборатория)
+  debug.ts, eventlog.ts    отладка: лог тапов/фокуса, копирование отчёта, красный фон
+  push.js                  клиентская часть push (заморожено; push.d.ts: типы)
+  store.ts                 Mock-Store (localStorage)
+  screens/                 экраны-компоненты: реестр index.ts, Placeholder, More, Lab (Лаборатория)
 tools/
   push-dev-plugin.mjs      dev-заглушка отправки push (только npm run dev)
   make-icons.mjs           генерация иконок
@@ -78,6 +78,7 @@ docs-src/                  документация и эталон дизайн
 |---|---|
 | `npm run dev` | Dev-сервер в локальной сети (телефон открывает `http://IP:5173`) |
 | `npm run dev:tunnel` | То же, но для работы за HTTPS-туннелем (проверка push) |
+| `npm run check` | Проверка типов (svelte-check) |
 | `npm run build` | Сборка в `dist/` |
 | `npm run preview` | Просмотр сборки (порт 4173) |
 
