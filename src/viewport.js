@@ -87,6 +87,36 @@ function sync() {
 }
 
 const listeners = new Set();
+const eventLog = [];
+export const getLog = () => eventLog;
+function log(msg) {
+  eventLog.unshift(`${(performance.now() / 1000).toFixed(1)}  ${msg}`);
+  eventLog.length = Math.min(eventLog.length, 12);
+  notify();
+}
+const who = t => t && t.tagName ? t.tagName.toLowerCase() + (t.id ? '#' + t.id : '') : '?';
+
+// Принудительный пересчёт вьюпорта (аналог «подёргать зум/потянуть вниз»).
+// scale: initial-scale 1 → 1.001 → 1; zoom: на миг ограничиваем масштаб, как делает жест.
+export function kickViewport(variant = store.get('dbg.kick', 'scale')) {
+  const m = document.querySelector('meta[name=viewport]');
+  if (!m || variant === 'off') return;
+  const orig = m.dataset.orig || m.content;
+  m.dataset.orig = orig;
+  const before = innerHeight;
+  m.content = variant === 'zoom'
+    ? orig + ', minimum-scale=1, maximum-scale=1.0001'
+    : orig.replace('initial-scale=1', 'initial-scale=1.001');
+  setTimeout(() => {
+    m.content = orig;
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      sync();
+      log(`kick ${variant}: inner ${before} → ${innerHeight}`);
+    }, 120);
+  }, 120);
+}
+export function setKick(v) { store.set('dbg.kick', v); }
 const notify = () => listeners.forEach(fn => fn());
 export const onViewportChange = fn => listeners.add(fn);
 
@@ -98,7 +128,11 @@ export function initViewport() {
   root.dataset.kb = 'closed';
 
   // Чёрная полоса при холодном старте/после фона: сбросить возможный сдвиг и пересчитать базу
-  const reset = () => { baseH = vv ? vv.height : innerHeight; baseW = vv ? vv.width : innerWidth; window.scrollTo(0, 0); sync(); };
+  const reset = () => {
+    baseH = vv ? vv.height : innerHeight; baseW = vv ? vv.width : innerWidth;
+    window.scrollTo(0, 0); sync();
+    if (computeGap() > 0) kickViewport(); // окно короче экрана: пробуем вылечить пересчётом
+  };
   window.addEventListener('pageshow', reset);
   window.addEventListener('orientationchange', () => setTimeout(reset, 300));
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reset(); });
@@ -126,7 +160,14 @@ export function initViewport() {
   // случайный зум щипком
   document.addEventListener('gesturestart', e => e.preventDefault());
 
+  document.addEventListener('pointerdown', e => log('pointerdown ' + who(e.target)), true);
+  document.addEventListener('focusin', e => log('focusin ' + who(e.target)), true);
+  document.addEventListener('focusout', e => log('focusout ' + who(e.target)), true);
+  window.addEventListener('error', e => log('ERR ' + e.message));
+  if (vv) vv.addEventListener('resize', () => log(`vv.resize h=${Math.round(vv.height)}`));
+
   sync();
+  setTimeout(reset, 300);
 }
 
 export function setShell(v) { root.dataset.shell = v; store.set('dbg.shell', v); window.scrollTo(0, 0); sync(); }

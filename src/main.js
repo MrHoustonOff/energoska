@@ -1,6 +1,6 @@
 import './styles.css';
 import * as store from './store.js';
-import { initViewport, readMetrics, onViewportChange, setShell, setKbMode } from './viewport.js';
+import { initViewport, readMetrics, onViewportChange, setShell, setKbMode, kickViewport, setKick, getLog } from './viewport.js';
 
 initViewport();
 
@@ -43,7 +43,15 @@ const screens = {
         <button class="btn" data-kbmode="pan" aria-pressed="${m.kbmode === 'pan'}">pan</button>
         <button class="btn" data-kbmode="resize" aria-pressed="${m.kbmode === 'resize'}">resize</button>
       </div>
-      <div class="card" style="margin-top:12px"><p class="caption">Диагностика</p><pre class="dbg" id="dbg"></pre></div>`;
+      <p class="caption">Пинок вьюпорта при старте</p>
+      <div class="seg">
+        ${['off', 'scale', 'zoom'].map(k => `<button class="btn" data-kick="${k}" aria-pressed="${store.get('dbg.kick', 'scale') === k}">${k}</button>`).join('')}
+      </div>
+      <button class="btn ghost" data-act="kick">Пнуть сейчас</button>
+      <p class="caption" style="margin-top:16px">Тест клавиатуры: голый input</p>
+      <input id="bare" placeholder="тапни сюда" style="background:#fff;color:#000">
+      <div class="card" style="margin-top:12px"><p class="caption">Диагностика</p><pre class="dbg" id="dbg"></pre></div>
+      <div class="card"><p class="caption">События</p><pre class="dbg" id="log"></pre></div>`;
   },
   form() {
     const d = store.get('draft', { login: '', pass: '', note: '' });
@@ -81,6 +89,8 @@ function render() {
 }
 
 function updateDbg() {
+  const lg = document.getElementById('log');
+  if (lg) lg.textContent = getLog().join('\n');
   const el = document.getElementById('dbg');
   if (!el) return;
   const m = readMetrics();
@@ -93,11 +103,13 @@ function updateDbg() {
 onViewportChange(updateDbg);
 
 app.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-act],[data-shell],[data-kbmode]');
+  const t = e.target.closest('[data-tab],[data-act],[data-shell],[data-kbmode],[data-kick]');
   if (!t) return;
   if (t.dataset.tab) { tab = t.dataset.tab; store.set('tab', tab); render(); }
   else if (t.dataset.act === 'can') store.set('cans', Math.min(MAX_CANS, store.get('cans', 0) + 1));
   else if (t.dataset.act === 'reset') store.set('cans', 0);
+  else if (t.dataset.act === 'kick') kickViewport(store.get('dbg.kick', 'scale') === 'off' ? 'scale' : undefined);
+  else if (t.dataset.kick) { setKick(t.dataset.kick); render(); }
   else if (t.dataset.shell) { setShell(t.dataset.shell); render(); }
   else if (t.dataset.kbmode) { setKbMode(t.dataset.kbmode); render(); }
 });
