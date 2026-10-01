@@ -15,7 +15,7 @@
   import { loadLockout, saveLockout } from './lockout';
   import { signedIn } from './session.svelte';
 
-  let { onregister, initialLogin = '' }: { onregister: () => void; initialLogin?: string } = $props();
+  let { onregister, initialLogin = '', justRegistered = false }: { onregister: () => void; initialLogin?: string; justRegistered?: boolean } = $props();
 
   type Problem = { kind: 'invalid'; attemptsLeft?: number } | { kind: 'empty' } | { kind: 'network' } | { kind: 'other' };
 
@@ -98,7 +98,7 @@
   <Infographic />
   <div>
     <h1 class="au-title">Вход</h1>
-    {#if !locked && !problem}<p class="au-sub">Логин и пароль — и вы снова дома</p>{/if}
+    {#if !locked && !problem}<p class="au-sub" class:done={justRegistered}>{justRegistered ? 'Аккаунт создан. Теперь войдите' : 'Логин и пароль — и вы снова дома'}</p>{/if}
   </div>
 
   <form onsubmit={submit} novalidate>

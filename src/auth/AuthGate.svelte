@@ -3,21 +3,20 @@
   import Login from './Login.svelte';
   import Register from './Register.svelte';
 
-  import { showToast } from '../toastState.svelte';
-
   let view = $state<'login' | 'register'>('login');
   let prefill = $state('');
+  let justRegistered = $state(false);
 
-  /** Регистрация прошла: сессию не открываем, возвращаем на вход (логин подставлен) и сообщаем тостом. */
+  /** Регистрация прошла: сессию не открываем, возвращаем на вход (логин подставлен); подпись под «Вход» становится зелёной. */
   function registered(login: string) {
     prefill = login;
     view = 'login';
-    showToast('Регистрация прошла успешно. Теперь войди');
+    justRegistered = true;
   }
 </script>
 
 {#if view === 'login'}
-  <Login initialLogin={prefill} onregister={() => (view = 'register')} />
+  <Login initialLogin={prefill} {justRegistered} onregister={() => (view = 'register')} />
 {:else}
   <Register onregistered={registered} onback={() => (view = 'login')} />
 {/if}

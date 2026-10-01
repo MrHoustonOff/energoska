@@ -30,13 +30,3 @@
 .card::after, .btn::after, .menu-row::after, .tabbar::after {
   content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 3; pointer-events: none;
   background: var(--grain) 0 0 / 140px; mix-blend-mode: overlay; opacity: .28; }
-
-/* Тост (reference NotificationToasts: радиус 20). Лежит поверх всего у верхнего края, ниже выреза. */
-.toast { position: absolute; z-index: 9; left: var(--space-4); right: var(--space-4); top: calc(var(--sat) + var(--space-2));
-  display: flex; align-items: center; gap: var(--space-3); min-height: var(--tap); padding: var(--space-3) var(--space-4); text-align: left;
-  background: var(--surface-100); color: var(--ink); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow-sticker);
-  font: 600 13px/1.35 var(--font-display); cursor: pointer; animation: toast-in .28s cubic-bezier(.2, .9, .25, 1); }
-.toast svg { flex: none; width: 22px; height: 22px; fill: none; stroke: var(--me-mark); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-.toast::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: var(--grain) 0 0 / 140px; mix-blend-mode: overlay; opacity: .28; }
-@keyframes toast-in { from { transform: translateY(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
