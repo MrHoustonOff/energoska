@@ -59,6 +59,16 @@
 
   const loginEdited = () => { checkSeq++; avail = 'idle'; failure = ''; };
   const edited = () => { failure = ''; };
+
+  /**
+   * «Надёжный пароль» от iOS заполняет оба поля и оставляет страницу ползти под клавиатурой (лог 02.10: scrollY до 752).
+   * Когда оба поля заполнены, клавиатура больше не нужна: снимаем фокус, как тап вне поля (так же сделано на входе).
+   */
+  function autofilled() {
+    setTimeout(() => {
+      if (password && repeat && document.activeElement instanceof HTMLInputElement) document.activeElement.blur();
+    }, 450);
+  }
   const leave = (f: keyof typeof touched) => { touched[f] = true; if (f === 'login') checkLogin(); };
   const pick = (s: string) => { login = s; touched.login = true; failure = ''; checkLogin(); };
 
@@ -129,7 +139,7 @@
 
     <Field
       label="Пароль" type="password" reveal bind:value={password} bind:input={passwordEl} invalid={!!passwordMsg}
-      readonly={busy} oninput={edited} onblur={() => leave('password')}
+      readonly={busy} oninput={edited} onblur={() => leave('password')} onautofill={autofilled}
       autocomplete="new-password" enterkeyhint="next"
     />
     {#if passwordMsg}
@@ -148,7 +158,7 @@
 
     <Field
       label="Повторите пароль" type="password" reveal bind:value={repeat} bind:input={repeatEl} invalid={!!repeatMsg} ok={repeatOk}
-      readonly={busy} oninput={edited} onblur={() => leave('repeat')}
+      readonly={busy} oninput={edited} onblur={() => leave('repeat')} onautofill={autofilled}
       autocomplete="new-password" enterkeyhint="go"
     />
     {#if repeatMsg}
@@ -161,7 +171,6 @@
       {#if busy}<Spinner />Создаём…{:else}Создать аккаунт{/if}
     </button>
     {#if failure}<Msg kind="error" center>{failure}</Msg>{/if}
-    <p class="au-hint">После создания iPhone предложит сохранить пароль — согласитесь, и входить станет проще</p>
   </form>
 
   <p class="au-switch">Уже есть аккаунт? <button type="button" onclick={onback}>Войти</button></p>
