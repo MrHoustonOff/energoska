@@ -191,7 +191,7 @@ function sync() {
 
   if (kb > 80) {
     if (Math.abs(store.get('kbh', 0) - kb) > 10) store.set('kbh', kb);
-    if (MODE === 'native') { setExt(kb); scheduleReveal(); }
+    if (MODE === 'native') { setExt(2 * kb); scheduleReveal(); } // запас с избытком: iOS центрирует поле и прокручивает дальше, чем нужно
     else {
       root.style.setProperty('--kbpad', kb + 'px');
       root.dataset.pad = '1';
@@ -225,7 +225,7 @@ export function initViewport() {
     root.dataset.edit = '1'; // панель вкладок выходит из потока сразу (иначе её место обрезает список)
     if (MODE === 'fluid') root.dataset.editing = '1'; // до того, как iOS начнёт сжимать окно
     if (MODE === 'native' && root.dataset.kb !== 'open') {
-      setExt(store.get('kbh', Math.round(baseH * 0.48))); // заранее, до решения iOS (оно приходит через ~90 мс)
+      setExt(2 * store.get('kbh', Math.round(baseH * 0.48))); // заранее, до решения iOS (оно приходит через ~90 мс)
       clearTimeout(extTimer);
       extTimer = setTimeout(() => { if (root.dataset.kb !== 'open') clearExt(); }, 900); // клавиатуры нет (аппаратная)
     }

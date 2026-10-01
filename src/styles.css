@@ -46,7 +46,12 @@ body {
   background: var(--bg);
 }
 /* родной режим: страница удлиняется на высоту клавиатуры, под её стеклом остаётся приложение, а не край документа */
-:root[data-kbm='native'][data-ext] body { padding-bottom: var(--kbext, 0px); } /* хвост под клавиатуру: список не растёт, пол прокрутки не меняется */
+/* Родной режим, ввод: приложение и список растут на запас (--kbext), и на ту же величину растёт нижний отступ списка.
+   Предел прокрутки списка (scrollHeight − clientHeight) не меняется, поэтому позиция не «поджимается» (телепорт),
+   а iOS, прокручивая страницу ниже, всегда видит под клавиатурой список, а не край приложения. */
+:root[data-kbm='native'][data-ext] #app { height: calc(var(--app-h) + var(--kbext, 0px)); }
+:root[data-ext] .screen-scroll { padding-bottom: calc(var(--tab-h, 94px) + var(--space-6) + var(--kbext, 0px)); }
+:root[data-ext] .tabbar { bottom: var(--kbext, 0px); } /* панель остаётся на прежнем месте, пока приложение растёт */
 
 /* режим fixed: каркас привязан к экрану и не зависит от размера окна (iOS сжимает окно, а каркас не перестраивается) */
 :root[data-kbm='fixed'] #app { position: fixed; top: 0; left: 0; right: 0; height: var(--app-h); }
