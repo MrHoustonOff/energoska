@@ -42,12 +42,15 @@ body {
   padding-right: var(--sar);
   background: var(--bg);
 }
+/* режим fixed: каркас привязан к экрану и не зависит от размера окна (iOS сжимает окно, а каркас не перестраивается) */
+:root[data-kbm='fixed'] #app { position: fixed; top: 0; left: 0; right: 0; height: var(--app-h); }
+
 /* пока в поле ввод: высота целиком от окна (в одном кадре с его сжатием), иначе iOS прокрутит документ до дна */
 :root[data-editing] body { min-height: 0; }
 :root[data-editing] #app { height: 100%; }
 
 /* клавиатура: окно НЕ сжимаем (рывок). Она накрывает низ, а списку добавляется запас снизу (--kbpad) для докрутки поля */
-:root[data-kb='open'] #app { transform: translateY(var(--vvy)); } /* только если iOS сдвинул панораму */
+:root:not([data-kbm='native'])[data-kb='open'] #app { transform: translateY(var(--vvy)); } /* только если iOS сдвинул панораму */
 #app { transition: transform .32s cubic-bezier(.22, .9, .3, 1); } /* iOS присылает конечный сдвиг сразу, а сам едет ~300 мс: гасим сдвиг плавно, а не скачком */
 :root[data-pad] .screen-scroll { padding-bottom: calc(var(--space-6) + var(--kbpad, 0px)); }
 :root[data-kb='open'] .tabbar { opacity: 0; pointer-events: none; }

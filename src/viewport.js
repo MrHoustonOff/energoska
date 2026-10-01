@@ -11,6 +11,12 @@ const isEditable = el =>
 const listeners = new Set();
 export const onViewportChange = fn => listeners.add(fn);
 
+// Режим клавиатуры (переключатель на вкладке «Итог»): native — ничего не трогаем, fixed — каркас привязан к экрану,
+// fluid — на время ввода высота = 100% окна. Нужен, чтобы сравнить на телефоне и выбрать лучший.
+const MODE = store.get('kbm', 'fixed');
+export const getKbm = () => MODE;
+export function setKbm(v) { store.set('kbm', v); location.reload(); }
+
 let gap = 0;
 let fullH = innerHeight;
 let baseH = vv ? vv.height : innerHeight;
@@ -73,7 +79,7 @@ function ensureVisible(el, instant = false) {
   const sc = el.closest('.screen-scroll');
   if (!sc || !vv) return;
   const open = root.dataset.kb === 'open';
-  if (!open && !root.dataset.pad) return;
+  if (MODE === 'native' || (!open && !root.dataset.pad)) return;
   const pad = 24;
   // клавиатура уже открыта: vv.height это область над ней; ещё нет: вычитаем ожидаемую высоту
   const limit = vv.offsetTop + vv.height - (open ? 0 : kbPad()) - pad;
@@ -100,6 +106,7 @@ function releasePad() {
 
 // Фокус пошёл, а размеры от iOS ещё не пришли: двигаем поле сразу по запомненной высоте клавиатуры.
 function preposition(el) {
+  if (MODE === 'native') return;
   if (root.dataset.kb === 'open') { ensureVisible(el); return; }
   const K = store.get('kbh', Math.round(baseH * 0.48));
   root.style.setProperty('--kbpad', K + 'px');
@@ -138,9 +145,11 @@ function sync() {
 
   if (kb > 80) {
     if (Math.abs(store.get('kbh', 0) - kb) > 10) store.set('kbh', kb);
-    root.style.setProperty('--kbpad', kb + 'px');
-    root.dataset.pad = '1';
-    ensureVisible(document.activeElement);
+    if (MODE !== 'native') {
+      root.style.setProperty('--kbpad', kb + 'px');
+      root.dataset.pad = '1';
+      ensureVisible(document.activeElement);
+    }
   }
   listeners.forEach(fn => fn());
 }
@@ -149,6 +158,7 @@ const schedule = () => { if (!raf) raf = requestAnimationFrame(sync); };
 
 export function initViewport() {
   root.dataset.kb = 'closed';
+  root.dataset.kbm = MODE;
 
   const reset = () => {
     baseH = vv ? vv.height : innerHeight; baseW = vv ? vv.width : innerWidth;
@@ -165,7 +175,7 @@ export function initViewport() {
 
   document.addEventListener('focusin', e => {
     if (!isEditable(e.target)) return;
-    root.dataset.editing = '1'; // до того, как iOS начнёт сжимать окно
+    if (MODE === 'fluid') root.dataset.editing = '1'; // до того, как iOS начнёт сжимать окно
     startRec('open'); mark('focusin');
     preposition(e.target);
     schedule();

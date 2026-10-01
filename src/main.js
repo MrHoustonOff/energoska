@@ -1,6 +1,6 @@
 import './styles.css';
 import * as store from './store.js';
-import { initViewport, metrics, liveLine, recording, onViewportChange } from './viewport.js';
+import { initViewport, metrics, liveLine, recording, getKbm, setKbm, onViewportChange } from './viewport.js';
 
 initViewport();
 
@@ -66,6 +66,8 @@ const screens = {
     const a = answers();
     const mark = v => v === 'ok' ? '<b class="ok">✓</b>' : v === 'bad' ? '<b class="bad">✗</b>' : '<b class="no">—</b>';
     return `
+      <p class="caption">Режим клавиатуры</p>
+      <div class="seg">${[['native', 'родной'], ['fixed', 'фикс'], ['fluid', 'текущий']].map(([k, n]) => `<button class="btn" data-setkbm="${k}" aria-pressed="${getKbm() === k}">${n}</button>`).join('')}</div>
       <p class="caption">Результат</p>
       ${CHECKS.map(([id, name]) => `<div class="sum"><span>${name}</span>${mark(a[id])}</div>`).join('')}
       <p class="caption" style="margin-top:24px">Для скриншота</p>
@@ -103,7 +105,7 @@ onViewportChange(() => { updateDbg(); updateLive(); });
 updateLive();
 
 app.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-ans],[data-act]');
+  const t = e.target.closest('[data-tab],[data-ans],[data-act],[data-setkbm]');
   if (!t || !app.contains(t)) return; // closest() может дойти до <html>
   if (t.dataset.tab) { tab = t.dataset.tab; store.set('tab', tab); render(); }
   else if (t.dataset.ans) {
@@ -115,6 +117,7 @@ app.addEventListener('click', e => {
     store.set('count', store.get('count', 0) + 1);
     document.getElementById('count').textContent = store.get('count', 0);
   }
+  else if (t.dataset.setkbm) setKbm(t.dataset.setkbm);
   else if (t.dataset.act === 'clear') { store.set('ans', {}); render(); }
 });
 
