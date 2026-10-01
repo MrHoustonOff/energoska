@@ -9,6 +9,7 @@
   import AuthGate from './auth/AuthGate.svelte';
   import Splash from './auth/Splash.svelte';
   import Backdrop from './Backdrop.svelte';
+  import Toast from './Toast.svelte';
   import Shell from './Shell.svelte';
 
   onMount(initSession);
@@ -22,3 +23,5 @@
 {:else}
   <Splash />
 {/if}
+
+<Toast />

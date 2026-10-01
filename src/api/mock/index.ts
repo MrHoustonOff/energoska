@@ -10,6 +10,7 @@ import { authApi } from './auth';
 import { coupleApi } from './couple';
 import { drinksApi, intakesApi, ratingsApi, waterApi } from './data';
 import * as store from '../../store';
+import { seedAdmin } from './seed';
 
 export interface MockOptions {
   /** Задержка каждого вызова, мс (имитация сети). По умолчанию 0. */
@@ -18,6 +19,8 @@ export interface MockOptions {
   persist?: boolean;
   /** Часы (мс); для тестов блокировки входа. */
   now?: () => number;
+  /** Создать тестовый аккаунт admin / admin, если его нет (только для разработки на моке; с настоящим бэкендом убрать). */
+  seedAdmin?: boolean;
   /** Пока вернёт false, вызовы падают с ошибкой network (имитация «нет сети»). */
   online?: () => boolean;
 }
@@ -27,6 +30,7 @@ const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 export function createMockBackend(opts: MockOptions = {}) {
   const { db, save } = openDb(opts.persist ?? false);
   const now = opts.now ?? Date.now;
+  if (opts.seedAdmin) seedAdmin(db, save, now());
 
   function client(): Api {
     const tokenKey = 'mock.token';

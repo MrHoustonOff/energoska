@@ -13,13 +13,15 @@
   import Msg from './Msg.svelte';
   import Spinner from './Spinner.svelte';
   import { loadLockout, saveLockout } from './lockout';
+  import { offerSavePassword } from './savePassword';
   import { signedIn } from './session.svelte';
 
-  let { onregister }: { onregister: () => void } = $props();
+  let { onregister, initialLogin = '' }: { onregister: () => void; initialLogin?: string } = $props();
 
   type Problem = { kind: 'invalid'; attemptsLeft?: number } | { kind: 'empty' } | { kind: 'network' } | { kind: 'other' };
 
-  let login = $state('');
+  // svelte-ignore state_referenced_locally: логин подставляется один раз при показе экрана (после регистрации)
+  let login = $state(initialLogin);
   let password = $state('');
   let busy = $state(false);
   let problem = $state<Problem | null>(null);
@@ -74,6 +76,7 @@
     try {
       const user = await api.auth.login({ login: login.trim(), password });
       lock = saveLockout(afterSuccess());
+      offerSavePassword(login.trim(), password, 'current-password');  // окно Apple, если пароль ещё не сохранён
       signedIn(user);
     } catch (err) {
       if (err instanceof ApiError && err.code === 'invalid_credentials') {

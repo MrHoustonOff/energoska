@@ -9,9 +9,9 @@
   import Field from './Field.svelte';
   import Msg from './Msg.svelte';
   import Spinner from './Spinner.svelte';
-  import { signedIn } from './session.svelte';
+  import { offerSavePassword } from './savePassword';
 
-  let { onback }: { onback: () => void } = $props();
+  let { onback, onregistered }: { onback: () => void; onregistered: (login: string) => void } = $props();
 
   const LEVEL_TEXT = { empty: '', weak: 'Слабый', medium: 'Средний', strong: 'Надёжный' };
   type Avail = 'idle' | 'checking' | 'free' | 'taken';
@@ -77,7 +77,10 @@
     if (body !== lastBody) { requestId = uuidv7(); lastBody = body; } // тот же ввод = повтор того же запроса
     busy = true;
     try {
-      signedIn(await api.auth.register({ id: requestId, login, password }));
+      await api.auth.register({ id: requestId, login, password });
+      offerSavePassword(login, password, 'new-password');      // окно Apple «Сохранить пароль?»
+      await api.auth.logout().catch(() => {});                 // регистрация не входит в аккаунт: вход делается отдельно
+      onregistered(login);
     } catch (err) {
       if (err instanceof ApiError && err.code === 'login_taken') {
         avail = 'taken';
