@@ -36,6 +36,9 @@ body {
 /* Полоса под окном закрашивается фоном html/body. Красим под нижнюю панель, и шва не видно.
    Home-индикатор лежит в этой полосе, поэтому safe-area панели уменьшаем на gap. */
 :root[data-gap], :root[data-gap] body { background: var(--surface-100); }
+/* окно кончается над полосой: нижний отступ панели не нужен, иконки прижимаем к краю окна */
+:root[data-gap] { --tab-pad: 0px; }
+:root[data-gap] .tab { padding-bottom: 2px; }
 
 /* ───── Каркас. Вариант A (по умолчанию): якорь к layout viewport ───── */
 :root[data-shell='fixed'] body { position: fixed; inset: 0; }
@@ -82,7 +85,7 @@ body {
 .tabbar {
   flex: none;
   display: flex;
-  padding: var(--space-2) var(--space-2) max(calc(var(--sab) - var(--gap)), var(--space-2));
+  padding: var(--space-2) var(--space-2) max(calc(var(--sab) - var(--gap)), var(--tab-pad, var(--space-2)));
   background: var(--surface-100);
   box-shadow: var(--shadow-panel);
   transition: transform .2s ease-out;
