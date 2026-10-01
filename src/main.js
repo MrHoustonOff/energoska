@@ -1,6 +1,6 @@
 import './styles.css';
 import * as store from './store.js';
-import { initViewport, metrics, onViewportChange } from './viewport.js';
+import { initViewport, metrics, liveLine, onViewportChange } from './viewport.js';
 
 initViewport();
 
@@ -16,7 +16,7 @@ const CHECKS = [['start', 'Запуск без полос'], ['data', 'Данн�
 
 const app = document.getElementById('app');
 app.innerHTML = `
-  <header class="header"><h1 id="title"></h1><span class="caption">прототип</span></header>
+  <header class="header"><h1 id="title"></h1><span class="caption" id="live"></span></header>
   <main class="screen-scroll" id="screen"></main>
   <nav class="tabbar">${TABS.map(([id, name]) => `
     <button class="tab" data-tab="${id}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[id]}</svg>${name}</button>`).join('')}
@@ -88,7 +88,10 @@ function updateDbg() {
   const el = document.getElementById('dbg');
   if (el) el.textContent = metrics();
 }
-onViewportChange(updateDbg);
+const live = document.getElementById('live');
+const updateLive = () => { live.textContent = liveLine(); };
+onViewportChange(() => { updateDbg(); updateLive(); });
+updateLive();
 
 app.addEventListener('click', e => {
   const t = e.target.closest('[data-tab],[data-ans],[data-act]');

@@ -34,6 +34,9 @@ function safeAreaInsets() {
   return r;
 }
 
+// Короткая строка для шапки: окно · видимая область @ сдвиг
+export const liveLine = () => `${innerHeight}·${vv ? Math.round(vv.height) : '-'}@${vv ? Math.round(vv.offsetTop) : '-'}${root.dataset.kb === 'open' ? ' kb' : ''}`;
+
 export function metrics() {
   return [
     `standalone: ${isStandalone()}`,
@@ -60,6 +63,8 @@ function sync() {
   // клавиатура открыта: каркас = видимая область, сдвиг панорамы гасим transform'ом
   root.style.setProperty('--vvh', Math.round(vv.height) + 'px');
   root.style.setProperty('--vvy', Math.round(vv.offsetTop) + 'px');
+  // окно сжимается постепенно: поле надо возвращать в видимую зону после КАЖДОГО изменения размера
+  if (editing && root.dataset.kb === 'open') ensureVisible(document.activeElement);
   listeners.forEach(fn => fn());
 }
 
