@@ -6,8 +6,11 @@ import { add as logAdd } from './eventlog.js';
 
 const root = document.documentElement;
 const vv = window.visualViewport;
+// Поля, у которых нет клавиатуры (системный выбор даты/времени, список, флажки): ввод для нашей логики не начинается
+const NO_KB = new Set(['date', 'time', 'datetime-local', 'month', 'week', 'color', 'checkbox', 'radio', 'range', 'file', 'button', 'submit', 'reset', 'image', 'hidden']);
 const isEditable = el =>
-  !!el && el.matches?.('input, textarea, select, [contenteditable=""], [contenteditable="true"]') && !el.hasAttribute('data-nokb');
+  !!el && !!el.matches?.('input, textarea, [contenteditable=""], [contenteditable="true"]') && !el.hasAttribute('data-nokb')
+  && !(el.tagName === 'INPUT' && NO_KB.has(el.type));
 
 const listeners = new Set();
 export const onViewportChange = fn => listeners.add(fn);
@@ -102,7 +105,31 @@ function ensureVisible(el, instant = false) {
 // всегда было продолжение приложения, а не край документа (иначе просвечивает фон страницы).
 let extTimer = 0;
 function setExt(px) { root.style.setProperty('--kbext', px + 'px'); root.dataset.ext = '1'; }
-function clearExt() { clearTimeout(extTimer); setTimeout(() => { if (root.dataset.kb !== 'open') delete root.dataset.ext; }, 350); }
+function clearExt() {
+  clearTimeout(extTimer);
+  // Страницу укорачиваем только когда она уже вернулась наверх, иначе укорочение резко дёрнет прокрутку
+  const tryClear = n => {
+    if (root.dataset.kb === 'open' || isEditable(document.activeElement)) return;
+    if (scrollY > 1 && n < 10) { setTimeout(() => tryClear(n + 1), 150); return; }
+    delete root.dataset.ext;
+    delete root.dataset.edit;
+  };
+  setTimeout(() => tryClear(0), 300);
+}
+
+// Родной режим: поле, которое iOS счёл «достаточно видимым», может остаться под клавиатурой. Плавно докручиваем страницу.
+let lastWin = null;
+function revealNative(el) {
+  if (MODE !== 'native' || !el || !vv || root.dataset.kb !== 'open' || !isEditable(el)) return;
+  const r = el.getBoundingClientRect();
+  const limit = vv.offsetTop + vv.height - 28;
+  if (r.bottom <= limit) return;
+  const target = scrollY + (r.bottom - limit);
+  if (lastWin !== null && Math.abs(target - lastWin) < 3) return;
+  lastWin = target;
+  window.scrollTo({ top: target, behavior: 'smooth' });
+  mark('reveal');
+}
 
 function releasePad() {
   clearTimeout(padTimer);
@@ -150,14 +177,14 @@ function sync() {
     const h = Math.round(vv.height + vv.offsetTop + gap);
     if (h > baseH * 0.8) fullH = h; // закрытие клавиатуры: vv ещё мал, это не новый размер окна
     delete root.dataset.editing;
-    delete root.dataset.edit;
+    if (MODE !== 'native') delete root.dataset.edit; // в родном режиме снимает clearExt, когда страница уже вернулась
   }
   root.style.setProperty('--app-h', fullH + 'px');
   root.style.setProperty('--vvy', Math.round(vv.offsetTop) + 'px'); // если iOS всё же сдвинул панораму, гасим transform'ом
 
   if (kb > 80) {
     if (Math.abs(store.get('kbh', 0) - kb) > 10) store.set('kbh', kb);
-    if (MODE === 'native') setExt(kb);
+    if (MODE === 'native') { setExt(kb); revealNative(document.activeElement); }
     else {
       root.style.setProperty('--kbpad', kb + 'px');
       root.dataset.pad = '1';
@@ -195,14 +222,20 @@ export function initViewport() {
       clearTimeout(extTimer);
       extTimer = setTimeout(() => { if (root.dataset.kb !== 'open') clearExt(); }, 900); // клавиатуры нет (аппаратная)
     }
+    lastWin = null;
     startRec('open'); mark('focusin');
     preposition(e.target);
     schedule();
   });
-  document.addEventListener('focusout', () => {
+  document.addEventListener('focusout', e => {
     startRec('close'); mark('focusout');
-    // после закрытия клавиатуры вьюпорт мог не вернуться (чёрная линия до скролла)
-    setTimeout(() => { if (!isEditable(document.activeElement)) { window.scrollTo(0, 0); sync(); } }, 60);
+    if (isEditable(e.relatedTarget)) return; // фокус переходит в другое поле
+    // Страницу возвращаем плавно и сразу, пока клавиатура ещё уезжает (раньше: мгновенный прыжок через 60 мс = рывок)
+    requestAnimationFrame(() => {
+      if (!isEditable(document.activeElement) && scrollY > 0) window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    // страховка: если плавно не вышло, вернуть как есть (чёрная линия до скролла)
+    setTimeout(() => { if (!isEditable(document.activeElement)) { if (scrollY > 0) window.scrollTo(0, 0); sync(); } }, 900);
   });
 
   // тап вне поля убирает клавиатуру
