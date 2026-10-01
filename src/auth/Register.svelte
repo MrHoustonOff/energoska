@@ -7,6 +7,7 @@
   import { api, ApiError } from '../api';
   import { LOGIN_HINT, loginError, passwordError, passwordStrength, repeatError, strengthBars, uuidv7 } from '../domain';
   import Field from './Field.svelte';
+  import Msg from './Msg.svelte';
   import Spinner from './Spinner.svelte';
   import { signedIn } from './session.svelte';
 
@@ -91,15 +92,18 @@
 </script>
 
 <main class="screen-scroll au">
+  <div class="au-gap"></div>
   <div class="au-bar">
-    <button type="button" class="au-back" aria-label="Назад ко входу" onclick={onback}>
+    <button type="button" class="au-ib" aria-label="Назад ко входу" onclick={onback}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
     </button>
     <span class="au-bar-title">Регистрация</span>
-    <span class="au-bar-spacer"></span>
+    <span class="au-ib ghost" aria-hidden="true"></span>
   </div>
-  <h1 class="au-title">Создать аккаунт</h1>
-  <p class="au-sub">Только логин и пароль. Больше ничего не нужно.</p>
+  <div>
+    <h1 class="au-title">Создать аккаунт</h1>
+    <p class="au-sub loose">Только логин и пароль. Больше ничего не нужно.</p>
+  </div>
 
   <form onsubmit={submit} novalidate>
     <Field
@@ -108,18 +112,18 @@
       autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck={false} enterkeyhint="next"
     />
     {#if loginMsg}
-      <p class="au-error" role="alert"><span aria-hidden="true">×</span> {loginMsg}</p>
+      <Msg kind="error">{loginMsg}</Msg>
     {:else if taken}
-      <p class="au-error" role="alert"><span aria-hidden="true">×</span> Такой логин уже занят.{#if suggestions.length} Попробуйте другой:{/if}</p>
+      <Msg kind="error">Такой логин уже занят.{#if suggestions.length} Попробуйте другой:{/if}</Msg>
       <div class="au-chips">
         {#each suggestions as s (s)}<button type="button" class="au-chip" onclick={() => pick(s)}>{s}</button>{/each}
       </div>
     {:else if avail === 'free'}
-      <p class="au-ok"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg> Логин свободен</p>
+      <Msg kind="ok">Логин свободен</Msg>
     {:else if avail === 'checking'}
-      <p class="au-note" aria-live="polite">Проверяем…</p>
+      <Msg>Проверяем…</Msg>
     {:else if !login}
-      <p class="au-note">{LOGIN_HINT}</p>
+      <Msg>{LOGIN_HINT}</Msg>
     {/if}
 
     <Field
@@ -128,9 +132,9 @@
       autocomplete="new-password" enterkeyhint="next"
     />
     {#if passwordMsg}
-      <p class="au-error" role="alert"><span aria-hidden="true">×</span> {passwordMsg}</p>
+      <Msg kind="error">{passwordMsg}</Msg>
     {:else if !password}
-      <p class="au-note">Минимум 8 символов. Лучше длинная фраза — iPhone может придумать надёжный пароль сам</p>
+      <Msg>Минимум 8 символов. Лучше длинная фраза — iPhone может придумать надёжный пароль сам</Msg>
     {/if}
     {#if password}
       <div class="au-meter" data-level={strength}>
@@ -147,16 +151,16 @@
       autocomplete="new-password" enterkeyhint="go"
     />
     {#if repeatMsg}
-      <p class="au-error" role="alert"><span aria-hidden="true">×</span> {repeatMsg}</p>
+      <Msg kind="error">{repeatMsg}</Msg>
     {:else if repeatOk}
-      <p class="au-ok"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg> Пароли совпадают</p>
+      <Msg kind="ok">Пароли совпадают</Msg>
     {/if}
 
     <button type="submit" class="au-cta" disabled={busy} aria-busy={busy}>
-      {#if busy}<Spinner /> Создаём…{:else}Создать аккаунт{/if}
+      {#if busy}<Spinner />Создаём…{:else}Создать аккаунт{/if}
     </button>
-    {#if failure}<p class="au-error center" role="alert"><span aria-hidden="true">×</span> {failure}</p>{/if}
-    <p class="au-note center">После создания iPhone предложит сохранить пароль — согласитесь, и входить станет проще</p>
+    {#if failure}<Msg kind="error" center>{failure}</Msg>{/if}
+    <p class="au-hint">После создания iPhone предложит сохранить пароль — согласитесь, и входить станет проще</p>
   </form>
 
   <p class="au-switch">Уже есть аккаунт? <button type="button" onclick={onback}>Войти</button></p>

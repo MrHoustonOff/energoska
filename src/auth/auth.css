@@ -1,97 +1,140 @@
-/* Экраны входа и регистрации. Только токены (docs-src/tokens/tokens.css); новых цветов, радиусов и теней нет.
-   Анимация: transform (дыхание кругов, спиннер). Каркас, клавиатура и поля ввода из styles.css не переопределяются:
-   нативный <input> внутри плашки лишь теряет собственный фон/рамку (плашку рисует .au-fld). */
+/* Экраны входа и регистрации — перенос эталона docs-src/components/ScreenLogin|ScreenRegister (preview.html) и
+   docs-src/reference/energoska.css. Только токены и значения эталона; каркас, клавиатура и поля из styles.css не переопределяются
+   (нативный <input> лишь теряет собственный фон и рамку: плашку рисует .au-fld).
+   Анимация: transform (дыхание кругов, спиннер). Зерно и «глубина» — статичные слои. */
 
-.au { padding-top: calc(var(--sat) + var(--space-3)); }
-.au form { display: block; }
+@import '@fontsource/unbounded/cyrillic-800.css';
+@import '@fontsource/unbounded/latin-400.css';
+@import '@fontsource/unbounded/latin-600.css';
+@import '@fontsource/unbounded/latin-800.css';
+@import '@fontsource/oswald/latin-700.css';
 
-.au-brand { display: flex; align-items: center; gap: var(--space-3); min-height: var(--tap); margin-bottom: var(--space-3); }
-.au-logo { width: 36px; height: 36px; display: grid; place-items: center; border-radius: var(--radius-md); background: var(--ink); color: var(--bg); }
-.au-logo svg { width: 22px; height: 22px; fill: currentColor; }
-.au-brand-name { font: 700 20px/1 var(--font-display); }
+.au {
+  --f1: color-mix(in srgb, var(--ink) 12%, transparent);
+  --f2: color-mix(in srgb, var(--ink) 8%, transparent);
+  --okc: var(--me);
+  --grain: url('../assets/grain.png');
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: calc(var(--sat) + 0px);
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme='dark']) .au { --okc: #2f7a00; } }
+.au > *, .au form > * { flex: none; }
+.au form { display: flex; flex-direction: column; gap: 14px; }
+.au-gap { height: 6px; }
 
-.au-title { margin: var(--space-4) 0 var(--space-1); font: 700 24px/1.1 var(--font-display); }
-.au-sub { margin: 0 0 var(--space-4); color: var(--ink-muted); font: 400 13px/1.4 var(--font-display); }
+/* ═══ Фон экрана «Глубина» + шум (reference .scr::before / ::after) ═══ */
+.au-bg { position: absolute; inset: 0; pointer-events: none; /* без z-index: иначе слой шума не смешивается с фоном приложения */
+  background:
+    radial-gradient(120% 45% at 50% 0%, color-mix(in srgb, var(--ink) 9%, transparent), transparent 70%),
+    radial-gradient(90% 40% at 50% 105%, color-mix(in srgb, var(--ink) 6%, transparent), transparent 70%); }
+.au-bg::after { content: ''; position: absolute; inset: 0; background: url('../assets/grain.png') 0 0 / 128px 128px; opacity: .07; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) .au-bg {
+    background:
+      radial-gradient(120% 45% at 50% 0%, rgba(255, 255, 255, .85), transparent 70%),
+      radial-gradient(100% 40% at 50% 105%, color-mix(in srgb, var(--ink) 5%, transparent), transparent 70%); }
+  :root:not([data-theme='dark']) .au-bg::after { mix-blend-mode: overlay; opacity: .45; }
+}
 
-/* Инфографика */
-.au-info { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-2); height: 136px; }
-.au-info .col { display: grid; grid-template-rows: 1fr 46px; gap: var(--space-2); min-height: 0; }
-.blk { position: relative; display: grid; place-items: center; overflow: hidden; border-radius: var(--radius-md); }
-.blk.blue { background: var(--can-gorilla); }
-.blk.lime { background: var(--can-burn); }
-.blk.pink { background: var(--can-lit); }
-.blk.red { background: var(--can-adrenaline); }
-.blk > i { grid-area: 1 / 1; border-radius: var(--radius-full); display: block; }
-.ring { width: 76px; height: 76px; border: 14px solid; box-sizing: border-box; }
-.ring.lime { border-color: var(--can-burn); }
-.ring.black { border-color: var(--on-accent); }
-.dot.black { width: 22px; height: 22px; background: var(--on-accent); }
-.dot.lime { width: 20px; height: 20px; background: var(--can-burn); }
-.disc.pink { width: 44px; height: 44px; background: var(--can-lit); }
-.blk.pink .dot { width: 18px; height: 18px; }
-.breathe { will-change: transform; animation: breathe 6s ease-in-out infinite alternate; }
-.breathe.b { animation-duration: 5s; }
-.breathe.c { animation-duration: 7s; }
-.breathe.d { animation-duration: 6.5s; }
-@keyframes breathe { from { transform: scale(1); } to { transform: scale(1.07); } }
-:root[data-edit] .breathe { animation-play-state: paused; } /* пока идёт ввод, анимации стоят */
+/* ═══ Зерно на поверхностях (reference «фактура»): поля, кнопки, чипы, плашки ═══ */
+.au-fld, .au-cta, .au-chip, .au-ib, .au-warn { position: relative; }
+.au-fld::after, .au-cta::after, .au-chip::after, .au-ib::after, .au-warn::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 3; pointer-events: none;
+  background: var(--grain) 0 0 / 140px; mix-blend-mode: overlay; opacity: .28; }
+.au-cta::after { opacity: .14; }
 
-/* Плашка поля */
-.au-fld { display: flex; align-items: center; margin-bottom: var(--space-3); background: var(--surface-200); border: 1px solid var(--line); border-radius: var(--radius-md); }
-.au-fld:focus-within { box-shadow: var(--shadow-focus); }
-.au-fld.invalid { border-color: var(--danger); }
+/* ═══ Шапка входа: знак и название ═══ */
+.au-brand { display: flex; align-items: center; gap: 12px; }
+.au-logo { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 16px; background: var(--ink); color: var(--bg); }
+.au-logo svg { width: 29.7px; height: 29.7px; fill: currentColor; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.au-brand-name { font: 800 26px/1.15 var(--font-display); letter-spacing: -.01em; }
+
+.au-title { margin: 0; font: 800 26px/1.15 var(--font-display); }
+.au-sub { margin: 6px 0 0; color: var(--ink-muted); font: 400 12px/1.35 var(--font-display); }
+.au-sub.loose { line-height: 1.5; }
+
+/* ═══ Инфографика (reference .inf) ═══ */
+.au-info { display: grid; grid-template-columns: 1.35fr 1fr 1fr; grid-template-rows: 1.75fr 1fr; gap: 10px; height: 150px; contain: layout paint style; }
+.au-info > i { display: grid; place-items: center; border-radius: 14px; position: relative; overflow: hidden; }
+.au-info .r1 { grid-column: 1; grid-row: 1 / 3; background: var(--can-gorilla); }
+.au-info .r2 { grid-column: 2; grid-row: 1; background: var(--can-burn); }
+.au-info .r3 { grid-column: 2; grid-row: 2; background: var(--can-lit); }
+.au-info .r4 { grid-column: 3; grid-row: 1 / 3; background: var(--can-adrenaline); }
+.au-info b { display: block; border-radius: 50%; aspect-ratio: 1; align-self: center; justify-self: center; }
+.au-info .ring { display: grid; place-items: center; width: 64%; background: var(--me); animation: au-breathe 5s ease-in-out infinite; will-change: transform; }
+.au-info .ring.sm { width: 56%; background: var(--on-accent); animation-delay: -2s; }
+.au-info .hole { width: 44%; background: var(--on-accent); }
+.au-info .dt2 { width: 42%; background: var(--me); }
+.au-info .dsk { width: 62%; background: var(--partner); animation: au-breathe 6s ease-in-out infinite; animation-delay: -1s; will-change: transform; }
+.au-info .dk { width: auto; height: 46%; background: var(--on-accent); animation: au-breathe 7s ease-in-out infinite; animation-delay: -3s; will-change: transform; }
+@keyframes au-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+:root[data-edit] .au-info b { animation-play-state: paused; }  /* пока идёт ввод, анимации стоят */
+
+/* ═══ Плашка поля (reference .fld с высотой 62) ═══ */
+.au-fld { display: flex; align-items: center; min-height: 62px; background: var(--f2); border-radius: 12px; }
+.au-fld:focus-within { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.au-fld.invalid, .au-fld.invalid:focus-within { box-shadow: inset 0 0 0 1.5px var(--danger); }
 .au-fld.disabled { opacity: .45; }
-.au-fld label { flex: 1; min-width: 0; display: block; padding: var(--space-2) var(--space-4) var(--space-2); }
-.au-cap { display: block; margin-bottom: 2px; color: var(--ink-muted); font: 500 11px/1.3 var(--font-display); }
-.au-fld input { display: block; width: 100%; min-height: 28px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
-.au-tick { width: 22px; height: 22px; margin-right: var(--space-4); flex: none; fill: none; stroke: var(--me-mark); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-.au-eye { flex: none; width: var(--tap); height: var(--tap); margin-right: var(--space-2); display: grid; place-items: center; background: none; border: 0; color: var(--ink-muted); cursor: pointer; }
+.au-fld label { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 10px 16px; align-self: stretch; justify-content: center; }
+.au-cap { color: var(--ink-muted); font: 500 10px/1.3 var(--font-display); }
+.au .au-fld input { display: block; width: 100%; min-height: 22px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none;
+  color: var(--ink); font-weight: 600; line-height: 1.3; caret-color: var(--okc); }
+.au .au-fld input:focus { box-shadow: none; }
+.au .au-fld input[type='password'] { letter-spacing: .12em; }
+.au .au-fld input::placeholder { color: var(--ink-muted); font-weight: 400; letter-spacing: 0; opacity: 1; }
+.au-tick { width: 22px; height: 22px; margin-right: 16px; flex: none; fill: none; stroke: var(--okc); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+/* Глаз выглядит как 22px, цель нажатия 44px */
+.au-eye { flex: none; width: var(--tap); height: var(--tap); margin-right: 5px; display: grid; place-items: center; background: none; border: 0; color: var(--ink-muted); cursor: pointer; }
 .au-eye svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .au-eye[aria-pressed='true'] { color: var(--ink); }
 
-/* Подписи под полями (всегда со словом или иконкой, не только цветом) */
-.au-error, .au-ok, .au-note { margin: calc(-1 * var(--space-1)) 0 var(--space-3); font: 400 12px/1.4 var(--font-display); }
-.au-error { display: flex; gap: var(--space-2); color: var(--danger); }
-.au-error span { flex: none; font-weight: 700; }
-.au-ok { display: flex; align-items: center; gap: var(--space-2); color: var(--me-mark); }
-.au-ok svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-.au-note { color: var(--ink-muted); }
-.center { justify-content: center; text-align: center; }
+/* ═══ Подписи под полями ═══ */
+.au-msg { display: flex; align-items: flex-start; gap: 6px; margin-top: -4px; padding: 0 4px; font: 400 11px/1.45 var(--font-display); }
+.au-msg .ic { flex: none; margin-top: 2px; }
+.au-msg svg { display: block; width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.au-msg.error { color: var(--danger); }
+.au-msg.ok { color: var(--okc); }
+.au-msg.note { color: var(--ink-muted); }
+.au-msg.center { justify-content: center; text-align: center; }
+.au-hint { margin: 0; color: var(--ink-muted); font: 400 11px/1.5 var(--font-display); text-align: center; }
 
-/* Чипы-подсказки логина */
-.au-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
-.au-chip { min-height: var(--tap); padding: 0 var(--space-4); background: var(--surface-200); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-md); font: 500 13px var(--font-display); cursor: pointer; }
+.au-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: -4px; }
+.au-chip { display: inline-flex; align-items: center; height: 30px; padding: 0 14px; border: 0; border-radius: 12px; background: var(--f1); color: var(--ink); font: 500 12px var(--font-display); cursor: pointer; }
+.au-chip::before { content: ''; position: absolute; inset: -7px 0; }  /* цель нажатия 44px при высоте 30 */
 
 /* Индикатор надёжности: три деления */
-.au-meter { display: flex; align-items: center; gap: var(--space-3); margin: calc(-1 * var(--space-1)) 0 var(--space-3); }
-.au-meter .bars { flex: 1; display: flex; gap: var(--space-1); }
-.au-meter i { flex: 1; height: 4px; border-radius: var(--radius-sm); background: var(--line); }
+.au-meter { display: flex; align-items: center; gap: 10px; margin-top: -4px; padding: 0 4px; }
+.au-meter .bars { flex: 1; display: flex; gap: 4px; }
+.au-meter i { flex: 1; height: 4px; border-radius: 2px; background: var(--f1); }
 .au-meter[data-level='weak'] i.on { background: var(--danger); }
 .au-meter[data-level='medium'] i.on { background: var(--warning); }
-.au-meter[data-level='strong'] i.on { background: var(--me-mark); }
-.au-meter .lvl { font: 600 12px var(--font-display); }
+.au-meter[data-level='strong'] i.on { background: var(--okc); }
+.au-meter .lvl { min-width: 64px; text-align: right; font: 600 11px var(--font-display); }
 .au-meter[data-level='weak'] .lvl { color: var(--danger); }
 .au-meter[data-level='medium'] .lvl { color: var(--warning); }
-.au-meter[data-level='strong'] .lvl { color: var(--me-mark); }
+.au-meter[data-level='strong'] .lvl { color: var(--okc); }
 
-/* Блокировка после неудач */
-.au-lock { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); padding: var(--space-3) var(--space-4); border: 1px solid var(--warning); border-radius: var(--radius-md); color: var(--warning); font: 400 12px/1.4 var(--font-display); }
-.au-timer { flex: none; font: 600 32px/1 var(--font-numerals); }
+/* Блокировка после неудач (reference .warn) */
+.au-warn { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; background: color-mix(in srgb, var(--warning) 14%, transparent); color: var(--warning); font: 400 12px/1.45 var(--font-display); }
+.au-timer { flex: none; color: var(--warning); font: 700 34px/1 'Oswald', 'Arial Narrow', sans-serif; font-variant-numeric: tabular-nums; }
 
-/* Главная кнопка: всегда светлая (как .cta в эталоне) */
-.au-cta { width: 100%; min-height: 52px; display: flex; align-items: center; justify-content: center; gap: var(--space-2); margin: var(--space-2) 0 var(--space-3); border: 0; border-radius: var(--radius-md); background: var(--ink); color: var(--bg); font: 700 14px var(--font-display); letter-spacing: .03em; cursor: pointer; }
+/* Главная кнопка: светлая (reference .cta) */
+.au-cta { width: 100%; min-height: 56px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 12px; border: 0; border-radius: 12px; background: var(--ink); color: var(--bg); font: 800 14px var(--font-display); letter-spacing: .03em; cursor: pointer; }
 .au-cta:active:not(:disabled) { transform: scale(.98); }
 .au-cta:disabled { cursor: default; }
-.au-cta:disabled:not([aria-busy='true']) { background: var(--surface-200); color: var(--ink-muted); }
-.au-spin { width: 16px; height: 16px; box-sizing: border-box; border: 2px solid currentColor; border-right-color: transparent; border-radius: var(--radius-full); animation: au-rot .8s linear infinite; }
+.au-cta.muted { background: var(--f1); color: var(--ink-muted); }
+.au-spin { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; animation: au-rot .8s linear infinite; }
 @keyframes au-rot { to { transform: rotate(360deg); } }
 
-.au-switch { margin: var(--space-3) 0 0; text-align: center; color: var(--ink-muted); font: 400 13px var(--font-display); }
-.au-switch button { min-height: var(--tap); padding: 0 var(--space-1); background: none; border: 0; color: var(--ink); font: 700 13px var(--font-display); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.au-switch { margin: 0; padding: 6px 0; text-align: center; color: var(--ink-muted); font: 400 13px var(--font-display); }
+.au-switch button { min-height: var(--tap); padding: 0 4px; background: none; border: 0; color: var(--ink); font: 700 13px var(--font-display); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
-/* Верхняя полоса регистрации: «назад» слева, название по центру */
-.au-bar { display: flex; align-items: center; justify-content: space-between; min-height: var(--tap); margin-bottom: var(--space-2); }
-.au-bar-title { font: 600 13px var(--font-display); }
-.au-bar-spacer { width: var(--tap); }
-.au-back { width: var(--tap); height: var(--tap); display: grid; place-items: center; background: var(--surface-200); border: 0; border-radius: var(--radius-md); color: var(--ink); cursor: pointer; }
-.au-back svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* Верхняя полоса регистрации (reference .top / .ib / .tt) */
+.au-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 44px; }
+.au-bar-title { font: 600 14px var(--font-display); }
+.au-ib { width: 44px; height: 44px; display: grid; place-items: center; flex: none; border: 0; border-radius: 12px; background: var(--f1); color: var(--ink); cursor: pointer; }
+.au-ib.ghost { opacity: 0; pointer-events: none; }
+.au-ib svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

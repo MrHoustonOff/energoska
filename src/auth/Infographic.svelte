@@ -1,13 +1,12 @@
-<script lang="ts"></script>
 <!--
-  Стартовая инфографика вместо витрины банок: сетка цветных блоков с «дышащими» кругами и кольцами.
-  Цвета — токены банок (can-*). Анимация только transform, 5–7 с; пауза при вводе (data-edit), стоп при prefers-reduced-motion.
+  Стартовая инфографика вместо витрины банок (эталон ScreenLogin, .inf): сетка цветных блоков с «дышащими» кругами.
+  Анимация только transform (масштаб 1 → 1,07, 5–7 с); пауза при вводе (data-edit), стоп при prefers-reduced-motion.
 -->
+<script lang="ts"></script>
+
 <div class="au-info" aria-hidden="true">
-  <div class="blk blue"><i class="ring lime breathe a"></i><i class="dot black"></i></div>
-  <div class="col">
-    <div class="blk lime"><i class="disc pink breathe b"></i></div>
-    <div class="blk pink"><i class="dot black breathe c"></i></div>
-  </div>
-  <div class="blk red"><i class="ring black breathe d"></i><i class="dot lime"></i></div>
+  <i class="r1"><b class="ring"><b class="hole"></b></b></i>
+  <i class="r2"><b class="dsk"></b></i>
+  <i class="r3"><b class="dk"></b></i>
+  <i class="r4"><b class="ring sm"><b class="dt2"></b></b></i>
 </div>

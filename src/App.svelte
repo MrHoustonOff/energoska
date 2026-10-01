@@ -8,6 +8,7 @@
   import { session, initSession } from './auth/session.svelte';
   import AuthGate from './auth/AuthGate.svelte';
   import Splash from './auth/Splash.svelte';
+  import Backdrop from './auth/Backdrop.svelte';
   import Shell from './Shell.svelte';
 
   onMount(initSession);
@@ -15,8 +16,11 @@
 
 {#if session.status === 'in'}
   <Shell />
-{:else if session.status === 'out'}
-  <AuthGate />
 {:else}
-  <Splash />
+  <Backdrop />
+  {#if session.status === 'out'}
+    <AuthGate />
+  {:else}
+    <Splash />
+  {/if}
 {/if}

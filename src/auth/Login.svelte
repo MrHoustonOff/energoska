@@ -9,6 +9,7 @@
   import Brand from './Brand.svelte';
   import Infographic from './Infographic.svelte';
   import Field from './Field.svelte';
+  import Msg from './Msg.svelte';
   import Spinner from './Spinner.svelte';
   import { signedIn } from './session.svelte';
 
@@ -67,16 +68,19 @@
 </script>
 
 <main class="screen-scroll au">
+  <div class="au-gap"></div>
   <Brand />
   <Infographic />
-  <h1 class="au-title">Вход</h1>
-  {#if !locked}<p class="au-sub">Логин и пароль — и вы снова дома</p>{/if}
+  <div>
+    <h1 class="au-title">Вход</h1>
+    {#if !locked && !problem}<p class="au-sub">Логин и пароль — и вы снова дома</p>{/if}
+  </div>
 
   <form onsubmit={submit} novalidate>
     {#if locked}
-      <div class="au-lock" role="alert">
+      <div class="au-warn" role="alert">
         <span class="au-timer">{formatCountdown(remaining)}</span>
-        <span>Слишком много попыток. Подождите, пока таймер дойдёт до нуля</span>
+        <span>Слишком много попыток. Подождите, пока таймер дойдёт до нуля.</span>
       </div>
     {/if}
 
@@ -90,22 +94,21 @@
     />
 
     {#if problem?.kind === 'invalid'}
-      <p class="au-error" role="alert">
-        <span aria-hidden="true">×</span>
-        Вы ввели что-то неверно. Проверьте логин и пароль.{#if problem.attemptsLeft !== undefined} {attemptsText(problem.attemptsLeft)}{/if}
-      </p>
+      <Msg kind="error">
+        Вы ввели что-то неверно. Проверьте логин и пароль.{#if problem.attemptsLeft !== undefined}<br />{attemptsText(problem.attemptsLeft)}{/if}
+      </Msg>
     {:else if problem?.kind === 'empty'}
-      <p class="au-error" role="alert"><span aria-hidden="true">×</span> Введите логин и пароль</p>
+      <Msg kind="error">Введите логин и пароль</Msg>
     {/if}
 
-    <button type="submit" class="au-cta" disabled={busy || locked} aria-busy={busy}>
-      {#if busy}<Spinner /> Входим…{:else if locked}Повторить через {formatCountdown(remaining)}{:else}Войти{/if}
+    <button type="submit" class="au-cta" class:muted={locked} disabled={busy || locked} aria-busy={busy}>
+      {#if busy}<Spinner />Входим…{:else if locked}Повторить через {formatCountdown(remaining)}{:else}Войти{/if}
     </button>
 
     {#if problem?.kind === 'network'}
-      <p class="au-error center" role="alert"><span aria-hidden="true">×</span> Нет соединения. Попробуйте ещё раз</p>
+      <Msg kind="error" center>Нет соединения. Попробуйте ещё раз</Msg>
     {:else if problem?.kind === 'other'}
-      <p class="au-error center" role="alert"><span aria-hidden="true">×</span> Что-то пошло не так. Попробуйте ещё раз</p>
+      <Msg kind="error" center>Что-то пошло не так. Попробуйте ещё раз</Msg>
     {/if}
   </form>
 

@@ -21,10 +21,10 @@
 <div class="au-fld" class:invalid class:disabled={rest.disabled}>
   <label>
     <span class="au-cap">{label}</span>
-    <input bind:this={input} bind:value type={reveal && shown ? 'text' : type} aria-invalid={invalid} {...rest} />
+    <input bind:this={input} bind:value type={reveal && shown ? 'text' : type} placeholder={label} aria-invalid={invalid} {...rest} />
   </label>
   {#if ok}
-    <svg class="au-tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+    <svg class="au-tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" /></svg>
   {/if}
   {#if reveal}
     <button
