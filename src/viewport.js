@@ -193,5 +193,11 @@ export function initViewport() {
   });
   document.addEventListener('gesturestart', e => e.preventDefault());
 
+  // Пока идёт ввод, страницу пальцем не двигаем: иначе её уводит к краю документа, и под клавиатурой просвечивает фон.
+  // Прокручивать можно только сам список (.screen-scroll, у него overscroll-behavior: contain).
+  document.addEventListener('touchmove', e => {
+    if (isEditable(document.activeElement) && !e.target.closest?.('.screen-scroll')) e.preventDefault();
+  }, { passive: false });
+
   sync();
 }
