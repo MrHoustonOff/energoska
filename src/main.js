@@ -1,6 +1,6 @@
 import './styles.css';
 import * as store from './store.js';
-import { initViewport, readMetrics, onViewportChange, setShell, setKbMode, kickViewport, setKick, getLog, setMarkers } from './viewport.js';
+import { initViewport, readMetrics, onViewportChange, setShell, setKbMode, kickViewport, setKick, getLog, setMarkers, isOff, toggleOff } from './viewport.js';
 
 initViewport();
 
@@ -35,6 +35,7 @@ const screens = {
       <button class="btn ghost" data-act="reset" style="margin-top:12px">Сбросить день</button>
       <p class="caption" style="margin-top:24px">Каркас</p>
       <div class="seg">
+        <button class="btn" data-shell="old" aria-pressed="${m.shell === 'old'}">old</button>
         <button class="btn" data-shell="plus" aria-pressed="${m.shell === 'plus'}">plus</button>
         <button class="btn" data-shell="fixed" aria-pressed="${m.shell === 'fixed'}">fixed</button>
         <button class="btn" data-shell="dvh" aria-pressed="${m.shell === 'dvh'}">dvh</button>
@@ -52,7 +53,9 @@ const screens = {
       <p class="caption" style="margin-top:16px">Границы</p>
       <button class="btn ghost" data-act="markers">${'markers' in document.documentElement.dataset ? 'Скрыть' : 'Показать'} маркеры: красный = низ корня, голубой = низ окна</button>
       <p class="caption" style="margin-top:16px">Бисект клавиатуры (страницы)</p>
-      <div class="seg">${[1, 2, 3, 4, 5].map(n => `<a class="btn ghost lnk" href="/kb/${n}.html">${n}</a>`).join('')}</div>
+      <div class="seg">${[1, 2, 3, 4, 5, 6, 7].map(n => `<a class="btn ghost lnk" href="/kb/${n}.html">${n}</a>`).join('')}</div>
+      <p class="caption" style="margin-top:16px">Отключить куски кода (перезагрузка), проверь голый input</p>
+      <div class="seg">${[['events', 'события'], ['vv', 'vv-слушатели'], ['log', 'журнал']].map(([k, n]) => `<button class="btn" data-off="${k}" aria-pressed="${isOff(k)}">${n}</button>`).join('')}</div>
       <p class="caption" style="margin-top:16px">Тест клавиатуры: голый input</p>
       <input id="bare" placeholder="тапни сюда" style="background:#fff;color:#000">
       <div class="card" style="margin-top:12px"><p class="caption">Диагностика</p><pre class="dbg" id="dbg"></pre></div>
@@ -108,13 +111,14 @@ function updateDbg() {
 onViewportChange(updateDbg);
 
 app.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-act],[data-shell],[data-kbmode],[data-kick]');
+  const t = e.target.closest('[data-tab],[data-act],[data-shell],[data-kbmode],[data-kick],[data-off]');
   if (!t) return;
   if (t.dataset.tab) { tab = t.dataset.tab; store.set('tab', tab); render(); }
   else if (t.dataset.act === 'can') store.set('cans', Math.min(MAX_CANS, store.get('cans', 0) + 1));
   else if (t.dataset.act === 'reset') store.set('cans', 0);
   else if (t.dataset.act === 'kick') kickViewport(store.get('dbg.kick', 'off') === 'off' ? 'scale' : undefined);
   else if (t.dataset.act === 'markers') { setMarkers(!('markers' in document.documentElement.dataset)); render(); }
+  else if (t.dataset.off) toggleOff(t.dataset.off);
   else if (t.dataset.kick) { setKick(t.dataset.kick); render(); }
   else if (t.dataset.shell) { setShell(t.dataset.shell); render(); }
   else if (t.dataset.kbmode) { setKbMode(t.dataset.kbmode); render(); }

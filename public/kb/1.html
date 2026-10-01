@@ -1,14 +1,32 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="color-scheme" content="dark light"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>kb 1</title>
-<style>html,body{margin:0;background:#000;color:#fff;font:14px system-ui}
-.w{padding:60px 16px 16px}input,textarea{display:block;width:100%;box-sizing:border-box;font-size:16px;padding:12px;margin:12px 0;background:#fff;color:#000;border:1px solid #888;border-radius:12px}
-a{color:#b6ff3d;display:block;margin:12px 0;font-size:16px}pre{font:12px/1.5 monospace;white-space:pre-wrap}
-</style></head><body><div class="w"><b>Тест 1: чистая страница</b>
-<input placeholder="input — тапни" autocomplete="off"><textarea placeholder="textarea" rows="3"></textarea>
-<a href="/kb/">← к списку</a><a href="/">← в приложение</a><pre id="l"></pre></div>
-<script>const L=[],l=document.getElementById('l');const g=m=>{L.unshift(m);L.length=Math.min(L.length,8);l.textContent=L.join('\n')};
-['pointerdown','focusin','focusout'].forEach(e=>document.addEventListener(e,x=>g(e+' '+x.target.tagName),true));
+<style>
+html,body{margin:0;background:#000;color:#fff;font:14px system-ui}
+#w{position:fixed;top:0;left:0;right:0;height:var(--h,100%);box-sizing:border-box;display:flex;flex-direction:column;padding:56px 16px 0;background:#000}
+.top{flex:1 1 auto;min-height:0;overflow-y:auto}
+.bot{flex:none;padding:8px 0 max(env(safe-area-inset-bottom),12px);background:#111;margin:0 -16px;padding-left:16px;padding-right:16px;border-top:1px solid #444}
+input,textarea{display:block;width:100%;box-sizing:border-box;font-size:16px;padding:12px;margin:8px 0;background:#fff;color:#000;border:1px solid #888;border-radius:12px}
+a{color:#b6ff3d;display:inline-block;margin:6px 12px 6px 0;font-size:16px}pre{font:12px/1.5 monospace;white-space:pre-wrap;margin:8px 0}
+</style></head><body>
+<div id="w"><div class="top"><b>Тест 1: чистая</b><br>
+<a href="/kb/">← список</a><a href="/">← приложение</a>
+<pre id="m"></pre><pre id="l"></pre>
+<div style="height:600px"></div>низ прокручиваемой части</div>
+<div class="bot"><input id="i1" placeholder="input (внизу)" autocomplete="off"><textarea id="i2" placeholder="textarea (внизу)" rows="2"></textarea></div></div>
+<script>
+const L=[],l=document.getElementById('l'),m=document.getElementById('m'),vv=window.visualViewport,w=document.getElementById('w');
+const g=x=>{L.unshift(x);L.length=Math.min(L.length,7);l.textContent=L.join('\n')};
+['pointerdown','focusin','focusout'].forEach(e=>document.addEventListener(e,x=>g(e+' '+x.target.tagName+(x.target.id?'#'+x.target.id:'')),true));
+const edit=()=>/INPUT|TEXTAREA/.test((document.activeElement||{}).tagName||'');
+let gap=0;
+function size(){
+  if(!edit()){const long=Math.max(screen.width,screen.height),short=Math.min(screen.width,screen.height);
+    const gp=Math.round((innerHeight>=innerWidth?long:short)-innerHeight);gap=(navigator.standalone===true&&gp>0&&gp<=80)?gp:0}
+  const h=Math.round(vv.height+vv.offsetTop+(edit()?0:gap));w.style.setProperty('--h',h+'px');
+  m.textContent='inner '+innerWidth+'x'+innerHeight+'  screen '+screen.height+'  vv '+Math.round(vv.height)+' @'+Math.round(vv.offsetTop)+'  gap '+gap+'  h '+h;
+}
+vv.addEventListener('resize',size);vv.addEventListener('scroll',size);document.addEventListener('focusin',size);document.addEventListener('focusout',()=>setTimeout(size,60));size();
 </script></body></html>

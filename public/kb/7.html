@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="color-scheme" content="dark light"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>kb 2</title>
+<title>kb 7</title>
 <style>
 html,body{margin:0;background:#000;color:#fff;font:14px system-ui}
 #w{position:fixed;top:0;left:0;right:0;height:var(--h,100%);box-sizing:border-box;display:flex;flex-direction:column;padding:56px 16px 0;background:#000}
@@ -10,8 +10,8 @@ html,body{margin:0;background:#000;color:#fff;font:14px system-ui}
 .bot{flex:none;padding:8px 0 max(env(safe-area-inset-bottom),12px);background:#111;margin:0 -16px;padding-left:16px;padding-right:16px;border-top:1px solid #444}
 input,textarea{display:block;width:100%;box-sizing:border-box;font-size:16px;padding:12px;margin:8px 0;background:#fff;color:#000;border:1px solid #888;border-radius:12px}
 a{color:#b6ff3d;display:inline-block;margin:6px 12px 6px 0;font-size:16px}pre{font:12px/1.5 monospace;white-space:pre-wrap;margin:8px 0}
-body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}input,textarea{-webkit-user-select:text;user-select:text}</style></head><body>
-<div id="w"><div class="top"><b>Тест 2: + user-select:none</b><br>
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}input,textarea{-webkit-user-select:text;user-select:text}html{overscroll-behavior:none}body{position:fixed;inset:0;overflow:hidden}input,textarea{min-height:44px;appearance:none;-webkit-appearance:none;outline:none;font-family:-apple-system,system-ui}.top{overscroll-behavior:contain;scrollbar-width:none}#w{position:absolute}</style></head><body>
+<div id="w"><div class="top"><b>Тест 7: чисто как приложение: 6 + нет position:fixed у #w</b><br>
 <a href="/kb/">← список</a><a href="/">← приложение</a>
 <pre id="m"></pre><pre id="l"></pre>
 <div style="height:600px"></div>низ прокручиваемой части</div>
@@ -29,4 +29,4 @@ function size(){
   m.textContent='inner '+innerWidth+'x'+innerHeight+'  screen '+screen.height+'  vv '+Math.round(vv.height)+' @'+Math.round(vv.offsetTop)+'  gap '+gap+'  h '+h;
 }
 vv.addEventListener('resize',size);vv.addEventListener('scroll',size);document.addEventListener('focusin',size);document.addEventListener('focusout',()=>setTimeout(size,60));size();
-</script></body></html>
+document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('pointerdown',e=>{const a=document.activeElement;if(a&&/INPUT|TEXTAREA/.test(a.tagName)&&!/INPUT|TEXTAREA/.test(e.target.tagName))a.blur()});document.addEventListener('focusout',()=>setTimeout(()=>{if(!edit())scrollTo(0,0)},60));</script></body></html>

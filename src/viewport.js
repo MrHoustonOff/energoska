@@ -78,7 +78,7 @@ function sync() {
     if (lastGap) root.dataset.gap = ''; else delete root.dataset.gap;
   }
   // plus (из старого рабочего проекта): корень = видимая область + gap. Тогда полоса закрыта и маскировать нечего (--gap = 0).
-  const plus = root.dataset.shell === 'plus';
+  const plus = root.dataset.shell === 'plus' || root.dataset.shell === 'old';
   root.style.setProperty('--gap', (plus ? 0 : lastGap) + 'px');
   root.style.setProperty('--plus', lastGap + 'px');
   root.style.setProperty('--inner', innerHeight + 'px');
@@ -128,8 +128,16 @@ export const onViewportChange = fn => listeners.add(fn);
 
 const schedule = () => { if (!ticking) { ticking = true; requestAnimationFrame(sync); } };
 
+// Отладка: отключаем куски кода, чтобы найти, что мешает фокусу в полях (см. кнопки на «Главной»)
+export const isOff = n => store.get('dbg.off', []).includes(n);
+export function toggleOff(n) {
+  const cur = store.get('dbg.off', []);
+  store.set('dbg.off', cur.includes(n) ? cur.filter(x => x !== n) : [...cur, n]);
+  location.reload();
+}
+
 export function initViewport() {
-  root.dataset.shell = store.get('dbg.shell', 'plus');    // plus | fixed | dvh
+  root.dataset.shell = store.get('dbg.shell', 'old');     // old | plus | fixed | dvh
   root.dataset.kbmode = store.get('dbg.kbmode', 'pan');   // pan | resize
   root.dataset.kb = 'closed';
   if (store.get('dbg.markers', false)) root.dataset.markers = '';
@@ -144,14 +152,14 @@ export function initViewport() {
   window.addEventListener('orientationchange', () => setTimeout(reset, 300));
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reset(); });
 
-  if (vv) { vv.addEventListener('resize', schedule); vv.addEventListener('scroll', schedule); }
+  if (vv && !isOff('vv')) { vv.addEventListener('resize', schedule); vv.addEventListener('scroll', schedule); }
 
-  document.addEventListener('focusin', e => {
+  if (!isOff('events')) document.addEventListener('focusin', e => {
     schedule();
     // поле не должно оказаться под клавиатурой: прокрутка ПОСЛЕ resize, а не сразу
     setTimeout(() => { if (document.activeElement === e.target) e.target.scrollIntoView({ block: 'center' }); }, 350);
   });
-  document.addEventListener('focusout', () => {
+  if (!isOff('events')) document.addEventListener('focusout', () => {
     // лечит «вьюпорт не вернулся после клавиатуры / чёрная линия до скролла»
     setTimeout(() => {
       if (!isEditable(document.activeElement)) { window.scrollTo(0, 0); sync(); }
@@ -159,19 +167,21 @@ export function initViewport() {
   });
 
   // тап вне поля убирает клавиатуру
-  document.addEventListener('pointerdown', e => {
+  if (!isOff('events')) document.addEventListener('pointerdown', e => {
     const a = document.activeElement;
     if (isEditable(a) && !isEditable(e.target) && !e.target.closest('label')) a.blur();
   });
 
   // случайный зум щипком
-  document.addEventListener('gesturestart', e => e.preventDefault());
+  if (!isOff('events')) document.addEventListener('gesturestart', e => e.preventDefault());
 
-  document.addEventListener('pointerdown', e => log('pointerdown ' + who(e.target)), true);
-  document.addEventListener('focusin', e => log('focusin ' + who(e.target)), true);
-  document.addEventListener('focusout', e => log('focusout ' + who(e.target)), true);
-  window.addEventListener('error', e => log('ERR ' + e.message));
-  if (vv) vv.addEventListener('resize', () => log(`vv.resize h=${Math.round(vv.height)}`));
+  if (!isOff('log')) {
+    document.addEventListener('pointerdown', e => log('pointerdown ' + who(e.target)), true);
+    document.addEventListener('focusin', e => log('focusin ' + who(e.target)), true);
+    document.addEventListener('focusout', e => log('focusout ' + who(e.target)), true);
+    window.addEventListener('error', e => log('ERR ' + e.message));
+    if (vv) vv.addEventListener('resize', () => log(`vv.resize h=${Math.round(vv.height)}`));
+  }
 
   sync();
   setTimeout(reset, 300);
