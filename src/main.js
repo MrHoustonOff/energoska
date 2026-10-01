@@ -4,6 +4,7 @@ import { initViewport, metrics, liveLine, recording, getKbm, setKbm, snap, onVie
 import * as eventlog from './eventlog.js';
 
 const root = document.documentElement;
+root.dataset.tabanim = store.get('tabanim', 'fade'); // как появляется панель вкладок: fade (прозрачность) / slide (выезд)
 if (store.get('redbg', true)) root.dataset.redbg = ''; // отладочный красный фон, выключается на «Итоге»
 initViewport();
 eventlog.add(`=== запуск: standalone=${navigator.standalone === true} screen=${screen.width}x${screen.height} режим=${getKbm()} ${snap()}`);
@@ -101,6 +102,8 @@ const screens = {
     const a = answers();
     const mark = v => v === 'ok' ? '<b class="ok">✓</b>' : v === 'bad' ? '<b class="bad">✗</b>' : '<b class="no">—</b>';
     return `
+      <p class="caption">Появление панели вкладок</p>
+      <div class="seg">${[['fade', 'прозрачность'], ['slide', 'выезд']].map(([k, n]) => `<button class="btn" data-settabanim="${k}" aria-pressed="${root.dataset.tabanim === k}">${n}</button>`).join('')}</div>
       <p class="caption">Отладка</p>
       <div class="seg">
         <button class="btn" data-act="redbg" aria-pressed="${'redbg' in root.dataset}">Красный фон</button>
@@ -184,7 +187,7 @@ onViewportChange(() => { updateDbg(); updateLive(); });
 updateLive();
 
 app.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-ans],[data-act],[data-setkbm]');
+  const t = e.target.closest('[data-tab],[data-ans],[data-act],[data-setkbm],[data-settabanim]');
   if (!t || !app.contains(t)) return; // closest() может дойти до <html>
   if (t.dataset.tab) { eventlog.add(`вкладка ${tab} -> ${t.dataset.tab}`); tab = t.dataset.tab; store.set('tab', tab); render(); }
   else if (t.dataset.ans) {
@@ -197,6 +200,10 @@ app.addEventListener('click', e => {
     document.getElementById('count').textContent = store.get('count', 0);
   }
   else if (t.dataset.setkbm) setKbm(t.dataset.setkbm);
+  else if (t.dataset.settabanim) {
+    root.dataset.tabanim = t.dataset.settabanim; store.set('tabanim', t.dataset.settabanim);
+    t.parentElement.querySelectorAll('.btn').forEach(b => b.setAttribute('aria-pressed', String(b === t)));
+  }
   else if (t.dataset.act === 'redbg') {
     const on = !('redbg' in root.dataset);
     if (on) root.dataset.redbg = ''; else delete root.dataset.redbg;

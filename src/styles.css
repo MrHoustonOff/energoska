@@ -51,7 +51,7 @@ body {
    а iOS, прокручивая страницу ниже, всегда видит под клавиатурой список, а не край приложения. */
 :root[data-kbm='native'][data-ext] #app { height: calc(var(--app-h) + var(--kbext, 0px)); }
 :root[data-ext] .screen-scroll { padding-bottom: calc(var(--tab-h, 94px) + var(--space-6) + var(--kbext, 0px)); }
-:root[data-ext] .tabbar { bottom: var(--kbext, 0px); transform: translateY(var(--sy, 0px)); } /* панель остаётся на прежнем месте на экране: приложение растёт, страница прокручена */
+:root[data-ext] .tabbar { bottom: var(--kbext, 0px); translate: 0 var(--sy, 0px); } /* панель остаётся на прежнем месте на экране: приложение растёт, страница прокручена */
 
 /* режим fixed: каркас привязан к экрану и не зависит от размера окна (iOS сжимает окно, а каркас не перестраивается) */
 :root[data-kbm='fixed'] #app { position: fixed; top: 0; left: 0; right: 0; height: var(--app-h); }
@@ -64,7 +64,11 @@ body {
 :root:not([data-kbm='native'])[data-kb='open'] #app { transform: translateY(var(--vvy)); } /* только если iOS сдвинул панораму */
 #app { transition: transform .32s cubic-bezier(.22, .9, .3, 1); } /* iOS присылает конечный сдвиг сразу, а сам едет ~300 мс: гасим сдвиг плавно, а не скачком */
 :root[data-pad] .screen-scroll { padding-bottom: calc(var(--tab-h, 94px) + var(--space-6) + var(--kbpad, 0px)); }
-:root[data-edit] .tabbar, :root[data-kb='open'] .tabbar { opacity: 0; pointer-events: none; transition-delay: 0s; } /* гаснет сразу, без задержки */
+/* Скрытие на время ввода. Режим по умолчанию «прозрачность»: гаснет сразу, появляется с задержкой */
+:root[data-edit] .tabbar, :root[data-kb='open'] .tabbar { opacity: 0; pointer-events: none; transition-delay: 0s; }
+/* Режим «выезд»: не гаснет, а уезжает вниз за край экрана и выезжает обратно. Двигаем только transform. */
+:root[data-tabanim='slide'] .tabbar { transition: transform .3s cubic-bezier(.2, .9, .25, 1) var(--tab-delay, .22s); }
+:root[data-tabanim='slide'][data-edit] .tabbar, :root[data-tabanim='slide'][data-kb='open'] .tabbar { opacity: 1; transform: translateY(calc(var(--tab-h, 94px) + 8px)); transition-delay: 0s; }
 
 /* ───── Шапка и панель: safe-area ровно один раз, в самих компонентах ───── */
 .header {
