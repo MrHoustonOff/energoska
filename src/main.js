@@ -88,7 +88,7 @@ function updateDbg() {
     `standalone: ${m.standalone}\nscreen: ${m.screen}  inner: ${m.inner}\nvisualViewport: ${m.vv}\n` +
     `vh ${m.heights.vh} lvh ${m.heights.lvh} svh ${m.heights.svh} dvh ${m.heights.dvh} fill ${m.heights.fill}\n` +
     `safe-area t/r/b/l: ${m.insets.t} ${m.insets.r} ${m.insets.b} ${m.insets.l}\n` +
-    `--kb: ${m.kb}  (${document.documentElement.dataset.kb})\nshell: ${m.shell}  kb: ${m.kbmode}`;
+    `gap: ${m.gap}  --kb: ${m.kb}  (${document.documentElement.dataset.kb})\nshell: ${m.shell}  kb: ${m.kbmode}`;
 }
 onViewportChange(updateDbg);
 

@@ -44,9 +44,20 @@ export function readMetrics() {
     vv: vv ? `${Math.round(vv.width)}×${Math.round(vv.height)} @${Math.round(vv.offsetTop)}` : 'нет',
     insets: readSafeAreaInsets(),
     kb: root.style.getPropertyValue('--kb') || '0px',
+    gap: root.style.getPropertyValue('--gap') || '0px',
     shell: root.dataset.shell,
     kbmode: root.dataset.kbmode,
   };
+}
+
+// iOS 26 + black-translucent: окно короче экрана на высоту статус-бара, полоса снизу вне WebView (нарисовать нельзя).
+// 1) не iOS-standalone → 0 (Android и вкладка Safari не трогаем)  2) gap = высота экрана − высота окна.
+// Если Apple починит баг, gap станет 0 сам.
+function computeGap() {
+  if (navigator.standalone !== true) return 0;
+  const long = Math.max(screen.width, screen.height), short = Math.min(screen.width, screen.height);
+  const gap = Math.round((innerHeight >= innerWidth ? long : short) - innerHeight);
+  return gap > 0 && gap <= 80 ? gap : 0;
 }
 
 let baseH = vv ? vv.height : innerHeight;
@@ -61,6 +72,11 @@ function sync() {
   if (!editing) baseH = Math.max(baseH, vv.height); // база растёт только без клавиатуры
 
   const kb = editing ? Math.max(0, Math.round(baseH - vv.height)) : 0;
+  if (!editing) {
+    const gap = computeGap();
+    root.style.setProperty('--gap', gap + 'px');
+    if (gap) root.dataset.gap = ''; else delete root.dataset.gap;
+  }
   root.style.setProperty('--kb', kb + 'px');
   root.dataset.kb = kb > 80 ? 'open' : 'closed';
 

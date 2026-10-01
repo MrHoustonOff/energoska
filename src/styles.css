@@ -10,6 +10,7 @@
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
   --kb: 0px;
+  --gap: 0px; /* полоса под окном на iOS 26, считается в viewport.js */
   color-scheme: dark light;
 }
 
@@ -31,6 +32,10 @@ body {
   touch-action: manipulation;
   -webkit-user-select: none; user-select: none;
 }
+
+/* Полоса под окном закрашивается фоном html/body. Красим под нижнюю панель, и шва не видно.
+   Home-индикатор лежит в этой полосе, поэтому safe-area панели уменьшаем на gap. */
+:root[data-gap], :root[data-gap] body { background: var(--surface-100); }
 
 /* ───── Каркас. Вариант A (по умолчанию): якорь к layout viewport ───── */
 :root[data-shell='fixed'] body { position: fixed; inset: 0; }
@@ -77,7 +82,7 @@ body {
 .tabbar {
   flex: none;
   display: flex;
-  padding: var(--space-2) var(--space-2) max(var(--sab), var(--space-2));
+  padding: var(--space-2) var(--space-2) max(calc(var(--sab) - var(--gap)), var(--space-2));
   background: var(--surface-100);
   box-shadow: var(--shadow-panel);
   transition: transform .2s ease-out;
