@@ -8,6 +8,7 @@
 3. `components/INDEX.md`: каталог из 44 компонентов и экранов; у каждого `README.md`, `preview.html` (эталонная вёрстка) и скриншоты `dark.webp`, `light.webp`.
 4. `tokens/tokens.css` и `reference/energoska.css`: токены и классы эталонной вёрстки.
 5. `docs/04-backend.md`, `docs/05-performance.md`, `docs/06-decisions.md`: бэк, оптимизация, принятые/отклонённые/открытые решения.
+6. **Технический каркас приложения (проверен на iPhone, заморожен):** `docs/07-app-shell.md` (запуск и клавиатура), `docs/08-push.md` (уведомления), `docs/09-dev-workflow.md` (запуск на телефоне, отладка, git), `SAFARI_PWA_BIBLE.md` (платформа). Код: `src/viewport.js`, `src/styles.css`, `src/shell.js`.
 
 Если два источника противоречат друг другу, действует тот, что выше в списке. Если правило не нашлось, найди ближайший компонент в `components/INDEX.md`, повтори его решение и скажи, что опирался на аналог. Если аналога нет, спроси владельца, а не придумывай новый стиль.
 
@@ -40,7 +41,11 @@
 - Минимальная цель нажатия 44px.
 
 ## 4. Нерушимые правила техники
-- iOS Safari PWA: `display: standalone`, `viewport-fit=cover`, `env(safe-area-inset-*)`, оболочка flex на `100dvh`, без `position: fixed` для шапки и нижней панели.
+- iOS Safari PWA: `display: standalone`, `viewport-fit=cover`, `env(safe-area-inset-*)`, `apple-mobile-web-app-status-bar-style: black-translucent`.
+- **Каркас (ЗАМОРОЖЕНО, проверено на устройстве, `docs/07-app-shell.md`):** `html` и `body` высотой `100%`, `body` **без** `position: fixed` и **без** `overflow: hidden`; корень `#app` с высотой в пикселях из JS (`visualViewport.height + offsetTop + gap`, `src/viewport.js`). **Не** использовать `100vh/svh/lvh/dvh` для корня и **не** делать `body {position: fixed}` (на iOS 26 это даёт чёрную полосу 47 pt снизу). Не добавлять `interactive-widget` в meta viewport.
+- **Нижняя панель вкладок** лежит поверх списка (`position: absolute`), **не в потоке**: так её появление и скрытие не пересчитывают вёрстку. Шапка в потоке flex-колонки, `position: fixed` для шапки и панели не используем.
+- **Клавиатура (ЗАМОРОЖЕНО):** окно под клавиатуру не сжимаем, содержимое сами не двигаем, прокручивает страницу iOS. Логика только в `src/viewport.js` (запас под клавиатуру, запрет прокрутки страницы пальцем при вводе, плавный возврат). Менять только по прямой просьбе и с проверкой по чек-листу из `docs/07-app-shell.md` §9 **на телефоне**.
+- Любой обработчик кликов с `closest('[data-…]')` обязан проверять, что найденный элемент внутри приложения (`app.contains(el)`): `closest` может дойти до `<html>`, у которого свои `data-*`.
 - **Анимируем только `transform` и `opacity`.** Исключение: `stroke-dashoffset` кольца удержания кнопки, только пока палец на ней. Никаких blur, backdrop-filter, mix-blend-mode над движущимся слоем; `will-change` только на бесконечных слоях. Тут же: паузы при скрытой вкладке, шторке и клавиатуре, уровни `data-perf=low|min`, `prefers-reduced-motion`. Проверка: `tools/lint-anim.py`, `tools/perf-audit.js`.
 - Картинки банок в четырёх размерах (XS 96, S 192, M 256, L 384 по высоте, WebP). Плитка списка берёт M, карусель S, результат и карточка L. В DOM списка не больше 4 страниц.
 - Любой экран с вводом имеет состояние «с клавиатурой» (системную клавиатуру на макете не рисуем: серый блок с атрибутами поля, например `inputmode`, `enterkeyhint`).

@@ -1,13 +1,14 @@
 {
  "name": "energoska-taste",
- "version": "1.0.0",
- "built": "2026-10-01",
+ "version": "1.1.0",
+ "built": "2026-10-02",
  "locale": "ru",
  "product": "Энергоська: PWA для пары (iOS Safari), энергетики, оценки, цены, вода",
  "entry": [
   "AGENTS.md",
   "SKILL.md",
-  "docs/01-product.md"
+  "docs/01-product.md",
+  "docs/07-app-shell.md"
  ],
  "invariants": [
   "max_energy_cans_per_day=2; third only via 3s hold, flagged over_limit; no UI for 3+",
@@ -19,7 +20,8 @@
   "rating format 8.6, step 0.1, four parameters",
   "countries BY/RU: prices and shops not compared across countries",
   "every input has a with-keyboard state; every screen checked in dark and light and in states empty/loading/error/offline/photo-pending/limit",
-  "change only what is asked; frozen decisions per docs/06-decisions.md"
+  "change only what is asked; frozen decisions per docs/06-decisions.md",
+  "shell and keyboard are FROZEN (verified on real iPhone 2026-10-02): html/body 100% height, #app height in px from src/viewport.js, tab bar position:absolute over the list; no position:fixed body, no 100dvh root, no interactive-widget; see docs/07-app-shell.md"
  ],
  "tokens": {
   "json": "tokens/tokens.json",
@@ -615,5 +617,11 @@
     "components/WaterFooter/light.webp"
    ]
   }
- ]
+ ],
+ "app_docs": {
+  "shell_and_keyboard": "docs/07-app-shell.md",
+  "push": "docs/08-push.md",
+  "dev_workflow": "docs/09-dev-workflow.md",
+  "platform_bible": "SAFARI_PWA_BIBLE.md"
+ }
 }

@@ -3,7 +3,7 @@ import pushDev from './tools/push-dev-plugin.mjs';
 
 // Режимы:
 //   npm run dev         — обычный запуск, телефон открывает http://<IP компьютера>:5173 в локальной сети;
-//   npm run dev:tunnel  — для теста push: страницу открывают по HTTPS через туннель (см. docs-src/push-test.md).
+//   npm run dev:tunnel  — для теста push: страницу открывают по HTTPS через туннель (см. docs-src/docs/08-push.md).
 export default defineConfig(({ mode }) => ({
   server: {
     host: true,                 // доступ с телефона по IP из локальной сети

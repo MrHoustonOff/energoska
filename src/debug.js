@@ -2,7 +2,7 @@
 //
 // Зачем: на iPhone нет DevTools, а поведение клавиатуры и размеров окна нельзя воспроизвести в эмуляции.
 // Всё, что здесь собрано, нужно, чтобы проблему можно было показать текстом (кнопка «Копировать лог» в Лаборатории).
-// Подробно: docs-src/09-dev-workflow.md.
+// Подробно: docs-src/docs/09-dev-workflow.md.
 import * as store from './store.js';
 import * as eventlog from './eventlog.js';
 import { metrics, recording, snap } from './viewport.js';

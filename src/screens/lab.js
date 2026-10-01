@@ -1,9 +1,9 @@
 // ЛАБОРАТОРИЯ: служебный экран для проверки на телефоне. В боевом приложении его не будет.
 //
 // Что здесь:
-//   1. Все виды полей ввода: проверка клавиатуры (логика в viewport.js, описание в docs-src/07-app-shell.md).
-//   2. Тест push-уведомлений (клиентская часть в push.js, описание в docs-src/08-push.md).
-//   3. Отладка: красный фон страницы, лог тапов и фокуса, копирование отчёта в буфер (debug.js, docs-src/09-dev-workflow.md).
+//   1. Все виды полей ввода: проверка клавиатуры (логика в viewport.js, описание в docs-src/docs/07-app-shell.md).
+//   2. Тест push-уведомлений (клиентская часть в push.js, описание в docs-src/docs/08-push.md).
+//   3. Отладка: красный фон страницы, лог тапов и фокуса, копирование отчёта в буфер (debug.js, docs-src/docs/09-dev-workflow.md).
 import * as eventlog from '../eventlog.js';
 import { liveLine, onViewportChange } from '../viewport.js';
 import { setRedBackground, isRedBackground, fullReport, screenReport } from '../debug.js';
