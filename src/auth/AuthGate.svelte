@@ -3,7 +3,7 @@
   import Login from './Login.svelte';
   import Register from './Register.svelte';
 
-  import { showToast } from '../toast.svelte';
+  import { showToast } from '../toastState.svelte';
 
   let view = $state<'login' | 'register'>('login');
   let prefill = $state('');

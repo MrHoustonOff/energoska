@@ -1,6 +1,6 @@
 <!-- Тост: радиус 20, галочка и текст, закрывается по тапу или через 5 с. Анимация только transform/opacity. Стили: surface.css. -->
 <script lang="ts">
-  import { toast, hideToast } from './toast.svelte';
+  import { toast, hideToast } from './toastState.svelte';
 </script>
 
 <div role="status" style="display: contents">
