@@ -1,0 +1,32 @@
+/* Общая «фактура» приложения (docs-src/reference/energoska.css, раздел «фактура» и «фон экрана»; docs-src/AGENTS.md §3):
+   1) фон «Глубина» (свет сверху, затемнение к краям) + постоянный слабый шум-картинка на ВСЕХ экранах;
+   2) мелкое зерно на поверхностях: карточки, кнопки, пункты меню, панель вкладок, поля входа.
+   Шум — готовая картинка src/assets/grain.png (не SVG-фильтр). Ничего здесь не анимируется. Каркасные правила styles.css не менялись:
+   сюда вынесен только внешний вид (прозрачность шапки и списка, позиционирование для слоёв). */
+
+:root { --grain: url('./assets/grain.png'); }
+
+/* Фон лежит первым ребёнком #app, абсолютно; всё остальное (шапка, список) поднято над ним position:relative.
+   Без z-index: иначе слой шума смешивается только сам с собой, а не с фоном приложения (в светлой теме выходил серым). */
+.app-bg { position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(120% 45% at 50% 0%, color-mix(in srgb, var(--ink) 9%, transparent), transparent 70%),
+    radial-gradient(90% 40% at 50% 105%, color-mix(in srgb, var(--ink) 6%, transparent), transparent 70%); }
+.app-bg::after { content: ''; position: absolute; inset: 0; background: var(--grain) 0 0 / 128px 128px; opacity: .07; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) .app-bg {
+    background:
+      radial-gradient(120% 45% at 50% 0%, rgba(255, 255, 255, .85), transparent 70%),
+      radial-gradient(100% 40% at 50% 105%, color-mix(in srgb, var(--ink) 5%, transparent), transparent 70%); }
+  :root:not([data-theme='dark']) .app-bg::after { mix-blend-mode: overlay; opacity: .45; }
+}
+
+/* Шапка оболочки прозрачная (иначе закрывала бы свет сверху); позиционирование ставит их над фоном. Вёрстка не меняется. */
+.header { position: relative; background: transparent; }
+.screen-scroll { position: relative; }
+
+/* Зерно на поверхностях (reference: .card, .cta, .tab и др.): overlay .28, у главных кнопок .14 */
+.card, .btn, .menu-row { position: relative; }  /* .tabbar уже absolute (styles.css): не переопределяем */
+.card::after, .btn::after, .menu-row::after, .tabbar::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 3; pointer-events: none;
+  background: var(--grain) 0 0 / 140px; mix-blend-mode: overlay; opacity: .28; }

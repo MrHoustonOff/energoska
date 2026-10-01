@@ -69,3 +69,28 @@ describe('экраны входа и регистрации', () => {
     expect(repeatError('a', 'a')).toBeNull();
   });
 });
+
+import { afterFailure, afterServerLock, afterSuccess, attemptsLeft, lockRemainingMs, NO_LOCKOUT } from './index';
+import { lockoutScenarios } from './scenarios';
+
+describe('блокировка входа на телефоне', () => {
+  it.each(lockoutScenarios)('$name', s => {
+    const base = Date.parse('2026-10-02T09:00:00Z');
+    let st = NO_LOCKOUT;
+    for (const e of s.events) {
+      const now = base + e.t * 1000;
+      st = e.do === 'fail' ? afterFailure(st, now) : e.do === 'success' ? afterSuccess() : afterServerLock(st, now, e.retry);
+    }
+    const now = base + s.at * 1000;
+    expect(st.fails).toBe(s.expect.fails);
+    expect(Math.ceil(lockRemainingMs(st, now) / 1000)).toBe(s.expect.remainingSec);
+  });
+  it('попыток до блокировки', () => {
+    expect(attemptsLeft(NO_LOCKOUT)).toBe(5);
+    expect(attemptsLeft({ fails: 3, lockedUntil: 0 })).toBe(2);
+  });
+  it('часы переведены назад: ждать больше минуты не придётся', () => {
+    const now = 1_000_000;
+    expect(lockRemainingMs({ fails: 0, lockedUntil: now + 3_600_000 }, now)).toBe(60_000);
+  });
+});

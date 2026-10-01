@@ -5,12 +5,14 @@
 -->
 <script lang="ts">
   import { api, ApiError } from '../api';
-  import { attemptsText, formatCountdown } from '../domain';
+  import { onMount } from 'svelte';
+  import { afterFailure, afterServerLock, afterSuccess, attemptsLeft, attemptsText, formatCountdown, lockRemainingMs } from '../domain';
   import Brand from './Brand.svelte';
   import Infographic from './Infographic.svelte';
   import Field from './Field.svelte';
   import Msg from './Msg.svelte';
   import Spinner from './Spinner.svelte';
+  import { loadLockout, saveLockout } from './lockout';
   import { signedIn } from './session.svelte';
 
   let { onregister }: { onregister: () => void } = $props();
@@ -21,25 +23,29 @@
   let password = $state('');
   let busy = $state(false);
   let problem = $state<Problem | null>(null);
-  let lockUntil = $state(0);
+  // Блокировка живёт на телефоне (решение владельца): момент окончания лежит в localStorage и переживает закрытие приложения.
+  let lock = $state(loadLockout());
   let now = $state(Date.now());
   let loginEl = $state<HTMLInputElement | null>(null);
   let passwordEl = $state<HTMLInputElement | null>(null);
 
-  const remaining = $derived(lockUntil ? Math.max(0, Math.ceil((lockUntil - now) / 1000)) : 0);
+  const remaining = $derived(Math.ceil(lockRemainingMs(lock, now) / 1000));
   const locked = $derived(remaining > 0);
   const badLogin = $derived(problem?.kind === 'invalid' || (problem?.kind === 'empty' && !login.trim()));
   const badPassword = $derived(problem?.kind === 'invalid' || (problem?.kind === 'empty' && !password));
 
-  // Отсчёт блокировки: время берём из часов, а не из числа тиков (в фоне таймеры замирают).
+  // Отсчёт блокировки: время берём из часов, а не из числа тиков (в фоне таймеры замирают). При возврате в приложение пересчитываем сразу.
   $effect(() => {
-    if (!lockUntil) return;
+    if (!locked) return;
     now = Date.now();
-    const t = setInterval(() => {
-      now = Date.now();
-      if (now >= lockUntil) lockUntil = 0;
-    }, 250);
+    const t = setInterval(() => { now = Date.now(); }, 250);
     return () => clearInterval(t);
+  });
+  onMount(() => {
+    const refresh = () => { now = Date.now(); };
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('pageshow', refresh);
+    return () => { document.removeEventListener('visibilitychange', refresh); window.removeEventListener('pageshow', refresh); };
   });
 
   /**
@@ -66,11 +72,19 @@
     busy = true;
     problem = null;
     try {
-      signedIn(await api.auth.login({ login: login.trim(), password }));
+      const user = await api.auth.login({ login: login.trim(), password });
+      lock = saveLockout(afterSuccess());
+      signedIn(user);
     } catch (err) {
-      if (err instanceof ApiError && err.code === 'invalid_credentials') problem = { kind: 'invalid', attemptsLeft: err.attemptsLeft };
-      else if (err instanceof ApiError && err.code === 'rate_limited') lockUntil = Date.now() + (err.retryAfterSeconds ?? 60) * 1000;
-      else problem = { kind: err instanceof ApiError && err.code === 'network' ? 'network' : 'other' };
+      if (err instanceof ApiError && err.code === 'invalid_credentials') {
+        lock = saveLockout(afterFailure(lock, Date.now()));
+        now = Date.now();
+        problem = lockRemainingMs(lock, now) > 0 ? null : { kind: 'invalid', attemptsLeft: attemptsLeft(lock) };
+      } else if (err instanceof ApiError && err.code === 'rate_limited') {
+        lock = saveLockout(afterServerLock(lock, Date.now(), err.retryAfterSeconds ?? 60));
+        now = Date.now();
+        problem = null;
+      } else problem = { kind: err instanceof ApiError && err.code === 'network' ? 'network' : 'other' };
     } finally {
       busy = false;
     }

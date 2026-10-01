@@ -5,3 +5,4 @@ export * from './rating';
 export * from './money';
 export * from './validation';
 export * from './auth';
+export * from './lockout';

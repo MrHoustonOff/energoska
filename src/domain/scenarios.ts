@@ -80,3 +80,18 @@ export const countdownScenarios: { seconds: number; expect: string }[] = [
   { seconds: 60, expect: '1:00' }, { seconds: 42, expect: '0:42' }, { seconds: 41.2, expect: '0:42' },
   { seconds: 5, expect: '0:05' }, { seconds: 0, expect: '0:00' }, { seconds: -3, expect: '0:00' }, { seconds: 125, expect: '2:05' },
 ];
+
+/** Блокировка входа на телефоне: последовательность событий → состояние. t в секундах от начала. */
+export type LockEvent = { t: number; do: 'fail' } | { t: number; do: 'success' } | { t: number; do: 'server'; retry: number };
+export const lockoutScenarios: { name: string; events: LockEvent[]; at: number; expect: { fails: number; remainingSec: number } }[] = [
+  { name: 'без событий', events: [], at: 0, expect: { fails: 0, remainingSec: 0 } },
+  { name: 'четыре неудачи: ещё не заблокирован', events: [0, 1, 2, 3].map(t => ({ t, do: 'fail' as const })), at: 4, expect: { fails: 4, remainingSec: 0 } },
+  { name: 'пятая неудача блокирует на 60 с', events: [0, 1, 2, 3, 4].map(t => ({ t, do: 'fail' as const })), at: 4, expect: { fails: 0, remainingSec: 60 } },
+  { name: 'через 18 с осталось 42', events: [0, 1, 2, 3, 4].map(t => ({ t, do: 'fail' as const })), at: 22, expect: { fails: 0, remainingSec: 42 } },
+  { name: 'после минуты блокировка снята', events: [0, 1, 2, 3, 4].map(t => ({ t, do: 'fail' as const })), at: 64, expect: { fails: 0, remainingSec: 0 } },
+  { name: 'попытка во время блокировки ничего не меняет', events: [0, 1, 2, 3, 4, 10].map(t => ({ t, do: 'fail' as const })), at: 30, expect: { fails: 0, remainingSec: 34 } },
+  { name: 'после блокировки счёт попыток начинается заново', events: [0, 1, 2, 3, 4, 70].map(t => ({ t, do: 'fail' as const })), at: 71, expect: { fails: 1, remainingSec: 0 } },
+  { name: 'успешный вход сбрасывает счётчик', events: [{ t: 0, do: 'fail' }, { t: 1, do: 'fail' }, { t: 2, do: 'success' }], at: 3, expect: { fails: 0, remainingSec: 0 } },
+  { name: 'ответ сервера 429 блокирует', events: [{ t: 0, do: 'server', retry: 45 }], at: 5, expect: { fails: 0, remainingSec: 40 } },
+  { name: 'сервер просит больше минуты: берём минуту', events: [{ t: 0, do: 'server', retry: 600 }], at: 0, expect: { fails: 0, remainingSec: 60 } },
+];

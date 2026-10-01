@@ -8,6 +8,7 @@
 // Порядок важен: сначала viewport (задаёт высоту и слушатели клавиатуры), потом отладка, потом оболочка.
 import { mount } from 'svelte';
 import './styles.css';
+import './surface.css';
 import { initViewport } from './viewport.js';
 import { initDebug } from './debug';
 import App from './App.svelte';
