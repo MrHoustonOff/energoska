@@ -8,11 +8,12 @@ const ICONS = {
   start: '<path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>',
   kb: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 10h8M8 14h5"/>',
   scroll: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
+  fields: '<rect x="3" y="5" width="18" height="5" rx="2"/><rect x="3" y="14" width="18" height="5" rx="2"/>',
   sum: '<path d="M5 12l4 4 10-10"/>',
 };
-const TABS = [['start', 'Старт'], ['kb', 'Ввод'], ['scroll', 'Скролл'], ['sum', 'Итог']];
-const TITLES = { start: '1. Запуск', kb: '2. Клавиатура', scroll: '3. Скролл', sum: 'Итог' };
-const CHECKS = [['start', 'Запуск без полос'], ['data', 'Данные сохранились'], ['kb', 'Клавиатура открыта'], ['kb2', 'После клавиатуры'],['smooth', 'Клавиатура плавно'], ['scroll', 'Скролл']];
+const TABS = [['start', 'Старт'], ['kb', 'Ввод'], ['scroll', 'Скролл'], ['fields', 'Поля'], ['sum', 'Итог']];
+const TITLES = { start: '1. Запуск', kb: '2. Клавиатура', scroll: '3. Скролл', fields: '4. Поля', sum: 'Итог' };
+const CHECKS = [['start', 'Запуск без полос'], ['data', 'Данные сохранились'], ['kb', 'Клавиатура открыта'], ['kb2', 'После клавиатуры'],['smooth', 'Клавиатура плавно'], ['fields', 'Все виды полей'], ['scroll', 'Скролл']];
 
 const app = document.getElementById('app');
 app.innerHTML = `
@@ -61,6 +62,33 @@ const screens = {
     <p class="hint">Потяни список вверх и вниз до конца. Двигается только список, шапка и панель стоят?</p>
     ${yn('scroll')}
     ${Array.from({ length: 60 }, (_, i) => `<div class="row"><span>Строка ${i + 1}</span><span class="num">${i + 1}</span></div>`).join('')}`,
+
+  fields: () => {
+    const F = [
+      ['Текст', 'type="text" enterkeyhint="next"'],
+      ['Поиск', 'type="search" enterkeyhint="search"'],
+      ['Email', 'type="email" autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next"'],
+      ['Телефон', 'type="tel" autocomplete="tel"'],
+      ['Ссылка', 'type="url" autocapitalize="none" autocorrect="off"'],
+      ['Цифры', 'type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done"'],
+      ['Цена, ₽ (с точкой)', 'type="text" inputmode="decimal" enterkeyhint="go"'],
+      ['Пароль', 'type="password" autocomplete="current-password" enterkeyhint="done"'],
+      ['Дата', 'type="date"'],
+      ['Время', 'type="time"'],
+    ];
+    const one = ([name, attrs]) => `<p class="caption">${name}</p><input ${attrs} placeholder="${name}">`;
+    return `
+      <p class="hint">Тапни каждое поле сверху вниз, потом снизу вверх. У каждого клавиатура открывается плавно, поле видно над ней, шапка и страница не прыгают?</p>
+      ${yn('fields')}
+      ${F.slice(0, 5).map(one).join('')}
+      <p class="caption">Список (без клавиатуры)</p>
+      <select><option>Беларусь (РБ)</option><option>Россия (РФ)</option></select>
+      ${F.slice(5).map(one).join('')}
+      <p class="caption">Многострочное</p>
+      <textarea enterkeyhint="done" placeholder="Заметка"></textarea>
+      <p class="caption">Редактируемый блок</p>
+      <div class="field" contenteditable="true" data-ph="contenteditable"></div>`;
+  },
 
   sum: () => {
     const a = answers();

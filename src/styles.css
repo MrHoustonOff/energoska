@@ -15,7 +15,7 @@
 /* ───── Каркас (рецепт, проверенный на iPhone): html/body 100%, корень задан высотой из viewport.js ───── */
 html {
   height: 100%;
-  background: #f00; /* ВРЕМЕННО (отладка): цвет «страницы» за приложением */
+  background: var(--bg);
   overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
   -webkit-touch-callout: none;
@@ -25,7 +25,7 @@ body {
   margin: 0;
   height: 100%;
   min-height: -webkit-fill-available;
-  background: #f00; /* ВРЕМЕННО (отладка) */
+  background: var(--bg);
   color: var(--ink);
   font: 400 14px/1.35 var(--font-display);
   -webkit-font-smoothing: antialiased;
@@ -40,7 +40,7 @@ body {
   flex-direction: column;
   padding-left: var(--sal);
   padding-right: var(--sar);
-  background: #000; /* ВРЕМЕННО (отладка): цвет приложения */
+  background: var(--bg);
 }
 /* режим fixed: каркас привязан к экрану и не зависит от размера окна (iOS сжимает окно, а каркас не перестраивается) */
 :root[data-kbm='fixed'] #app { position: fixed; top: 0; left: 0; right: 0; height: var(--app-h); }
@@ -113,7 +113,7 @@ body {
 .seg .btn:not([aria-pressed='true']) { background: var(--surface-200); color: var(--ink-muted); }
 .seg .btn.bad[aria-pressed='true'] { background: var(--danger); color: #000; }
 
-input, textarea {
+input, textarea, select, .field {
   -webkit-user-select: text; user-select: text;
   font-size: 16px; /* ≥16px, иначе iOS приближает страницу */
   font-family: var(--font-system);
@@ -123,7 +123,9 @@ input, textarea {
   padding: var(--space-3); margin-bottom: var(--space-3);
   outline: none; appearance: none; -webkit-appearance: none;
 }
-input:focus, textarea:focus { box-shadow: var(--shadow-focus); }
+input:focus, textarea:focus, select:focus, .field:focus { box-shadow: var(--shadow-focus); }
+.field { display: block; line-height: 1.35; white-space: pre-wrap; }
+.field:empty::before { content: attr(data-ph); color: var(--ink-muted); }
 textarea { resize: none; height: 96px; }
 
 .row { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; }
