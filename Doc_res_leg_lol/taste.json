@@ -1,0 +1,619 @@
+{
+ "name": "energoska-taste",
+ "version": "1.0.0",
+ "built": "2026-10-01",
+ "locale": "ru",
+ "product": "Энергоська: PWA для пары (iOS Safari), энергетики, оценки, цены, вода",
+ "entry": [
+  "AGENTS.md",
+  "SKILL.md",
+  "docs/01-product.md"
+ ],
+ "invariants": [
+  "max_energy_cans_per_day=2; third only via 3s hold, flagged over_limit; no UI for 3+",
+  "only is_energy drinks count toward limit, stats, ratings, main button",
+  "dark-first; light via prefers-color-scheme; one token set; no brand accent color; color only from cans and players",
+  "fonts: Unbounded (text), Oswald (numbers); inputs >=16px system font",
+  "single radius 12 (circles full); no blur shadows; backgrounds: circles only; Depth bg + weak PNG grain",
+  "animate only transform/opacity (exception: hold ring stroke-dashoffset)",
+  "rating format 8.6, step 0.1, four parameters",
+  "countries BY/RU: prices and shops not compared across countries",
+  "every input has a with-keyboard state; every screen checked in dark and light and in states empty/loading/error/offline/photo-pending/limit",
+  "change only what is asked; frozen decisions per docs/06-decisions.md"
+ ],
+ "tokens": {
+  "json": "tokens/tokens.json",
+  "css": "tokens/tokens.css"
+ },
+ "reference": "reference/energoska.css",
+ "images": {
+  "sizes_px_height": {
+   "XS": 96,
+   "S": 192,
+   "M": 256,
+   "L": 384
+  },
+  "format": "webp",
+  "list_page_size": 24,
+  "list_dom_window_pages": 4
+ },
+ "recommendations": {
+  "count": 24,
+  "doc": "components/RecommendationCatalog/README.md",
+  "logic": "components/CanOfDayLogic/README.md"
+ },
+ "components": [
+  {
+   "name": "ActionButton",
+   "group": "Компоненты",
+   "kind": "component",
+   "subtitle": "Главная кнопка «Энергоснулся»: живая, затухает после первой банки, отталкивает после второй",
+   "summary": "Кнопка — монолит с главной: большой, высокий блок (196 px) с текстом сверху слева и словом «Энергоснулся» снизу слева. Слово на кнопке не меняется никогда: это фирменное. Меняются: 1. Текст над словом — свободный, не закреплён: заготовки и фразы от ИИ. На маке",
+   "readme": "components/ActionButton/README.md",
+   "preview": "components/ActionButton/preview.html",
+   "screenshots": [
+    "components/ActionButton/dark.webp",
+    "components/ActionButton/light.webp"
+   ]
+  },
+  {
+   "name": "AppIcon",
+   "group": "Компоненты",
+   "kind": "component",
+   "subtitle": "Знак приложения: иконка, значок уведомления, favicon",
+   "summary": "Кольцо с молнией (из стартового экрана) и розовый круг, заходящий за него: вторая половина пары. Синий фон как у банки Gorilla. Без текста и градиентов.",
+   "readme": "components/AppIcon/README.md",
+   "preview": "components/AppIcon/preview.html",
+   "screenshots": [
+    "components/AppIcon/dark.webp",
+    "components/AppIcon/light.webp"
+   ]
+  },
+  {
+   "name": "CanOfDayLogic",
+   "group": "Основы",
+   "kind": "component",
+   "subtitle": "Банка дня: как считается на бэке — выбор рекомендации, генератор, воронка, таблицы",
+   "summary": "Как считается «Банка дня» на бэке: ночная задача daily_pick (взвешенный детерминированный выбор типа по seed = hash(couple_id + date)), запрос генератора рандома с параметрами, воронка пустого результата, таблицы daily_pick, pick_state, pick_presets, drink_sta",
+   "readme": "components/CanOfDayLogic/README.md",
+   "preview": "components/CanOfDayLogic/preview.html",
+   "screenshots": [
+    "components/CanOfDayLogic/dark.webp",
+    "components/CanOfDayLogic/light.webp"
+   ]
+  },
+  {
+   "name": "Controls",
+   "group": "Основы",
+   "kind": "component",
+   "subtitle": "Кнопки, сегменты, чипы, поля, игроки",
+   "summary": "Кнопки, сегменты, чипы, поля и аватары.",
+   "readme": "components/Controls/README.md",
+   "preview": "components/Controls/preview.html",
+   "screenshots": [
+    "components/Controls/dark.webp",
+    "components/Controls/light.webp"
+   ]
+  },
+  {
+   "name": "Cover",
+   "group": "—",
+   "kind": "component",
+   "subtitle": "",
+   "summary": "",
+   "readme": "components/Cover/README.md",
+   "preview": "components/Cover/preview.html",
+   "screenshots": [
+    "components/Cover/dark.webp",
+    "components/Cover/light.webp"
+   ]
+  },
+  {
+   "name": "ImageLoading",
+   "group": "Основы",
+   "kind": "component",
+   "subtitle": "Картинки банок: размеры, карусель, список, кеш и бюджеты по экранам",
+   "summary": "Загрузка и картинки. Банка-вырезка в памяти браузера занимает около 355 КБ (178×512×4), 300 банок дали бы около 104 МБ. Решение: четыре размера (XS 96, S 192, M 256, L 384, замеры внутри), каждый экран берёт минимально нужный; барабан держит 12 банок размера S",
+   "readme": "components/ImageLoading/README.md",
+   "preview": "components/ImageLoading/preview.html",
+   "screenshots": [
+    "components/ImageLoading/dark.webp",
+    "components/ImageLoading/light.webp"
+   ]
+  },
+  {
+   "name": "NotificationToasts",
+   "group": "Компоненты",
+   "kind": "component",
+   "subtitle": "Уведомления в приложении: 4 типа, смахивание, очередь",
+   "summary": "Четыре типа: (1) партнёр выпил энергетик или воду, (2) партнёр закрыл воду, (3) партнёр добавил банку, магазин или бренд, (4) фото обработано (готово или не вышло).",
+   "readme": "components/NotificationToasts/README.md",
+   "preview": "components/NotificationToasts/preview.html",
+   "screenshots": [
+    "components/NotificationToasts/dark.webp",
+    "components/NotificationToasts/light.webp"
+   ]
+  },
+  {
+   "name": "Performance",
+   "group": "Основы",
+   "kind": "component",
+   "subtitle": "Оптимизация: что сделано, замеры, правила и как их сохранять",
+   "summary": "Производительность: что сделано, как проверено и как это сохранять. Дизайн при оптимизации не менялся (пиксельное сравнение до/после).",
+   "readme": "components/Performance/README.md",
+   "preview": "components/Performance/preview.html",
+   "screenshots": [
+    "components/Performance/dark.webp",
+    "components/Performance/light.webp"
+   ]
+  },
+  {
+   "name": "RecommendationCatalog",
+   "group": "Компоненты",
+   "kind": "component",
+   "subtitle": "Рекомендации «Банки дня»: 24 типа, у каждого своё оформление и формула на бэке",
+   "summary": "Двадцать четыре типа рекомендаций «Банки дня». У каждого своя карточка (цвет, композиция, цифра), текст «почему» и формула расчёта на бэке с минимумом данных и весом. Типы: твоя пятница, Даша по пятницам, в это время, давно не пили, зашло обоим, спорная, выгод",
+   "readme": "components/RecommendationCatalog/README.md",
+   "preview": "components/RecommendationCatalog/preview.html",
+   "screenshots": [
+    "components/RecommendationCatalog/dark.webp",
+    "components/RecommendationCatalog/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenActiveChart",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Активный график: панель под графиком",
+   "summary": "Активный график на весь экран.",
+   "readme": "components/ScreenActiveChart/README.md",
+   "preview": "components/ScreenActiveChart/preview.html",
+   "screenshots": [
+    "components/ScreenActiveChart/dark.webp",
+    "components/ScreenActiveChart/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenAvatarEditor",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Фото профиля: выбор источника и обрезка в круг",
+   "summary": "Фото профиля — **всегда круг**. Пользователь выбирает снимок, а обрезка под круг делается прямо в приложении.",
+   "readme": "components/ScreenAvatarEditor/README.md",
+   "preview": "components/ScreenAvatarEditor/preview.html",
+   "screenshots": [
+    "components/ScreenAvatarEditor/dark.webp",
+    "components/ScreenAvatarEditor/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenBackgrounds",
+   "group": "Основы",
+   "kind": "screen",
+   "subtitle": "Фон экрана: спокойные варианты, меняется только фон",
+   "summary": "Только подложка, вёрстка не затрагивается. Три спокойных варианта без цветных пятен: мягкая глубина, печатный полутон и линии рельефа. Контраст не выше 10 процентов, чтобы фон не отвлекал от банок и оценок. ",
+   "readme": "components/ScreenBackgrounds/README.md",
+   "preview": "components/ScreenBackgrounds/preview.html",
+   "screenshots": [
+    "components/ScreenBackgrounds/dark.webp",
+    "components/ScreenBackgrounds/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenBrand",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Бренд: энергосы с минимальной ценой и магазином, Все / РБ / РФ",
+   "summary": "Страница бренда: плоская плитка цвета бренда с крупным названием (правило длинных названий работает как везде), чипы «число энергосов» и «выпито», три плитки: моя оценка, оценка партнёра, средняя цена. Переключатель средней цены Все / РБ / РФ. Ниже фильтры и с",
+   "readme": "components/ScreenBrand/README.md",
+   "preview": "components/ScreenBrand/preview.html",
+   "screenshots": [
+    "components/ScreenBrand/dark.webp",
+    "components/ScreenBrand/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenCanOfDay",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Банка дня · рандом: параметры, подбор, результат и пустой результат с воронкой",
+   "summary": "Банка дня, вкладка «Рандом». Вход с Главной: карточка «Банка дня». Сверху переключатель «Рандом | Рекомендация» (точка на второй вкладке, пока рекомендацию не открывали).",
+   "readme": "components/ScreenCanOfDay/README.md",
+   "preview": "components/ScreenCanOfDay/preview.html",
+   "screenshots": [
+    "components/ScreenCanOfDay/dark.webp",
+    "components/ScreenCanOfDay/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenCanOfDayLimit",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Банка дня · лимит 2 банки: вторая и последняя, дуэль, замёрзший экран при 2 из 2",
+   "summary": "Банка дня при суточном лимите в 2 банки (жёсткое правило продукта). Четыре экрана: результат рандома при 1 банке (кнопка «Беру · последняя на сегодня»), рекомендация «Вторая и последняя» (разрешены только лёгкие типы), «Дуэль» (две банки с одинаковой оценкой, ",
+   "readme": "components/ScreenCanOfDayLimit/README.md",
+   "preview": "components/ScreenCanOfDayLimit/preview.html",
+   "screenshots": [
+    "components/ScreenCanOfDayLimit/dark.webp",
+    "components/ScreenCanOfDayLimit/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenCanOfDayRec",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Банка дня · рекомендация: три разных оформления из двадцати четырёх",
+   "summary": "Банка дня, вкладка «Рекомендация»: одна на день и одна на двоих, у обоих одинаковая. Три примера из четырнадцати: «Твоя пятница», «Даша по пятницам», «Давно не пили». Остальные типы и формулы: RecommendationCatalog и CanOfDayLogic.",
+   "readme": "components/ScreenCanOfDayRec/README.md",
+   "preview": "components/ScreenCanOfDayRec/preview.html",
+   "screenshots": [
+    "components/ScreenCanOfDayRec/dark.webp",
+    "components/ScreenCanOfDayRec/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenCatalog",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Список банок: фото и «фото скоро» в одной сетке",
+   "summary": "Список банок в две колонки.",
+   "readme": "components/ScreenCatalog/README.md",
+   "preview": "components/ScreenCatalog/preview.html",
+   "screenshots": [
+    "components/ScreenCatalog/dark.webp",
+    "components/ScreenCatalog/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenCatalogLoading",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Список банок: холодная загрузка, догрузка при прокрутке, нет сети с кешем, обновление поиска",
+   "summary": "Список «Банки»: четыре состояния загрузки. 1) Холодный старт без кеша: скелетон тех же размеров, что плитка (диск в цвет банки из поля dominant, блик едет через transform). 2) Догрузка при прокрутке: плитки с плавным появлением картинки (fade 250 мс), внизу ин",
+   "readme": "components/ScreenCatalogLoading/README.md",
+   "preview": "components/ScreenCatalogLoading/preview.html",
+   "screenshots": [
+    "components/ScreenCatalogLoading/dark.webp",
+    "components/ScreenCatalogLoading/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenDrinkCard",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Карточка «Витрина»: с фото, в ожидании и чат на весь экран",
+   "summary": "Карточка банки «Витрина». В макете экран прокручивается колесом мыши, полоса прокрутки скрыта.",
+   "readme": "components/ScreenDrinkCard/README.md",
+   "preview": "components/ScreenDrinkCard/preview.html",
+   "screenshots": [
+    "components/ScreenDrinkCard/dark.webp",
+    "components/ScreenDrinkCard/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenFilters",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Фильтры без шума: одна кнопка, одна шторка, чипы только когда фильтр включён",
+   "summary": "Принцип: на экране не больше одной строки управления. Главный переключатель (игрок или период) остаётся на виду, всё остальное спрятано за одной кнопкой «Фильтры» (иконка-ползунки).",
+   "readme": "components/ScreenFilters/README.md",
+   "preview": "components/ScreenFilters/preview.html",
+   "screenshots": [
+    "components/ScreenFilters/dark.webp",
+    "components/ScreenFilters/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenHome",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Главная: кнопка-монолит, рандом дня, лента",
+   "summary": "Главная: кнопка-монолит «Энергоснулся», рандом дня, лента пары.",
+   "readme": "components/ScreenHome/README.md",
+   "preview": "components/ScreenHome/preview.html",
+   "screenshots": [
+    "components/ScreenHome/dark.webp",
+    "components/ScreenHome/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenKeyboardForms",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Клавиатура: добавление банки (название, цена, комментарий, новый тег)",
+   "summary": "Состояния экранов, когда открыта клавиатура: название (с подсказкой «уже есть в базе»), цена (десятичная клавиатура), комментарий (многострочное поле), новый тег (шторка).",
+   "readme": "components/ScreenKeyboardForms/README.md",
+   "preview": "components/ScreenKeyboardForms/preview.html",
+   "screenshots": [
+    "components/ScreenKeyboardForms/dark.webp",
+    "components/ScreenKeyboardForms/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenKeyboardMore",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Клавиатура: чат, название магазина, имя в профиле",
+   "summary": "Чат банки (панель ввода приклеена к клавиатуре, сообщения сдвигаются вверх), название магазина (две буквы на плитке пересчитываются при вводе), имя в профиле. Полный список полей и правил: ScreenKeyboardForms. ",
+   "readme": "components/ScreenKeyboardMore/README.md",
+   "preview": "components/ScreenKeyboardMore/preview.html",
+   "screenshots": [
+    "components/ScreenKeyboardMore/dark.webp",
+    "components/ScreenKeyboardMore/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenKeyboardSearch",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Клавиатура: поиск и выбор (каталог, магазин, график цены) и код партнёра",
+   "summary": "Поиск по каталогу, выбор магазина при добавлении, поиск среди магазинов на графике цены и ввод кода партнёра. Шторки сидят на клавиатуре, результаты обновляются при вводе. Полный список полей и правил: ScreenKeyboardForms. ",
+   "readme": "components/ScreenKeyboardSearch/README.md",
+   "preview": "components/ScreenKeyboardSearch/preview.html",
+   "screenshots": [
+    "components/ScreenKeyboardSearch/dark.webp",
+    "components/ScreenKeyboardSearch/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenLogin",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Вход: ввод с подсказкой iOS, неверные данные, блокировка после попыток, загрузка",
+   "summary": "Четыре состояния: ввод с подсказкой iOS «Пароли», неверные данные, блокировка после попыток, отправка.",
+   "readme": "components/ScreenLogin/README.md",
+   "preview": "components/ScreenLogin/preview.html",
+   "screenshots": [
+    "components/ScreenLogin/dark.webp",
+    "components/ScreenLogin/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenNewDrink",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Новая банка: энергетик и не энергетик, теги и КБЖУ, добавление нового тега с цветом",
+   "summary": "Новая банка, шаги 1–2.",
+   "readme": "components/ScreenNewDrink/README.md",
+   "preview": "components/ScreenNewDrink/preview.html",
+   "screenshots": [
+    "components/ScreenNewDrink/dark.webp",
+    "components/ScreenNewDrink/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenNewDrinkSaved",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Новая банка: фото и итог «фото скоро»",
+   "summary": "Новая банка: фото и итог.",
+   "readme": "components/ScreenNewDrinkSaved/README.md",
+   "preview": "components/ScreenNewDrinkSaved/preview.html",
+   "screenshots": [
+    "components/ScreenNewDrinkSaved/dark.webp",
+    "components/ScreenNewDrinkSaved/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenNotificationSetup",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Уведомления: установка на «Домой», запрос, настройки, выключено в iOS",
+   "summary": "1. **Не на экране «Домой».** В обычной вкладке Safari iOS не даёт подписаться. Экран в три шага: «Поделиться», «На экран „Домой“», открой Энергоську с экрана. Это требование Apple. 2. **Запрос.** Показываем после установки и по тапу «Разрешить уведомления» (iO",
+   "readme": "components/ScreenNotificationSetup/README.md",
+   "preview": "components/ScreenNotificationSetup/preview.html",
+   "screenshots": [
+    "components/ScreenNotificationSetup/dark.webp",
+    "components/ScreenNotificationSetup/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenNotifications",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Уведомления: экран блокировки, внутри приложения, «пока тебя не было», список",
+   "summary": "1. **Экран блокировки.** Системное уведомление: иконка приложения, «ЭНЕРГОСЬКА», время, заголовок и текст. Рисует iOS, мы задаём только заголовок, текст, адрес для тапа и число на иконке. Несколько уведомлений складываются стопкой. 2. **Внутри приложения.** То",
+   "readme": "components/ScreenNotifications/README.md",
+   "preview": "components/ScreenNotifications/preview.html",
+   "screenshots": [
+    "components/ScreenNotifications/dark.webp",
+    "components/ScreenNotifications/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenPartner",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Партнёрство: нет пары и ожидание",
+   "summary": "Партнёрство: нет пары и ожидание.",
+   "readme": "components/ScreenPartner/README.md",
+   "preview": "components/ScreenPartner/preview.html",
+   "screenshots": [
+    "components/ScreenPartner/dark.webp",
+    "components/ScreenPartner/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenPartnerTogether",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Партнёрство: запрос и вместе",
+   "summary": "Партнёрство: запрос и «вместе».",
+   "readme": "components/ScreenPartnerTogether/README.md",
+   "preview": "components/ScreenPartnerTogether/preview.html",
+   "screenshots": [
+    "components/ScreenPartnerTogether/dark.webp",
+    "components/ScreenPartnerTogether/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenPickers",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Выбор записи со шторкой, «Создать» открывает выбор цвета",
+   "summary": "Выбор записи и создание.",
+   "readme": "components/ScreenPickers/README.md",
+   "preview": "components/ScreenPickers/preview.html",
+   "screenshots": [
+    "components/ScreenPickers/dark.webp",
+    "components/ScreenPickers/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenPriceSheet",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Лейбл цены: линии по магазинам, фильтр, валюта, диапазон, жирные точки покупок",
+   "summary": "Открывается нажатием на список «Где брал» на карточке банки. Это общий компонент для любых цен.",
+   "readme": "components/ScreenPriceSheet/README.md",
+   "preview": "components/ScreenPriceSheet/preview.html",
+   "screenshots": [
+    "components/ScreenPriceSheet/dark.webp",
+    "components/ScreenPriceSheet/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenRating",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Оценка: фейдеры с шагом 0.1, затем детали",
+   "summary": "Оценка двумя шагами на весь экран.",
+   "readme": "components/ScreenRating/README.md",
+   "preview": "components/ScreenRating/preview.html",
+   "screenshots": [
+    "components/ScreenRating/dark.webp",
+    "components/ScreenRating/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenRecords",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Бренды, магазины, теги: плитки и шторка правки",
+   "summary": "Справочники: бренды, магазины, теги.",
+   "readme": "components/ScreenRecords/README.md",
+   "preview": "components/ScreenRecords/preview.html",
+   "screenshots": [
+    "components/ScreenRecords/dark.webp",
+    "components/ScreenRecords/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenRegister",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Регистрация: надёжный пароль от iOS, ошибки, готово к отправке, предложение Apple сохранить пароль",
+   "summary": "Только логин и пароль. Четыре состояния: ввод пароля с подсказкой iOS, ошибки, всё верно, окно Apple «Сохранить пароль?».",
+   "readme": "components/ScreenRegister/README.md",
+   "preview": "components/ScreenRegister/preview.html",
+   "screenshots": [
+    "components/ScreenRegister/dark.webp",
+    "components/ScreenRegister/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenSettings",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Настройки: норма воды, выход из аккаунта",
+   "summary": "Настройки: карточка профиля и группы списками.",
+   "readme": "components/ScreenSettings/README.md",
+   "preview": "components/ScreenSettings/preview.html",
+   "screenshots": [
+    "components/ScreenSettings/dark.webp",
+    "components/ScreenSettings/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenShop",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Магазин: рейтинг и энергосы с ценами, редактирование с фото, рейтинг по странам",
+   "summary": "Три экрана в одном макете: страница магазина, редактирование и рейтинг магазинов по странам.",
+   "readme": "components/ScreenShop/README.md",
+   "preview": "components/ScreenShop/preview.html",
+   "screenshots": [
+    "components/ScreenShop/dark.webp",
+    "components/ScreenShop/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenStats",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Цифры: все блоки статистики, 4 экрана прокрутки",
+   "summary": "Цифры: плитки-рекорды.",
+   "readme": "components/ScreenStats/README.md",
+   "preview": "components/ScreenStats/preview.html",
+   "screenshots": [
+    "components/ScreenStats/dark.webp",
+    "components/ScreenStats/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenWater",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Добавить воду: стакан наполняется ползунком, быстрые стаканы, свои стаканы с зажатием",
+   "summary": "Один экран, ничего лишнего. Четыре состояния: основной, зажатый свой стакан (меню), шторка «Свой стакан», ввод числа с клавиатуры.",
+   "readme": "components/ScreenWater/README.md",
+   "preview": "components/ScreenWater/preview.html",
+   "screenshots": [
+    "components/ScreenWater/dark.webp",
+    "components/ScreenWater/light.webp"
+   ]
+  },
+  {
+   "name": "ScreenWaterStats",
+   "group": "Экраны",
+   "kind": "screen",
+   "subtitle": "Цифры: закреплённая водяная сводка, свёрнутая и развёрнутая (неделя, месяц, год; Я, Даша, Оба)",
+   "summary": "Сверху экрана «Цифры» под переключателем Я / Даша / Оба всегда закреплена карточка воды, остальная статистика прокручивается под ней.",
+   "readme": "components/ScreenWaterStats/README.md",
+   "preview": "components/ScreenWaterStats/preview.html",
+   "screenshots": [
+    "components/ScreenWaterStats/dark.webp",
+    "components/ScreenWaterStats/light.webp"
+   ]
+  },
+  {
+   "name": "StickerCan",
+   "group": "Основы",
+   "kind": "component",
+   "subtitle": "Банка-стикер на диске и состояние «фото скоро»",
+   "summary": "Банка-стикер на диске цвета банки.",
+   "readme": "components/StickerCan/README.md",
+   "preview": "components/StickerCan/preview.html",
+   "screenshots": [
+    "components/StickerCan/dark.webp",
+    "components/StickerCan/light.webp"
+   ]
+  },
+  {
+   "name": "WaterButton",
+   "group": "Компоненты",
+   "kind": "component",
+   "subtitle": "Кнопка воды под «Энергоснулся»: половина высоты, цвет по времени суток",
+   "summary": "Лежит на главной ПОД «Энергоснулся», вдвое ниже (98 px против 196). Собрана тем же монолитом: два размытых пятна, зерно, крупное слово «Водичка» снизу, строка-подсказка сверху, справа выпито за день («1,2 из 2 л»). Слабо анимирована: дрейф пятен и две полупроз",
+   "readme": "components/WaterButton/README.md",
+   "preview": "components/WaterButton/preview.html",
+   "screenshots": [
+    "components/WaterButton/dark.webp",
+    "components/WaterButton/light.webp"
+   ]
+  },
+  {
+   "name": "WaterFooter",
+   "group": "Компоненты",
+   "kind": "component",
+   "subtitle": "Футер заполняется водой относительно цели дня: 0, 30, 70, 100%",
+   "summary": "Таб-бар получает слой воды (`.wtr`) под иконками. Уровень: `--lv` от 0 до 1, это выпитое за день, делённое на цель дня. `tabbar(active, water=lv)` в генераторе; при 100% футер залит полностью.",
+   "readme": "components/WaterFooter/README.md",
+   "preview": "components/WaterFooter/preview.html",
+   "screenshots": [
+    "components/WaterFooter/dark.webp",
+    "components/WaterFooter/light.webp"
+   ]
+  }
+ ]
+}
