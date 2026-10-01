@@ -104,6 +104,9 @@ function ensureVisible(el, instant = false) {
 // Родной режим: пока клавиатура открыта, страница удлиняется вниз на её высоту, чтобы под прозрачной клавиатурой
 // всегда было продолжение приложения, а не край документа (иначе просвечивает фон страницы).
 let extTimer = 0;
+// Пока приложение удлинено, панель вкладок приклеиваем к низу экрана: прибавляем прокрутку страницы через transform.
+// Иначе при закрытии клавиатуры она появляется посреди экрана и «опускается» вместе с возвратом страницы.
+const syncTab = () => root.style.setProperty('--sy', (root.dataset.ext ? Math.round(scrollY) : 0) + 'px');
 function setExt(px) { root.style.setProperty('--kbext', px + 'px'); root.dataset.ext = '1'; }
 function clearExt() {
   clearTimeout(extTimer);
@@ -112,6 +115,7 @@ function clearExt() {
     if (root.dataset.kb === 'open' || isEditable(document.activeElement)) return;
     if (scrollY > 1 && n < 10) { setTimeout(() => tryClear(n + 1), 150); return; }
     delete root.dataset.ext;
+    syncTab();
   };
   setTimeout(() => tryClear(0), 300);
 }
@@ -205,6 +209,7 @@ const schedule = () => { if (!raf) raf = requestAnimationFrame(sync); };
 
 export function initViewport() {
   root.dataset.kb = 'closed';
+  window.addEventListener('scroll', syncTab, { passive: true });
   root.dataset.kbm = MODE;
 
   const reset = () => {
@@ -217,7 +222,7 @@ export function initViewport() {
 
   if (vv) {
     vv.addEventListener('resize', () => { mark('vv.resize'); schedule(); });
-    vv.addEventListener('scroll', () => { mark('vv.scroll'); schedule(); });
+    vv.addEventListener('scroll', () => { mark('vv.scroll'); syncTab(); schedule(); });
   }
 
   document.addEventListener('focusin', e => {
