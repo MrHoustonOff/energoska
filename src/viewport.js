@@ -243,6 +243,7 @@ export function initViewport() {
   document.addEventListener('focusout', e => {
     startRec('close'); mark('focusout');
     if (isEditable(e.relatedTarget)) return; // фокус переходит в другое поле
+    schedule(); // панель вкладок должна вернуться сразу, а не ждать событий iOS
     // Страницу возвращаем плавно и сразу, пока клавиатура ещё уезжает (раньше: мгновенный прыжок через 60 мс = рывок)
     requestAnimationFrame(() => {
       if (!isEditable(document.activeElement) && scrollY > 0) window.scrollTo({ top: 0, behavior: 'smooth' });
