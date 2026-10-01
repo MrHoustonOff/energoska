@@ -98,6 +98,12 @@ function ensureVisible(el, instant = false) {
   mark(instant ? 'fit!' : 'fit');
 }
 
+// Родной режим: пока клавиатура открыта, страница удлиняется вниз на её высоту, чтобы под прозрачной клавиатурой
+// всегда было продолжение приложения, а не край документа (иначе просвечивает фон страницы).
+let extTimer = 0;
+function setExt(px) { root.style.setProperty('--kbext', px + 'px'); root.dataset.ext = '1'; }
+function clearExt() { clearTimeout(extTimer); setTimeout(() => { if (root.dataset.kb !== 'open') delete root.dataset.ext; }, 350); }
+
 function releasePad() {
   clearTimeout(padTimer);
   const sc = document.querySelector('.screen-scroll');
@@ -134,7 +140,7 @@ function sync() {
   if (was !== root.dataset.kb) {
     mark('kb=' + root.dataset.kb);
     logAdd(`клавиатура ${root.dataset.kb === 'open' ? 'ОТКРЫЛАСЬ' : 'закрылась'}  ${snap()}`);
-    if (root.dataset.kb === 'closed' && was === 'open') setTimeout(() => { if (root.dataset.kb === 'closed') releasePad(); }, 250);
+    if (root.dataset.kb === 'closed' && was === 'open') setTimeout(() => { if (root.dataset.kb === 'closed') { releasePad(); clearExt(); } }, 250);
   }
 
   // Высота каркаса. Документ не должен быть выше окна: iOS сжимает окно при клавиатуре и иначе прокручивает документ
@@ -151,7 +157,8 @@ function sync() {
 
   if (kb > 80) {
     if (Math.abs(store.get('kbh', 0) - kb) > 10) store.set('kbh', kb);
-    if (MODE !== 'native') {
+    if (MODE === 'native') setExt(kb);
+    else {
       root.style.setProperty('--kbpad', kb + 'px');
       root.dataset.pad = '1';
       ensureVisible(document.activeElement);
@@ -183,6 +190,11 @@ export function initViewport() {
     if (!isEditable(e.target)) return;
     root.dataset.edit = '1'; // панель вкладок выходит из потока сразу (иначе её место обрезает список)
     if (MODE === 'fluid') root.dataset.editing = '1'; // до того, как iOS начнёт сжимать окно
+    if (MODE === 'native' && root.dataset.kb !== 'open') {
+      setExt(store.get('kbh', Math.round(baseH * 0.48))); // заранее, до решения iOS (оно приходит через ~90 мс)
+      clearTimeout(extTimer);
+      extTimer = setTimeout(() => { if (root.dataset.kb !== 'open') clearExt(); }, 900); // клавиатуры нет (аппаратная)
+    }
     startRec('open'); mark('focusin');
     preposition(e.target);
     schedule();
