@@ -64,7 +64,7 @@ body {
 :root:not([data-kbm='native'])[data-kb='open'] #app { transform: translateY(var(--vvy)); } /* только если iOS сдвинул панораму */
 #app { transition: transform .32s cubic-bezier(.22, .9, .3, 1); } /* iOS присылает конечный сдвиг сразу, а сам едет ~300 мс: гасим сдвиг плавно, а не скачком */
 :root[data-pad] .screen-scroll { padding-bottom: calc(var(--tab-h, 94px) + var(--space-6) + var(--kbpad, 0px)); }
-:root[data-edit] .tabbar, :root[data-kb='open'] .tabbar { opacity: 0; pointer-events: none; }
+:root[data-edit] .tabbar, :root[data-kb='open'] .tabbar { opacity: 0; pointer-events: none; transition-delay: 0s; } /* гаснет сразу, без задержки */
 
 /* ───── Шапка и панель: safe-area ровно один раз, в самих компонентах ───── */
 .header {
@@ -93,7 +93,8 @@ body {
   padding: var(--space-2) var(--space-2) max(var(--sab), var(--space-2));
   background: var(--surface-100);
   box-shadow: var(--shadow-panel);
-  transition: opacity .18s;
+  /* появление после закрытия клавиатуры чуть позже: иначе оно совпадает с уходом плавающей панели клавиатуры и даёт визуальный шум */
+  transition: opacity .22s ease var(--tab-delay, .22s);
 }
 .tab {
   flex: 1; min-height: var(--tap);
