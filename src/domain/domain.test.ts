@@ -46,3 +46,26 @@ describe('идентификаторы и время', () => {
     expect(isIsoUtc('вчера')).toBe(false);
   });
 });
+
+import { attemptsText, formatCountdown, loginError, passwordError, passwordStrength, repeatError, strengthBars } from './index';
+import { attemptsScenarios, countdownScenarios, strengthScenarios } from './scenarios';
+
+describe('экраны входа и регистрации', () => {
+  it.each(strengthScenarios)('надёжность «$password» → $expect', s => expect(passwordStrength(s.password)).toBe(s.expect));
+  it('деления индикатора', () => expect(['empty', 'weak', 'medium', 'strong'].map(s => strengthBars(s as 'weak'))).toEqual([0, 1, 2, 3]));
+  it.each(attemptsScenarios)('попытки: $left', s => expect(attemptsText(s.left)).toBe(s.expect));
+  it.each(countdownScenarios)('таймер: $seconds', s => expect(formatCountdown(s.seconds)).toBe(s.expect));
+  it('логин', () => {
+    expect(loginError('')).toBe('Введите логин');
+    expect(loginError('ab')).not.toBeNull();
+    expect(loginError('a b c')).not.toBeNull();
+    expect(loginError('vova_26.by')).toBeNull();
+    expect(loginError('x'.repeat(21))).not.toBeNull();
+  });
+  it('пароль и повтор', () => {
+    expect(passwordError('1234567')).toMatch(/минимум 8/);
+    expect(passwordError('12345678')).toBeNull();
+    expect(repeatError('a', 'b')).toBe('Пароли не совпадают');
+    expect(repeatError('a', 'a')).toBeNull();
+  });
+});

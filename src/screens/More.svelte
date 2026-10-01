@@ -3,6 +3,8 @@
   Пока работает только служебный пункт «Лаборатория»: стенд для проверки клавиатуры, уведомлений и отладки.
 -->
 <script lang="ts">
+  import { signOut } from '../auth/session.svelte';
+
   let { go }: { go: (id: string) => void } = $props();
 
   const ITEMS = [
@@ -24,4 +26,8 @@
 <p class="caption" style="margin-top:24px">Служебное</p>
 <button class="menu-row" onclick={() => go('lab')}>
   <span>Лаборатория</span><span class="caption">dev</span>
+</button>
+
+<button class="menu-row" onclick={signOut}>
+  <span>Выйти</span><span class="caption">аккаунт</span>
 </button>

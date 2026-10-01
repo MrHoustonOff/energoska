@@ -49,3 +49,34 @@ export const priceScenarios: { name: string; a: Money; b: Money; expect: number 
   { name: 'равны', a: { amount: 9900, currency: 'RUB' }, b: { amount: 9900, currency: 'RUB' }, expect: 0 },
   { name: 'BYN и RUB не сравниваются', a: { amount: 250, currency: 'BYN' }, b: { amount: 8000, currency: 'RUB' }, expect: null },
 ];
+
+/** Надёжность пароля: пароль → уровень индикатора. */
+export const strengthScenarios: { password: string; expect: 'empty' | 'weak' | 'medium' | 'strong' }[] = [
+  { password: '', expect: 'empty' },
+  { password: 'abc', expect: 'weak' },
+  { password: 'Ab1!xyz', expect: 'weak' },                 // короче 8
+  { password: 'abcdefgh', expect: 'weak' },                // 8, один класс
+  { password: 'abcdefgh1', expect: 'weak' },               // 9, два класса
+  { password: 'abcdefgh12', expect: 'medium' },            // 10, два класса
+  { password: 'Abcdef12', expect: 'medium' },              // 8, три класса
+  { password: 'correct-horse-1', expect: 'strong' },       // 15, три класса
+  { password: 'Abcdefgh1234', expect: 'strong' },          // 12, три класса
+  { password: 'qwertyuiopasdfghjkl;', expect: 'strong' },  // 21
+  { password: 'длиннаяпарольнаяфраза', expect: 'strong' }, // 21, кириллица считается «прочими»
+];
+
+/** «Осталось N попытки». */
+export const attemptsScenarios: { left: number; expect: string }[] = [
+  { left: 1, expect: 'Осталась 1 попытка' },
+  { left: 2, expect: 'Осталось 2 попытки' },
+  { left: 4, expect: 'Осталось 4 попытки' },
+  { left: 5, expect: 'Осталось 5 попыток' },
+  { left: 11, expect: 'Осталось 11 попыток' },
+  { left: 21, expect: 'Осталась 21 попытка' },
+];
+
+/** Таймер блокировки. */
+export const countdownScenarios: { seconds: number; expect: string }[] = [
+  { seconds: 60, expect: '1:00' }, { seconds: 42, expect: '0:42' }, { seconds: 41.2, expect: '0:42' },
+  { seconds: 5, expect: '0:05' }, { seconds: 0, expect: '0:00' }, { seconds: -3, expect: '0:00' }, { seconds: 125, expect: '2:05' },
+];

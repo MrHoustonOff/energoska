@@ -64,6 +64,7 @@ src/
   styles.css               каркас и стили (подробные комментарии)
   debug.ts, eventlog.ts    отладка: лог тапов/фокуса, копирование отчёта, красный фон
   push.js                  клиентская часть push (заморожено; push.d.ts: типы)
+  auth/                    вход и регистрация (Login, Register, Field, session.svelte.ts)
   store.ts                 Mock-Store (localStorage)
   screens/                 экраны-компоненты: реестр index.ts, Placeholder, More, Lab (Лаборатория)
 tools/

@@ -1,0 +1,97 @@
+/* Экраны входа и регистрации. Только токены (docs-src/tokens/tokens.css); новых цветов, радиусов и теней нет.
+   Анимация: transform (дыхание кругов, спиннер). Каркас, клавиатура и поля ввода из styles.css не переопределяются:
+   нативный <input> внутри плашки лишь теряет собственный фон/рамку (плашку рисует .au-fld). */
+
+.au { padding-top: calc(var(--sat) + var(--space-3)); }
+.au form { display: block; }
+
+.au-brand { display: flex; align-items: center; gap: var(--space-3); min-height: var(--tap); margin-bottom: var(--space-3); }
+.au-logo { width: 36px; height: 36px; display: grid; place-items: center; border-radius: var(--radius-md); background: var(--ink); color: var(--bg); }
+.au-logo svg { width: 22px; height: 22px; fill: currentColor; }
+.au-brand-name { font: 700 20px/1 var(--font-display); }
+
+.au-title { margin: var(--space-4) 0 var(--space-1); font: 700 24px/1.1 var(--font-display); }
+.au-sub { margin: 0 0 var(--space-4); color: var(--ink-muted); font: 400 13px/1.4 var(--font-display); }
+
+/* Инфографика */
+.au-info { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-2); height: 136px; }
+.au-info .col { display: grid; grid-template-rows: 1fr 46px; gap: var(--space-2); min-height: 0; }
+.blk { position: relative; display: grid; place-items: center; overflow: hidden; border-radius: var(--radius-md); }
+.blk.blue { background: var(--can-gorilla); }
+.blk.lime { background: var(--can-burn); }
+.blk.pink { background: var(--can-lit); }
+.blk.red { background: var(--can-adrenaline); }
+.blk > i { grid-area: 1 / 1; border-radius: var(--radius-full); display: block; }
+.ring { width: 76px; height: 76px; border: 14px solid; box-sizing: border-box; }
+.ring.lime { border-color: var(--can-burn); }
+.ring.black { border-color: var(--on-accent); }
+.dot.black { width: 22px; height: 22px; background: var(--on-accent); }
+.dot.lime { width: 20px; height: 20px; background: var(--can-burn); }
+.disc.pink { width: 44px; height: 44px; background: var(--can-lit); }
+.blk.pink .dot { width: 18px; height: 18px; }
+.breathe { will-change: transform; animation: breathe 6s ease-in-out infinite alternate; }
+.breathe.b { animation-duration: 5s; }
+.breathe.c { animation-duration: 7s; }
+.breathe.d { animation-duration: 6.5s; }
+@keyframes breathe { from { transform: scale(1); } to { transform: scale(1.07); } }
+:root[data-edit] .breathe { animation-play-state: paused; } /* пока идёт ввод, анимации стоят */
+
+/* Плашка поля */
+.au-fld { display: flex; align-items: center; margin-bottom: var(--space-3); background: var(--surface-200); border: 1px solid var(--line); border-radius: var(--radius-md); }
+.au-fld:focus-within { box-shadow: var(--shadow-focus); }
+.au-fld.invalid { border-color: var(--danger); }
+.au-fld.disabled { opacity: .45; }
+.au-fld label { flex: 1; min-width: 0; display: block; padding: var(--space-2) var(--space-4) var(--space-2); }
+.au-cap { display: block; margin-bottom: 2px; color: var(--ink-muted); font: 500 11px/1.3 var(--font-display); }
+.au-fld input { display: block; width: 100%; min-height: 28px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.au-tick { width: 22px; height: 22px; margin-right: var(--space-4); flex: none; fill: none; stroke: var(--me-mark); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.au-eye { flex: none; width: var(--tap); height: var(--tap); margin-right: var(--space-2); display: grid; place-items: center; background: none; border: 0; color: var(--ink-muted); cursor: pointer; }
+.au-eye svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.au-eye[aria-pressed='true'] { color: var(--ink); }
+
+/* Подписи под полями (всегда со словом или иконкой, не только цветом) */
+.au-error, .au-ok, .au-note { margin: calc(-1 * var(--space-1)) 0 var(--space-3); font: 400 12px/1.4 var(--font-display); }
+.au-error { display: flex; gap: var(--space-2); color: var(--danger); }
+.au-error span { flex: none; font-weight: 700; }
+.au-ok { display: flex; align-items: center; gap: var(--space-2); color: var(--me-mark); }
+.au-ok svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.au-note { color: var(--ink-muted); }
+.center { justify-content: center; text-align: center; }
+
+/* Чипы-подсказки логина */
+.au-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
+.au-chip { min-height: var(--tap); padding: 0 var(--space-4); background: var(--surface-200); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-md); font: 500 13px var(--font-display); cursor: pointer; }
+
+/* Индикатор надёжности: три деления */
+.au-meter { display: flex; align-items: center; gap: var(--space-3); margin: calc(-1 * var(--space-1)) 0 var(--space-3); }
+.au-meter .bars { flex: 1; display: flex; gap: var(--space-1); }
+.au-meter i { flex: 1; height: 4px; border-radius: var(--radius-sm); background: var(--line); }
+.au-meter[data-level='weak'] i.on { background: var(--danger); }
+.au-meter[data-level='medium'] i.on { background: var(--warning); }
+.au-meter[data-level='strong'] i.on { background: var(--me-mark); }
+.au-meter .lvl { font: 600 12px var(--font-display); }
+.au-meter[data-level='weak'] .lvl { color: var(--danger); }
+.au-meter[data-level='medium'] .lvl { color: var(--warning); }
+.au-meter[data-level='strong'] .lvl { color: var(--me-mark); }
+
+/* Блокировка после неудач */
+.au-lock { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); padding: var(--space-3) var(--space-4); border: 1px solid var(--warning); border-radius: var(--radius-md); color: var(--warning); font: 400 12px/1.4 var(--font-display); }
+.au-timer { flex: none; font: 600 32px/1 var(--font-numerals); }
+
+/* Главная кнопка: всегда светлая (как .cta в эталоне) */
+.au-cta { width: 100%; min-height: 52px; display: flex; align-items: center; justify-content: center; gap: var(--space-2); margin: var(--space-2) 0 var(--space-3); border: 0; border-radius: var(--radius-md); background: var(--ink); color: var(--bg); font: 700 14px var(--font-display); letter-spacing: .03em; cursor: pointer; }
+.au-cta:active:not(:disabled) { transform: scale(.98); }
+.au-cta:disabled { cursor: default; }
+.au-cta:disabled:not([aria-busy='true']) { background: var(--surface-200); color: var(--ink-muted); }
+.au-spin { width: 16px; height: 16px; box-sizing: border-box; border: 2px solid currentColor; border-right-color: transparent; border-radius: var(--radius-full); animation: au-rot .8s linear infinite; }
+@keyframes au-rot { to { transform: rotate(360deg); } }
+
+.au-switch { margin: var(--space-3) 0 0; text-align: center; color: var(--ink-muted); font: 400 13px var(--font-display); }
+.au-switch button { min-height: var(--tap); padding: 0 var(--space-1); background: none; border: 0; color: var(--ink); font: 700 13px var(--font-display); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+/* Верхняя полоса регистрации: «назад» слева, название по центру */
+.au-bar { display: flex; align-items: center; justify-content: space-between; min-height: var(--tap); margin-bottom: var(--space-2); }
+.au-bar-title { font: 600 13px var(--font-display); }
+.au-bar-spacer { width: var(--tap); }
+.au-back { width: var(--tap); height: var(--tap); display: grid; place-items: center; background: var(--surface-200); border: 0; border-radius: var(--radius-md); color: var(--ink); cursor: pointer; }
+.au-back svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
