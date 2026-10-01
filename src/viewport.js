@@ -1,5 +1,8 @@
 // Запуск и клавиатура на iOS Safari (standalone). Рецепт проверен на iPhone, см. docs-src/SAFARI_PWA_BIBLE.md §4.2.
-// Высота каркаса = visualViewport + gap (недостающие пиксели окна в iOS 26). Клавиатура: каркас сжимается до видимой области.
+// Каркас: высота = visualViewport + gap. Клавиатура НЕ меняет размер окна: она накрывает низ, а поле заранее
+// уезжает вверх плавной прокруткой (iOS присылает новые размеры с задержкой ~90 мс, ждать их = рывок).
+import * as store from './store.js';
+
 const root = document.documentElement;
 const vv = window.visualViewport;
 const isEditable = el =>
@@ -8,21 +11,20 @@ const isEditable = el =>
 const listeners = new Set();
 export const onViewportChange = fn => listeners.add(fn);
 
-// Запись «что и когда пришло от iOS» вокруг фокуса: нужна, чтобы настраивать плавность по цифрам, а не вслепую.
+let gap = 0;
+let baseH = vv ? vv.height : innerHeight;
+let baseW = vv ? vv.width : innerWidth;
+let raf = 0, padTimer = 0, lastFit = null;
+
+// ───── запись событий вокруг фокуса (для настройки плавности по цифрам) ─────
 const rec = { open: [], close: [] };
 let cur = null, t0 = 0;
 function startRec(kind) { cur = rec[kind]; cur.length = 0; t0 = performance.now(); setTimeout(() => { if (cur === rec[kind]) cur = null; }, 1400); }
 function mark(tag) {
-  if (!cur || !vv) return;
-  if (cur.length > 60) return;
+  if (!cur || !vv || cur.length > 60) return;
   cur.push(`+${Math.round(performance.now() - t0)} ${tag} in${innerHeight} vv${Math.round(vv.height)}@${Math.round(vv.offsetTop)} y${Math.round(scrollY)}`);
 }
 export const recording = kind => rec[kind].join('\n') || '—';
-
-let gap = 0;
-let baseH = vv ? vv.height : innerHeight;
-let baseW = vv ? vv.width : innerWidth;
-let raf = 0;
 
 export const isStandalone = () =>
   navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
@@ -57,8 +59,51 @@ export function metrics() {
     `gap: ${gap}px`,
     `app-h: ${root.style.getPropertyValue('--app-h')}`,
     `safe-area t r b l: ${safeAreaInsets()}`,
-    `клавиатура: ${root.dataset.kb}`,
+    `клавиатура: ${root.dataset.kb} (запас ${root.style.getPropertyValue('--kbpad') || '0'})`,
   ].join('\n');
+}
+
+// ───── клавиатура: запас снизу + плавная докрутка поля ─────
+const kbPad = () => parseFloat(root.style.getPropertyValue('--kbpad')) || 0;
+
+function ensureVisible(el) {
+  const sc = el.closest('.screen-scroll');
+  if (!sc || !vv) return;
+  const open = root.dataset.kb === 'open';
+  if (!open && !root.dataset.pad) return;
+  const pad = 24;
+  // клавиатура уже открыта: vv.height это область над ней; ещё нет: вычитаем ожидаемую высоту
+  const limit = vv.offsetTop + vv.height - (open ? 0 : kbPad()) - pad;
+  const r = el.getBoundingClientRect(), c = sc.getBoundingClientRect();
+  let target = null;
+  if (r.bottom > limit) target = sc.scrollTop + r.bottom - limit;
+  else if (r.top < c.top + pad) target = sc.scrollTop - ((c.top + pad) - r.top);
+  if (target === null || (lastFit !== null && Math.abs(target - lastFit) < 2)) return;
+  lastFit = target;
+  sc.scrollTo({ top: target, behavior: 'smooth' }); // на композиторе, без рывка
+  mark('fit');
+}
+
+function releasePad() {
+  clearTimeout(padTimer);
+  const sc = document.querySelector('.screen-scroll');
+  if (sc) {
+    const max = Math.max(0, sc.scrollHeight - sc.clientHeight - kbPad());
+    if (sc.scrollTop > max) sc.scrollTo({ top: max, behavior: 'smooth' }); // вернуть плавно, до снятия запаса
+  }
+  setTimeout(() => { if (root.dataset.kb !== 'open') { delete root.dataset.pad; lastFit = null; } }, 350);
+}
+
+// Фокус пошёл, а размеры от iOS ещё не пришли: двигаем поле сразу по запомненной высоте клавиатуры.
+function preposition(el) {
+  if (root.dataset.kb === 'open') { ensureVisible(el); return; }
+  const K = store.get('kbh', Math.round(baseH * 0.48));
+  root.style.setProperty('--kbpad', K + 'px');
+  root.dataset.pad = '1';
+  lastFit = null;
+  ensureVisible(el);
+  clearTimeout(padTimer);
+  padTimer = setTimeout(() => { if (root.dataset.kb !== 'open') releasePad(); }, 900); // клавиатуры нет (аппаратная)
 }
 
 function sync() {
@@ -71,32 +116,25 @@ function sync() {
   const kb = editing ? Math.max(0, Math.round(baseH - vv.height)) : 0;
   const was = root.dataset.kb;
   root.dataset.kb = kb > 80 ? 'open' : 'closed';
-  if (was !== root.dataset.kb) mark('kb=' + root.dataset.kb);
-  root.style.setProperty('--app-h', Math.round(vv.height + vv.offsetTop + (editing ? 0 : gap)) + 'px');
-  // клавиатура открыта: каркас = видимая область + зона под плавающей панелью ^ v ✓ (её iOS в visualViewport не включает,
-  // но панель прозрачная и контент под ней должен продолжаться, а не обрываться чёрным). Сдвиг панорамы гасим transform'ом.
-  const under = editing && kb > 80 ? Math.max(0, Math.min(100, Math.round(innerHeight - vv.height))) : 0;
-  root.style.setProperty('--vvh', Math.round(vv.height + under) + 'px');
-  root.style.setProperty('--kbx', under + 'px');
-  root.style.setProperty('--vvy', Math.round(vv.offsetTop) + 'px');
-  // окно сжимается постепенно: поле надо возвращать в видимую зону после КАЖДОГО изменения размера
-  if (editing && root.dataset.kb === 'open') ensureVisible(document.activeElement);
+  if (was !== root.dataset.kb) {
+    mark('kb=' + root.dataset.kb);
+    if (root.dataset.kb === 'closed' && was === 'open') setTimeout(() => { if (root.dataset.kb === 'closed') releasePad(); }, 250);
+  }
+
+  // Размер каркаса меняем ТОЛЬКО без поля ввода: клавиатура окно не сжимает
+  if (!editing) root.style.setProperty('--app-h', Math.round(vv.height + vv.offsetTop + gap) + 'px');
+  root.style.setProperty('--vvy', Math.round(vv.offsetTop) + 'px'); // если iOS всё же сдвинул панораму, гасим transform'ом
+
+  if (kb > 80) {
+    if (Math.abs(store.get('kbh', 0) - kb) > 10) store.set('kbh', kb);
+    root.style.setProperty('--kbpad', kb + 'px');
+    root.dataset.pad = '1';
+    ensureVisible(document.activeElement);
+  }
   listeners.forEach(fn => fn());
 }
 
 const schedule = () => { if (!raf) raf = requestAnimationFrame(sync); };
-
-// Поле не должно оказаться под клавиатурой: докручиваем ближайший скролл-контейнер, окно не трогаем.
-function ensureVisible(el) {
-  const sc = el.closest('.screen-scroll');
-  if (!sc) return;
-  const under = parseFloat(root.style.getPropertyValue('--kbx')) || 0; // поле держим над панелью ^ v ✓
-  const r = el.getBoundingClientRect(), c = sc.getBoundingClientRect(), pad = 24;
-  const bottom = c.bottom - under;
-  // scrollTo с smooth едет на композиторе, а не рывком; повторные вызовы безвредны (если поле на месте, ничего не делаем)
-  if (r.bottom > bottom - pad) { sc.scrollTo({ top: sc.scrollTop + r.bottom - (bottom - pad), behavior: 'smooth' }); mark('fit'); }
-  else if (r.top < c.top + pad) sc.scrollTo({ top: sc.scrollTop - ((c.top + pad) - r.top), behavior: 'smooth' });
-}
 
 export function initViewport() {
   root.dataset.kb = 'closed';
@@ -115,9 +153,10 @@ export function initViewport() {
   }
 
   document.addEventListener('focusin', e => {
-    if (isEditable(e.target)) { startRec('open'); mark('focusin'); }
+    if (!isEditable(e.target)) return;
+    startRec('open'); mark('focusin');
+    preposition(e.target);
     schedule();
-    if (isEditable(e.target)) [120, 450].forEach(t => setTimeout(() => { if (document.activeElement === e.target) ensureVisible(e.target); }, t));
   });
   document.addEventListener('focusout', () => {
     startRec('close'); mark('focusout');

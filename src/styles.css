@@ -42,10 +42,10 @@ body {
   padding-right: var(--sar);
   background: var(--bg);
 }
-/* клавиатура открыта: каркас = видимая область, панель вкладок убираем */
-:root[data-kb='open'] #app { height: var(--vvh); transform: translateY(var(--vvy)); }
-:root[data-kb='open'] .tabbar { display: none; }
-:root[data-kb='open'] .screen-scroll { padding-bottom: calc(var(--space-6) + var(--kbx, 0px)); }
+/* клавиатура: окно НЕ сжимаем (рывок). Она накрывает низ, а списку добавляется запас снизу (--kbpad) для докрутки поля */
+:root[data-kb='open'] #app { transform: translateY(var(--vvy)); } /* только если iOS сдвинул панораму */
+:root[data-pad] .screen-scroll { padding-bottom: calc(var(--space-6) + var(--kbpad, 0px)); }
+:root[data-kb='open'] .tabbar { opacity: 0; pointer-events: none; }
 
 /* ───── Шапка и панель: safe-area ровно один раз, в самих компонентах ───── */
 .header {
@@ -74,6 +74,7 @@ body {
   padding: var(--space-2) var(--space-2) max(var(--sab), var(--space-2));
   background: var(--surface-100);
   box-shadow: var(--shadow-panel);
+  transition: opacity .15s;
 }
 .tab {
   flex: 1; min-height: var(--tap);
