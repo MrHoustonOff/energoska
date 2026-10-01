@@ -1,0 +1,666 @@
+openapi: 3.0.3
+info:
+  title: Энергоська API
+  version: 0.1.0
+  description: |
+    Контракт между фронтендом и бэкендом. Единый источник правды: типы `src/api/types.gen.ts` генерируются отсюда
+    (`npm run api:types`), мок и будущий HTTP-клиент проверяются одними контрактными тестами (`src/api/contract/`).
+
+    ## Соглашения (обязательны для каждого нового эндпоинта)
+    1. **Идентификаторы** — UUIDv7, **создаёт клиент** (поле `id` в теле POST). Так запись можно показать сразу и отправить позже из очереди.
+    2. **Идемпотентность.** Повторный POST с тем же `id` и тем же телом возвращает уже созданный ресурс (200, не 201) и ничего не дублирует.
+       Тот же `id` с другим телом — 409 `id_conflict`.
+    3. **Время** — ISO-8601 в UTC с `Z` (`2026-10-02T08:15:00Z`). «День» (`local_day`, `YYYY-MM-DD`) считает сервер по часовому поясу пары
+       и границе суток (см. `Couple.timezone`, `Couple.day_boundary_hour`); клиент свой день для правил не считает.
+    4. **Оценка** — целое число десятых, 0..100 (7.4 → 74). Шаг 0.1 обеспечивается целыми числами.
+    5. **Деньги** — целое число минимальных единиц (копейки) + `currency` (`BYN` | `RUB`). Цены разных валют не сравниваются и не складываются.
+    6. **Ошибки** — `application/problem+json` (RFC 9457) с полем `code` (машинный код, список в схеме `Problem`).
+    7. **Пагинация** — курсором: `?limit=&cursor=`, ответ `{ items, next_cursor }` (`next_cursor: null` — конец).
+    8. **Изоляция.** Все данные принадлежат паре (`couple_id`); пользователь видит только данные своей пары. Чужое = 404.
+    9. **Аутентификация** — cookie-сессия (HttpOnly). Без сессии 401 `unauthorized`.
+servers:
+  - url: /api
+tags:
+  - { name: auth, description: 'Регистрация, вход, профиль' }
+  - { name: couple, description: Пара }
+  - { name: drinks, description: Банки }
+  - { name: intakes, description: Записи «выпил» }
+  - { name: ratings, description: Оценки }
+  - { name: water, description: Вода }
+security:
+  - session: []
+
+paths:
+  /auth/login-available:
+    get:
+      tags: [auth]
+      operationId: loginAvailable
+      summary: Свободен ли логин (проверка на лету при регистрации)
+      security: []
+      parameters:
+        - { name: login, in: query, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Результат; при занятом логине `suggestions` — до 3 свободных вариантов
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginAvailability' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /auth/register:
+    post:
+      tags: [auth]
+      operationId: register
+      summary: Регистрация (и вход)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201':
+          description: Создан, сессия открыта
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '200':
+          description: Повтор с тем же id (идемпотентность)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: Вход. Неверная пара логин/пароль не раскрывает, какое поле ошибочно
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Сессия открыта
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401':
+          description: 'Неверные данные (`code: invalid_credentials`, `attempts_left`)'
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '429':
+          description: 'Блокировка после серии неудач (`code: rate_limited`, `retry_after_seconds`)'
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+  /auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: Выход (сессия закрывается)
+      responses:
+        '204': { description: Готово }
+  /me:
+    get:
+      tags: [auth]
+      operationId: getMe
+      summary: Текущий пользователь
+      responses:
+        '200':
+          description: Профиль
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Problem' }
+    patch:
+      tags: [auth]
+      operationId: updateMe
+      summary: Изменить профиль (имя, цвет, норма воды)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserPatch' }
+      responses:
+        '200':
+          description: Обновлённый профиль
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /couple:
+    get:
+      tags: [couple]
+      operationId: getCouple
+      summary: Состояние пары (нет партнёра / входящий запрос / вместе)
+      responses:
+        '200':
+          description: Пара и состояние
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CoupleState' }
+    patch:
+      tags: [couple]
+      operationId: updateCouple
+      summary: Настройки пары (часовой пояс)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CouplePatch' }
+      responses:
+        '200':
+          description: Обновлённая пара
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CoupleState' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /couple/join:
+    post:
+      tags: [couple]
+      operationId: joinCouple
+      summary: Ввести код партнёра (создаёт входящий запрос у владельца кода)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/JoinRequest' }
+      responses:
+        '200':
+          description: Запрос отправлен (повтор безопасен)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CoupleState' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /couple/requests/{id}/accept:
+    post:
+      tags: [couple]
+      operationId: acceptRequest
+      summary: Принять запрос в пару (данные пар объединяются)
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: Вы вместе
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CoupleState' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /couple/requests/{id}/decline:
+    post:
+      tags: [couple]
+      operationId: declineRequest
+      summary: Отклонить запрос
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: Запрос отклонён
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CoupleState' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /drinks:
+    get:
+      tags: [drinks]
+      operationId: listDrinks
+      summary: Банки пары (новые сверху)
+      parameters:
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: Страница
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DrinkPage' }
+    post:
+      tags: [drinks]
+      operationId: createDrink
+      summary: Добавить банку
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DrinkCreate' }
+      responses:
+        '201':
+          description: Создана
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Drink' }
+        '200':
+          description: Повтор с тем же id (идемпотентность)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Drink' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /drinks/{id}:
+    get:
+      tags: [drinks]
+      operationId: getDrink
+      summary: Банка по id
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: Банка
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Drink' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /drinks/{id}/ratings:
+    get:
+      tags: [ratings]
+      operationId: listRatings
+      summary: Оценки банки (обеих сторон пары, новые сверху)
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: Список
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Rating' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /ratings:
+    post:
+      tags: [ratings]
+      operationId: createRating
+      summary: Поставить оценку (каждая оценка — новая запись, история сохраняется)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RatingCreate' }
+      responses:
+        '201':
+          description: Создана; `total` считает сервер
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Rating' }
+        '200':
+          description: Повтор с тем же id (идемпотентность)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Rating' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /intakes:
+    get:
+      tags: [intakes]
+      operationId: listIntakes
+      summary: Записи «выпил» пары (новые сверху)
+      parameters:
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+        - { name: day, in: query, required: false, description: 'Только за этот день пары (YYYY-MM-DD)', schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Страница
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IntakePage' }
+    post:
+      tags: [intakes]
+      operationId: createIntake
+      summary: Записать «выпил»
+      description: |
+        Лимит — 2 энергетика в день на человека. Третью (и далее) можно записать только с `over_limit: true`,
+        иначе 409 `limit_exceeded`. Флаг при записи в пределах лимита и для не-энергетиков игнорируется (сохраняется `false`):
+        так записи из офлайн-очереди, пришедшие не по порядку, не ломаются.
+        Неэнергетики (`is_energy: false`) в счёт не идут.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IntakeCreate' }
+      responses:
+        '201':
+          description: Записано
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Intake' }
+        '200':
+          description: Повтор с тем же id (идемпотентность)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Intake' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /intakes/day-summary:
+    get:
+      tags: [intakes]
+      operationId: getDaySummary
+      summary: Сколько энергетиков выпито за день (по умолчанию — сегодня по часам пары)
+      parameters:
+        - { name: day, in: query, required: false, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Сводка за день для текущего пользователя
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DaySummary' }
+  /water:
+    get:
+      tags: [water]
+      operationId: getWater
+      summary: Вода за день текущего пользователя (по умолчанию — сегодня)
+      parameters:
+        - { name: day, in: query, required: false, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Сводка
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WaterDay' }
+    post:
+      tags: [water]
+      operationId: addWater
+      summary: Записать порцию воды (25..2000 мл)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WaterCreate' }
+      responses:
+        '201':
+          description: Записано
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WaterEntry' }
+        '200':
+          description: Повтор с тем же id (идемпотентность)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WaterEntry' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: sid
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/Uuid' }
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 24 }
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema: { type: string }
+  responses:
+    Problem:
+      description: Ошибка
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Uuid:
+      type: string
+      format: uuid
+      description: UUIDv7, создаёт клиент
+    Timestamp:
+      type: string
+      format: date-time
+      description: ISO-8601 UTC
+    Day:
+      type: string
+      format: date
+      description: День пары по её часовому поясу и границе суток
+    Tenths:
+      type: integer
+      minimum: 0
+      maximum: 100
+      description: Оценка в десятых (74 = 7.4)
+    Currency:
+      type: string
+      enum: [BYN, RUB]
+    Money:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount: { type: integer, minimum: 0, description: Минимальные единицы (копейки) }
+        currency: { $ref: '#/components/schemas/Currency' }
+    Problem:
+      type: object
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, description: 'URI типа; пока `about:blank`' }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        code:
+          type: string
+          enum:
+            - validation
+            - unauthorized
+            - not_found
+            - id_conflict
+            - login_taken
+            - invalid_credentials
+            - rate_limited
+            - limit_exceeded
+            - already_paired
+            - invalid_code
+        errors:
+          type: array
+          description: Ошибки по полям (для `validation`)
+          items:
+            type: object
+            required: [field, message]
+            properties:
+              field: { type: string }
+              message: { type: string }
+        attempts_left: { type: integer, description: Для `invalid_credentials` }
+        retry_after_seconds: { type: integer, description: Для `rate_limited` }
+    LoginAvailability:
+      type: object
+      required: [available, suggestions]
+      properties:
+        available: { type: boolean }
+        suggestions: { type: array, maxItems: 3, items: { type: string } }
+    RegisterRequest:
+      type: object
+      required: [id, login, password]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        login: { type: string, pattern: '^[A-Za-z0-9_.]{3,20}$' }
+        password: { type: string, minLength: 8 }
+    LoginRequest:
+      type: object
+      required: [login, password]
+      properties:
+        login: { type: string }
+        password: { type: string }
+    User:
+      type: object
+      required: [id, login, display_name, color, water_goal_ml, couple_id, invite_code, created_at]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        login: { type: string }
+        display_name: { type: string }
+        color: { type: string, description: 'Цвет игрока, #rrggbb' }
+        water_goal_ml: { type: integer, default: 2250 }
+        couple_id: { $ref: '#/components/schemas/Uuid' }
+        invite_code: { type: string, description: 'Личный код приглашения, например `EV-7429`' }
+        created_at: { $ref: '#/components/schemas/Timestamp' }
+    UserPatch:
+      type: object
+      properties:
+        display_name: { type: string, minLength: 1, maxLength: 30 }
+        color: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
+        water_goal_ml: { type: integer, minimum: 500, maximum: 6000 }
+    Couple:
+      type: object
+      required: [id, timezone, day_boundary_hour, members]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        timezone: { type: string, description: 'IANA, например `Europe/Minsk`' }
+        day_boundary_hour: { type: integer, minimum: 0, maximum: 6, description: 'Час, с которого начинается новый день (0 = полночь)' }
+        members:
+          type: array
+          items: { $ref: '#/components/schemas/Member' }
+    Member:
+      type: object
+      required: [id, display_name, color]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        display_name: { type: string }
+        color: { type: string }
+    CoupleRequest:
+      type: object
+      required: [id, from]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        from: { $ref: '#/components/schemas/Member' }
+    CoupleState:
+      type: object
+      required: [status, couple]
+      properties:
+        status:
+          type: string
+          enum: [solo, incoming, paired]
+          description: solo — партнёра нет; incoming — есть входящий запрос; paired — вместе
+        couple: { $ref: '#/components/schemas/Couple' }
+        incoming_request: { $ref: '#/components/schemas/CoupleRequest' }
+        outgoing_pending: { type: boolean, description: Вы ввели код партнёра и ждёте ответа }
+    CouplePatch:
+      type: object
+      properties:
+        timezone: { type: string }
+    JoinRequest:
+      type: object
+      required: [id, code]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        code: { type: string, description: 'Код партнёра, регистр и дефис не важны' }
+    Drink:
+      type: object
+      required: [id, name, brand, is_energy, volume_ml, country, created_by, created_at]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        name: { type: string }
+        brand: { type: string, description: 'Название бренда (справочник брендов — отдельный блок, пока строка)' }
+        is_energy: { type: boolean }
+        volume_ml: { type: integer, minimum: 1 }
+        sugar_g_per_100ml: { type: integer, minimum: 0, description: 'Сахар, десятые грамма на 100 мл; null — неизвестно', nullable: true }
+        country: { type: string, enum: [BY, RU] }
+        created_by: { $ref: '#/components/schemas/Uuid' }
+        created_at: { $ref: '#/components/schemas/Timestamp' }
+    DrinkCreate:
+      type: object
+      required: [id, name, brand, volume_ml, country]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        name: { type: string, minLength: 1, maxLength: 60 }
+        brand: { type: string, minLength: 1, maxLength: 40 }
+        is_energy: { type: boolean, default: true }
+        volume_ml: { type: integer, minimum: 1, maximum: 2000 }
+        sugar_g_per_100ml: { type: integer, minimum: 0, nullable: true }
+        country: { type: string, enum: [BY, RU] }
+    DrinkPage:
+      type: object
+      required: [items, next_cursor]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Drink' } }
+        next_cursor: { type: string, nullable: true }
+    Rating:
+      type: object
+      required: [id, drink_id, user_id, smell, taste, after, strength, total, at]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        drink_id: { $ref: '#/components/schemas/Uuid' }
+        user_id: { $ref: '#/components/schemas/Uuid' }
+        smell: { $ref: '#/components/schemas/Tenths' }
+        taste: { $ref: '#/components/schemas/Tenths' }
+        after: { $ref: '#/components/schemas/Tenths' }
+        strength: { $ref: '#/components/schemas/Tenths' }
+        total: { allOf: [{ $ref: '#/components/schemas/Tenths' }], description: 'Среднее четырёх параметров, округлено до десятых (половина вверх); считает сервер' }
+        comment: { type: string, nullable: true }
+        at: { $ref: '#/components/schemas/Timestamp' }
+    RatingCreate:
+      type: object
+      required: [id, drink_id, smell, taste, after, strength]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        drink_id: { $ref: '#/components/schemas/Uuid' }
+        smell: { $ref: '#/components/schemas/Tenths' }
+        taste: { $ref: '#/components/schemas/Tenths' }
+        after: { $ref: '#/components/schemas/Tenths' }
+        strength: { $ref: '#/components/schemas/Tenths' }
+        comment: { type: string, maxLength: 500, nullable: true }
+        at: { $ref: '#/components/schemas/Timestamp' }
+    Intake:
+      type: object
+      required: [id, drink_id, user_id, at, local_day, over_limit]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        drink_id: { $ref: '#/components/schemas/Uuid' }
+        user_id: { $ref: '#/components/schemas/Uuid' }
+        at: { $ref: '#/components/schemas/Timestamp' }
+        local_day: { $ref: '#/components/schemas/Day' }
+        over_limit: { type: boolean }
+    IntakeCreate:
+      type: object
+      required: [id, drink_id, at]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        drink_id: { $ref: '#/components/schemas/Uuid' }
+        at: { $ref: '#/components/schemas/Timestamp' }
+        over_limit: { type: boolean, default: false }
+    IntakePage:
+      type: object
+      required: [items, next_cursor]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Intake' } }
+        next_cursor: { type: string, nullable: true }
+    DaySummary:
+      type: object
+      required: [day, energy_count, limit, over_limit]
+      properties:
+        day: { $ref: '#/components/schemas/Day' }
+        energy_count: { type: integer }
+        limit: { type: integer, description: Дневной лимит (2) }
+        over_limit: { type: boolean, description: В этот день была запись сверх лимита }
+    WaterEntry:
+      type: object
+      required: [id, user_id, ml, at, local_day]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        user_id: { $ref: '#/components/schemas/Uuid' }
+        ml: { type: integer, minimum: 25, maximum: 2000 }
+        at: { $ref: '#/components/schemas/Timestamp' }
+        local_day: { $ref: '#/components/schemas/Day' }
+    WaterCreate:
+      type: object
+      required: [id, ml, at]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        ml: { type: integer, minimum: 25, maximum: 2000 }
+        at: { $ref: '#/components/schemas/Timestamp' }
+    WaterDay:
+      type: object
+      required: [day, total_ml, goal_ml, goal_reached, entries]
+      properties:
+        day: { $ref: '#/components/schemas/Day' }
+        total_ml: { type: integer }
+        goal_ml: { type: integer }
+        goal_reached: { type: boolean }
+        entries: { type: array, items: { $ref: '#/components/schemas/WaterEntry' } }

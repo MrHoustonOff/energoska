@@ -78,6 +78,8 @@ docs-src/                  документация и эталон дизайн
 |---|---|
 | `npm run dev` | Dev-сервер в локальной сети (телефон открывает `http://IP:5173`) |
 | `npm run dev:tunnel` | То же, но для работы за HTTPS-туннелем (проверка push) |
+| `npm test` | Тесты правил и контрактные тесты API (vitest) |
+| `npm run api:types` | Типы из `api/openapi.yaml` |
 | `npm run check` | Проверка типов (svelte-check) |
 | `npm run build` | Сборка в `dist/` |
 | `npm run preview` | Просмотр сборки (порт 4173) |

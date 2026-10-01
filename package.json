@@ -8,15 +8,20 @@
     "build": "vite build",
     "preview": "vite preview --host --port 4173",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "dev:tunnel": "vite --mode tunnel"
+    "dev:tunnel": "vite --mode tunnel",
+    "api:types": "openapi-typescript api/openapi.yaml --default-non-nullable false -o src/api/types.gen.ts",
+    "test": "vitest run"
   },
   "devDependencies": {
+    "@apidevtools/swagger-parser": "^13.1.0",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@tsconfig/svelte": "^5.0.8",
+    "openapi-typescript": "^7.13.0",
     "svelte": "^5.57.1",
     "svelte-check": "^4.7.6",
     "typescript": "^6.0.3",
     "vite": "^7.0.0",
+    "vitest": "^5.0.3",
     "web-push": "^3.6.7"
   },
   "dependencies": {
