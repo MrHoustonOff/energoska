@@ -1,44 +1,72 @@
 // Лог действий для отладки на телефоне: что тапнул, куда ушёл фокус, что делала клавиатура.
-// Хранится в localStorage (переживает перезапуск), копируется в буфер кнопкой на вкладке «Итог».
+//
+// Зачем: на iPhone нет DevTools, а поведение клавиатуры нельзя воспроизвести в эмуляции.
+// Лог хранится в localStorage (переживает перезапуск приложения) и копируется в буфер кнопкой на странице,
+// после чего его можно отправить разработчику как текст.
 import * as store from './store.js';
 
+/** Максимум строк. Старые вытесняются. */
 const MAX = 400;
-let lines = store.get('log', []);
-const subs = new Set();
-let saveT = 0;
 
-const pad = (n, l = 2) => String(n).padStart(l, '0');
-const stamp = () => {
+let lines = store.get('log', []);
+let saveTimer = 0;
+
+const pad = (n, len = 2) => String(n).padStart(len, '0');
+
+/** Время с миллисекундами: порядок событий важен, поэтому нужна точность. */
+function stamp() {
   const d = new Date();
   return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(), 3)}`;
-};
+}
 
+/** Добавить строку в лог. */
 export function add(text) {
   lines.push(`${stamp()}  ${text}`);
   if (lines.length > MAX) lines.splice(0, lines.length - MAX);
-  clearTimeout(saveT);
-  saveT = setTimeout(() => store.set('log', lines), 400); // не пишем в localStorage на каждый тап
-  subs.forEach(fn => fn());
+  // В localStorage пишем не на каждый тап, а пачкой: запись синхронная и может притормозить касание.
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => store.set('log', lines), 400);
 }
-export const getLines = () => lines;
-export const onAdd = fn => subs.add(fn);
-export function clear() { lines = []; store.set('log', lines); subs.forEach(fn => fn()); }
 
-// Буфер обмена: на http (локальная сеть) navigator.clipboard недоступен, поэтому запасной путь через execCommand.
+/** Все строки лога. */
+export const getLines = () => lines;
+
+/** Стереть лог. */
+export function clear() {
+  lines = [];
+  store.set('log', lines);
+}
+
+/**
+ * Скопировать текст в буфер обмена.
+ *
+ * navigator.clipboard работает только в безопасном контексте (https). В разработке страница открыта по http с
+ * локальной сети, поэтому есть запасной путь через временное поле и execCommand('copy').
+ * Временное поле помечено data-nokb: оно не считается полем ввода (иначе сработает логика клавиатуры).
+ */
 export async function copyText(text) {
   try {
-    if (navigator.clipboard?.writeText && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; }
-  } catch { /* идём дальше */ }
+    if (navigator.clipboard?.writeText && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    /* нет разрешения: пробуем запасной путь */
+  }
   const ta = document.createElement('textarea');
   ta.value = text;
-  ta.setAttribute('readonly', '');
-  ta.setAttribute('data-nokb', ''); // не считать полем ввода: без клавиатуры и без логики фокуса
+  ta.setAttribute('readonly', ''); // readonly: iOS не показывает клавиатуру
+  ta.setAttribute('data-nokb', '');
   ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px';
   document.body.appendChild(ta);
   ta.select();
-  ta.setSelectionRange(0, text.length);
+  ta.setSelectionRange(0, text.length); // select() на iOS выделяет не весь текст без этого вызова
   let ok = false;
-  try { ok = document.execCommand('copy'); } catch { /* не вышло */ }
+  try {
+    ok = document.execCommand('copy');
+  } catch {
+    /* не вышло */
+  }
   ta.remove();
   return ok;
 }

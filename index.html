@@ -1,16 +1,28 @@
 <!doctype html>
-<html lang="ru" data-perf="full">
+<html lang="ru">
 <head>
   <meta charset="utf-8">
+
+  <!--
+    VIEWPORT. viewport-fit=cover обязателен: без него env(safe-area-inset-*) всегда 0, и контент не рисуется под вырезом/индикатором.
+    maximum-scale=1, user-scalable=no: страница не приближается щипком и двойным тапом (проверено рабочим в предыдущем проекте).
+    interactive-widget НЕ указываем: iOS 26 его учитывает, и тогда окно сжимается вместе с клавиатурой, а страница прокручивается до дна.
+  -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+  <!-- Тёмная тема основная, светлая по prefers-color-scheme. theme-color красит окно вокруг приложения. -->
   <meta name="color-scheme" content="dark light">
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f4f4f1" media="(prefers-color-scheme: light)">
 
+  <!--
+    PWA на iOS. Эти теги читаются ТОЛЬКО при установке на домашний экран:
+    после любого изменения удали иконку и добавь заново.
+    black-translucent: приложение рисуется под статус-баром (полноэкранный вид). Единственный вариант без чёрной полосы сверху.
+  -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Энергоська">
-  <!-- iOS 26 (WebKit #301108): с translucent окно короче экрана на высоту статус-бара. Лечим математикой в src/viewport.js (--gap), стиль не меняем. -->
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
 
@@ -19,11 +31,10 @@
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png">
   <title>Энергоська</title>
 
-  <!-- Критичный фон до загрузки любых файлов: без вспышки и полос при холодном старте -->
+  <!-- Фон до загрузки любых файлов: без белой/чёрной вспышки при холодном старте. Должен совпадать с --bg из tokens.css. -->
   <style>
     html, body { margin: 0; background: #000; }
     @media (prefers-color-scheme: light) { html, body { background: #f4f4f1; } }
-    
   </style>
 </head>
 <body>

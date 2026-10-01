@@ -1,71 +1,161 @@
-// Запуск и клавиатура на iOS Safari (standalone). Рецепт проверен на iPhone, см. docs-src/SAFARI_PWA_BIBLE.md §4.2.
-// Каркас: высота = visualViewport + gap. Клавиатура НЕ меняет размер окна: она накрывает низ, а поле заранее
-// уезжает вверх плавной прокруткой (iOS присылает новые размеры с задержкой ~90 мс, ждать их = рывок).
+// Запуск и клавиатура на iOS Safari (PWA с домашнего экрана, iOS 26).
+// Рецепт проверен на iPhone 13 Pro / 14 (390×844). Подробности и история: docs-src/SAFARI_PWA_BIBLE.md.
+//
+// ═══════════════════════════ КАК УСТРОЕНО ═══════════════════════════
+//
+// 1. ВЫСОТА КАРКАСА. Корень приложения (#app) задан в пикселях: --app-h = visualViewport.height + offsetTop + gap.
+//    gap = высота экрана − innerHeight. В iOS 26 при запуске окно бывает короче экрана на высоту статус-бара
+//    (WebKit #301108); gap это компенсирует. Если iOS окно не урезал, gap = 0 и всё работает как обычно.
+//
+// 2. КЛАВИАТУРА. Мы НЕ сжимаем окно под клавиатуру и НЕ двигаем содержимое сами: iOS сам прокручивает страницу
+//    и делает это правильно и нативно (плавно, вместе с клавиатурой). Мы только страхуем три вещи:
+//
+//    а) Под клавиатурой не должно быть «края приложения» (иначе через её прозрачное стекло просвечивает фон страницы).
+//       Поэтому пока идёт ввод, приложение и список удлиняются на запас (--kbext = 2 × высота клавиатуры).
+//       Запас с избытком: iOS центрирует поле и прокручивает страницу дальше, чем нужно.
+//       Список удлиняется ВМЕСТЕ со своим нижним отступом, поэтому предел его прокрутки (scrollHeight − clientHeight)
+//       не меняется. Это важно: иначе браузер «поджимает» текущую позицию и список телепортируется.
+//
+//    б) Страницу пальцем двигать нельзя, пока идёт ввод (иначе её уводит к краю документа).
+//       Прокручивается только сам список.
+//
+//    в) Поле, которое iOS счёл «достаточно видимым», может остаться под клавиатурой. Через 0.26 и 0.7 с после открытия
+//       (когда iOS закончил свою прокрутку) мы плавно докручиваем страницу, если поле всё ещё ниже видимой области.
+//
+// 3. ВОЗВРАТ. При закрытии клавиатуры страница остаётся прокрученной. Возвращаем её наверх ПЛАВНО и сразу
+//    (раньше был мгновенный scrollTo(0,0) через 60 мс: заметный рывок). Запас снимаем только когда страница доехала.
+//
+// 4. ПАНЕЛЬ ВКЛАДОК. Лежит поверх (position:absolute), не в потоке, поэтому на фокусе вёрстка не пересчитывается.
+//    Пока идёт ввод, она уезжает за нижний край экрана; после закрытия клавиатуры выезжает с задержкой, чтобы не
+//    пересекаться с уходом плавающей панели клавиатуры (^ v ✓). Пока приложение удлинено, панель приклеена к низу экрана
+//    (translate = прокрутка страницы), иначе при возврате она «ехала» бы вместе со страницей.
+//
+// ═══════════════════ ВАЖНЫЕ ФАКТЫ ОБ iOS (получены логами с устройства) ═══════════════════
+//  - Новые размеры (visualViewport.resize) приходят с задержкой ~90 мс после фокуса, одной пачкой, а клавиатура
+//    физически выезжает сразу. Ждать их = рывок. Поэтому всё, что можно, делаем на фокусе, до их прихода.
+//  - Для низких полей iOS мгновенно прокручивает страницу (y: 0 → до 403 за ~25 мс). Это его родное поведение.
+//  - innerHeight при открытой клавиатуре «гуляет» (844 → 797 → 441 → 614…), поэтому на него нельзя опираться.
+//  - Высоту клавиатуры определяем как baseH − visualViewport.height (baseH: высота видимой области без клавиатуры).
+//  - Поля без клавиатуры (дата, время, список) вьюпорт не меняют; для них наша логика не запускается.
 import * as store from './store.js';
 import { add as logAdd } from './eventlog.js';
 
 const root = document.documentElement;
 const vv = window.visualViewport;
-// Поля, у которых нет клавиатуры (системный выбор даты/времени, список, флажки): ввод для нашей логики не начинается
-const NO_KB = new Set(['date', 'time', 'datetime-local', 'month', 'week', 'color', 'checkbox', 'radio', 'range', 'file', 'button', 'submit', 'reset', 'image', 'hidden']);
+
+// ───────────────────────── Что считать «полем ввода» ─────────────────────────
+
+/**
+ * Типы <input>, у которых нет экранной клавиатуры (системный выбор даты/времени, флажки и т.п.).
+ * Для них клавиатурная логика не нужна: вьюпорт при фокусе не меняется (проверено логом).
+ */
+const NO_KEYBOARD_TYPES = new Set([
+  'date', 'time', 'datetime-local', 'month', 'week', 'color',
+  'checkbox', 'radio', 'range', 'file', 'button', 'submit', 'reset', 'image', 'hidden',
+]);
+
+/**
+ * Поле, при фокусе в которое iOS показывает клавиатуру.
+ * Элементы с атрибутом data-nokb исключены: так помечено служебное поле для копирования в буфер.
+ * <select> тоже исключён: у него системный выбор вместо клавиатуры.
+ */
 const isEditable = el =>
-  !!el && !!el.matches?.('input, textarea, [contenteditable=""], [contenteditable="true"]') && !el.hasAttribute('data-nokb')
-  && !(el.tagName === 'INPUT' && NO_KB.has(el.type));
+  !!el
+  && !!el.matches?.('input, textarea, [contenteditable=""], [contenteditable="true"]')
+  && !el.hasAttribute('data-nokb')
+  && !(el.tagName === 'INPUT' && NO_KEYBOARD_TYPES.has(el.type));
+
+// ───────────────────────── Состояние ─────────────────────────
+
+/** Недостающие пиксели окна (см. п.1 выше). */
+let gap = 0;
+/** Последняя «полная» высота каркаса. Обновляется только когда ввода нет и значение похоже на настоящее окно. */
+let fullH = innerHeight;
+/** Высота видимой области без клавиатуры (максимум за время работы). От неё считаем высоту клавиатуры. */
+let baseH = vv ? vv.height : innerHeight;
+/** Ширина видимой области: её смена значит поворот экрана, тогда baseH считаем заново. */
+let baseW = vv ? vv.width : innerWidth;
+
+let rafId = 0;        // отложенный sync (не чаще раза в кадр)
+let extTimer = 0;     // страховка: если клавиатура так и не появилась, запас снимаем
+let revealTimers = []; // отложенные докрутки поля
+let lastRevealTarget = null; // последняя цель докрутки, чтобы не повторять одно и то же
 
 const listeners = new Set();
+/** Подписаться на любое изменение размеров/состояния клавиатуры (для обновления отладочных цифр). */
 export const onViewportChange = fn => listeners.add(fn);
 
-// Режим клавиатуры (переключатель на вкладке «Итог»): native — ничего не трогаем, fixed — каркас привязан к экрану,
-// fluid — на время ввода высота = 100% окна. Нужен, чтобы сравнить на телефоне и выбрать лучший.
-const MODE = store.get('kbm', 'native');
-export const getKbm = () => MODE;
-export function setKbm(v) { store.set('kbm', v); location.reload(); }
+// ───────────────────────── Запись событий (для отладки) ─────────────────────────
+// Две «ленты»: что происходило вокруг открытия и вокруг закрытия клавиатуры, с миллисекундами от начала.
+// В них видно, что присылает iOS и в каком порядке. Выводятся в отчёте кнопкой «Копировать лог».
 
-let gap = 0;
-let fullH = innerHeight;
-let baseH = vv ? vv.height : innerHeight;
-let baseW = vv ? vv.width : innerWidth;
-let raf = 0, padTimer = 0, lastFit = null;
+const records = { open: [], close: [] };
+let currentRecord = null;
+let recordStart = 0;
 
-// ───── запись событий вокруг фокуса (для настройки плавности по цифрам) ─────
-const rec = { open: [], close: [] };
-let cur = null, t0 = 0;
-function startRec(kind) { cur = rec[kind]; cur.length = 0; t0 = performance.now(); setTimeout(() => { if (cur === rec[kind]) cur = null; }, 1400); }
-function mark(tag) {
-  if (!cur || !vv || cur.length > 60) return;
-  const a = document.activeElement, sc = document.querySelector('.screen-scroll');
-  const f = isEditable(a) ? ` f${Math.round(a.getBoundingClientRect().bottom)}` : '';
-  cur.push(`+${Math.round(performance.now() - t0)} ${tag} in${innerHeight} vv${Math.round(vv.height)}@${Math.round(vv.offsetTop)} y${Math.round(scrollY)}${f} sc${sc ? Math.round(sc.scrollTop) : '-'}`);
+function startRecord(kind) {
+  currentRecord = records[kind];
+  currentRecord.length = 0;
+  recordStart = performance.now();
+  // Запись ведём 1.4 с: этого хватает на всю анимацию клавиатуры.
+  setTimeout(() => { if (currentRecord === records[kind]) currentRecord = null; }, 1400);
 }
-export const recording = kind => rec[kind].join('\n') || '—';
 
+/** Добавить отметку в текущую запись: время, размеры окна, прокрутка и положение поля. */
+function mark(tag) {
+  if (!currentRecord || !vv || currentRecord.length > 60) return;
+  const el = document.activeElement;
+  const list = document.querySelector('.screen-scroll');
+  const f = isEditable(el) ? ` f${Math.round(el.getBoundingClientRect().bottom)}` : ''; // нижняя граница поля
+  currentRecord.push(
+    `+${Math.round(performance.now() - recordStart)} ${tag} in${innerHeight} vv${Math.round(vv.height)}@${Math.round(vv.offsetTop)}`
+    + ` y${Math.round(scrollY)}${f} sc${list ? Math.round(list.scrollTop) : '-'}`
+  );
+}
+
+/** Текст записи для отчёта. */
+export const recording = kind => records[kind].join('\n') || '—';
+
+// ───────────────────────── Диагностика ─────────────────────────
+
+/** Установлено ли приложение на домашний экран (режим standalone). */
 export const isStandalone = () =>
   navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
 
-// Только iOS-приложение с иконки. Окно короче экрана на gap (в iOS 26 это высота статус-бара); Android и вкладка Safari дают 0.
+/**
+ * Недостающая высота окна. Только для iOS-приложения с иконки; во вкладке Safari и на Android всегда 0.
+ * Берём длинную сторону экрана в портрете (короткую в ландшафте) минус innerHeight.
+ * Значения вне 0…80 считаем не недостачей, а чем-то иным (клавиатура, ландшафт) и игнорируем.
+ */
 function computeGap() {
   if (navigator.standalone !== true) return 0;
-  const long = Math.max(screen.width, screen.height), short = Math.min(screen.width, screen.height);
+  const long = Math.max(screen.width, screen.height);
+  const short = Math.min(screen.width, screen.height);
   const g = Math.round((innerHeight >= innerWidth ? long : short) - innerHeight);
   return g > 0 && g <= 80 ? g : 0;
 }
 
+/** Фактические safe-area-inset-* (env() напрямую прочитать нельзя, поэтому через временный элемент). */
 function safeAreaInsets() {
-  const d = document.createElement('div');
-  d.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
-  document.body.appendChild(d);
-  const cs = getComputedStyle(d);
-  const r = `${cs.paddingTop} ${cs.paddingRight} ${cs.paddingBottom} ${cs.paddingLeft}`;
-  d.remove();
-  return r;
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;'
+    + 'padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
+  document.body.appendChild(probe);
+  const cs = getComputedStyle(probe);
+  const text = `${cs.paddingTop} ${cs.paddingRight} ${cs.paddingBottom} ${cs.paddingLeft}`;
+  probe.remove();
+  return text;
 }
 
-// Короткая строка для шапки: окно · видимая область @ сдвиг
-// Снимок состояния для лога
-export const snap = () => `in${innerHeight} vv${vv ? Math.round(vv.height) : '-'}@${vv ? Math.round(vv.offsetTop) : '-'} y${Math.round(scrollY)} kb:${root.dataset.kb}`;
+/** Короткий снимок состояния для строк лога. */
+export const snap = () =>
+  `in${innerHeight} vv${vv ? Math.round(vv.height) : '-'}@${vv ? Math.round(vv.offsetTop) : '-'} y${Math.round(scrollY)} kb:${root.dataset.kb}`;
 
-export const liveLine = () => `${innerHeight}·${vv ? Math.round(vv.height) : '-'}@${vv ? Math.round(vv.offsetTop) : '-'}${root.dataset.kb === 'open' ? ' kb' : ''}`;
+/** Короткая строка для шапки: окно · видимая область @ сдвиг. */
+export const liveLine = () =>
+  `${innerHeight}·${vv ? Math.round(vv.height) : '-'}@${vv ? Math.round(vv.offsetTop) : '-'}${root.dataset.kb === 'open' ? ' kb' : ''}`;
 
+/** Подробные метрики для отчёта. */
 export function metrics() {
   return [
     `standalone: ${isStandalone()}`,
@@ -74,196 +164,200 @@ export function metrics() {
     `visualViewport: ${vv ? Math.round(vv.height) : '-'} @${vv ? Math.round(vv.offsetTop) : '-'}`,
     `gap: ${gap}px`,
     `app-h: ${root.style.getPropertyValue('--app-h')}`,
+    `запас под клавиатуру: ${root.style.getPropertyValue('--kbext') || '0'}`,
     `safe-area t r b l: ${safeAreaInsets()}`,
-    `клавиатура: ${root.dataset.kb} (запас ${root.style.getPropertyValue('--kbpad') || '0'})`,
+    `клавиатура: ${root.dataset.kb}`,
   ].join('\n');
 }
 
-// ───── клавиатура: запас снизу + плавная докрутка поля ─────
-const kbPad = () => parseFloat(root.style.getPropertyValue('--kbpad')) || 0;
+// ───────────────────────── Запас под клавиатуру ─────────────────────────
 
-function ensureVisible(el, instant = false) {
-  const sc = el.closest('.screen-scroll');
-  if (!sc || !vv) return;
-  const open = root.dataset.kb === 'open';
-  if (MODE === 'native' || (!open && !root.dataset.pad)) return;
-  const pad = 24;
-  // клавиатура уже открыта: vv.height это область над ней; ещё нет: вычитаем ожидаемую высоту
-  const limit = vv.offsetTop + vv.height - (open ? 0 : kbPad()) - pad;
-  const r = el.getBoundingClientRect(), c = sc.getBoundingClientRect();
-  let target = null;
-  if (r.bottom > limit) target = sc.scrollTop + r.bottom - limit;
-  else if (r.top < c.top + pad) target = sc.scrollTop - ((c.top + pad) - r.top);
-  if (target === null || (lastFit !== null && Math.abs(target - lastFit) < 2)) return;
-  lastFit = target;
-  // instant: на фокусе ставим поле на место ДО решения iOS (оно приходит через ~90 мс); иначе iOS сдвинет всю страницу сам
-  sc.scrollTo({ top: target, behavior: instant ? 'auto' : 'smooth' });
-  mark(instant ? 'fit!' : 'fit');
+/**
+ * Приклеить панель вкладок к низу экрана. Пока приложение удлинено, а страница прокручена, панель (она лежит
+ * внутри страницы) иначе оказывается посреди экрана и «опускается» вместе с плавным возвратом страницы.
+ * Прибавляем текущую прокрутку через CSS-свойство translate (оно не анимируется вместе с transform панели).
+ */
+function stickTabbar() {
+  root.style.setProperty('--sy', (root.dataset.ext ? Math.round(scrollY) : 0) + 'px');
 }
 
-// Родной режим: пока клавиатура открыта, страница удлиняется вниз на её высоту, чтобы под прозрачной клавиатурой
-// всегда было продолжение приложения, а не край документа (иначе просвечивает фон страницы).
-let extTimer = 0;
-// Пока приложение удлинено, панель вкладок приклеиваем к низу экрана: прибавляем прокрутку страницы через transform.
-// Иначе при закрытии клавиатуры она появляется посреди экрана и «опускается» вместе с возвратом страницы.
-const syncTab = () => root.style.setProperty('--sy', (root.dataset.ext ? Math.round(scrollY) : 0) + 'px');
-function setExt(px) { root.style.setProperty('--kbext', px + 'px'); root.dataset.ext = '1'; }
+/** Включить запас: приложение и список удлиняются на px (CSS: [data-ext]). */
+function setExt(px) {
+  root.style.setProperty('--kbext', px + 'px');
+  root.dataset.ext = '1';
+}
+
+/**
+ * Снять запас. Только когда ввода нет, а страница уже вернулась наверх: иначе укорочение страницы резко
+ * дёрнет прокрутку. Если страница так и не вернулась (бывает при сбое плавной прокрутки), ждём до 1.5 с.
+ */
 function clearExt() {
   clearTimeout(extTimer);
-  // Страницу укорачиваем только когда она уже вернулась наверх, иначе укорочение резко дёрнет прокрутку
-  const tryClear = n => {
-    if (root.dataset.kb === 'open' || isEditable(document.activeElement)) return;
-    if (scrollY > 1 && n < 10) { setTimeout(() => tryClear(n + 1), 150); return; }
+  const tryClear = attempt => {
+    if (root.dataset.kb === 'open' || isEditable(document.activeElement)) return; // снова вводят: оставляем
+    if (scrollY > 1 && attempt < 10) { setTimeout(() => tryClear(attempt + 1), 150); return; }
     delete root.dataset.ext;
-    syncTab();
+    stickTabbar();
   };
   setTimeout(() => tryClear(0), 300);
 }
 
-// Родной режим: поле, которое iOS счёл «достаточно видимым», может остаться под клавиатурой. Плавно докручиваем страницу.
-let lastWin = null;
-function revealNative(el) {
-  if (MODE !== 'native' || !el || !vv || root.dataset.kb !== 'open' || !isEditable(el)) return;
-  const r = el.getBoundingClientRect();
-  const limit = vv.offsetTop + vv.height - 28;
-  if (r.bottom <= limit) return;
-  const target = scrollY + (r.bottom - limit);
-  if (lastWin !== null && Math.abs(target - lastWin) < 3) return;
-  lastWin = target;
+// ───────────────────────── Докрутка поля ─────────────────────────
+
+/**
+ * Поле, которое iOS счёл «достаточно видимым» (например, видна только его верхняя часть), может остаться под
+ * клавиатурой до первого введённого символа. Если нижняя граница поля ниже видимой области, плавно докручиваем.
+ * Вызывается через 0.26 и 0.7 с после открытия: к этому времени iOS уже закончил свою мгновенную прокрутку,
+ * и мы не двигаем страницу поверх неё.
+ */
+function revealField(el) {
+  if (!el || !vv || root.dataset.kb !== 'open' || !isEditable(el)) return;
+  const bottom = el.getBoundingClientRect().bottom;
+  const limit = vv.offsetTop + vv.height - 28; // 28: небольшой зазор над клавиатурой
+  if (bottom <= limit) return; // поле уже видно
+  const target = scrollY + (bottom - limit);
+  if (lastRevealTarget !== null && Math.abs(target - lastRevealTarget) < 3) return;
+  lastRevealTarget = target;
   window.scrollTo({ top: target, behavior: 'smooth' });
   mark('reveal');
 }
 
-// Докрутку делаем ПОСЛЕ того, как iOS закончил свою (она приходит мгновенно на ~+100 мс): иначе мы двигаем страницу поверх неё
-let revealT = [];
 function scheduleReveal() {
-  if (revealT.length) return;
-  revealT = [260, 700].map(t => setTimeout(() => revealNative(document.activeElement), t));
-  setTimeout(() => { revealT = []; }, 800);
+  if (revealTimers.length) return; // уже запланировано для этого фокуса
+  revealTimers = [260, 700].map(ms => setTimeout(() => revealField(document.activeElement), ms));
+  setTimeout(() => { revealTimers = []; }, 800);
 }
 
-function releasePad() {
-  clearTimeout(padTimer);
-  const sc = document.querySelector('.screen-scroll');
-  if (sc) {
-    const max = Math.max(0, sc.scrollHeight - sc.clientHeight - kbPad());
-    if (sc.scrollTop > max) sc.scrollTo({ top: max, behavior: 'smooth' }); // вернуть плавно, до снятия запаса
-  }
-  setTimeout(() => { if (root.dataset.kb !== 'open') { delete root.dataset.pad; lastFit = null; } }, 350);
-}
+// ───────────────────────── Главный пересчёт ─────────────────────────
 
-// Фокус пошёл, а размеры от iOS ещё не пришли: двигаем поле сразу по запомненной высоте клавиатуры.
-function preposition(el) {
-  if (MODE === 'native') return;
-  if (root.dataset.kb === 'open') { ensureVisible(el); return; }
-  const K = store.get('kbh', Math.round(baseH * 0.48));
-  root.style.setProperty('--kbpad', K + 'px');
-  root.dataset.pad = '1';
-  lastFit = null;
-  ensureVisible(el, true);
-  clearTimeout(padTimer);
-  padTimer = setTimeout(() => { if (root.dataset.kb !== 'open') releasePad(); }, 900); // клавиатуры нет (аппаратная)
-}
-
+/**
+ * Пересчёт всего, что зависит от размеров окна и клавиатуры. Вызывается не чаще раза в кадр (schedule()).
+ */
 function sync() {
-  raf = 0;
+  rafId = 0;
   if (!vv) return;
-  if (Math.abs(vv.width - baseW) > 1) { baseW = vv.width; baseH = vv.height; } // поворот
+
+  // Поворот экрана: ширина изменилась, базовую высоту считаем заново.
+  if (Math.abs(vv.width - baseW) > 1) { baseW = vv.width; baseH = vv.height; }
+
   const editing = isEditable(document.activeElement);
-  if (!editing) { baseH = Math.max(baseH, vv.height); gap = computeGap(); }
 
-  const kb = editing ? Math.max(0, Math.round(baseH - vv.height)) : 0;
-  const was = root.dataset.kb;
-  root.dataset.kb = kb > 80 ? 'open' : 'closed';
-  if (was !== root.dataset.kb) {
-    mark('kb=' + root.dataset.kb);
-    logAdd(`клавиатура ${root.dataset.kb === 'open' ? 'ОТКРЫЛАСЬ' : 'закрылась'}  ${snap()}`);
-    if (root.dataset.kb === 'closed' && was === 'open') setTimeout(() => { if (root.dataset.kb === 'closed') { releasePad(); clearExt(); } }, 250);
-  }
-
-  // Высота каркаса. Документ не должен быть выше окна: iOS сжимает окно при клавиатуре и иначе прокручивает документ
-  // до дна (шапка улетает). Из JS успеть нельзя (мы всегда на кадр позже), поэтому на время ввода высоту отдаём CSS:
-  // html/body/#app = 100% окна (см. data-editing в styles.css), и они сжимаются в том же кадре, что и окно.
   if (!editing) {
+    // Базовая высота растёт только без ввода: иначе в неё попадёт уменьшение от клавиатуры.
+    baseH = Math.max(baseH, vv.height);
+    gap = computeGap();
+    // Новая полная высота каркаса. Значения меньше 80% базовой не принимаем: это ещё не доехавшая вниз клавиатура
+    // (vv.height в момент закрытия успевает оказаться маленьким).
     const h = Math.round(vv.height + vv.offsetTop + gap);
-    if (h > baseH * 0.8) fullH = h; // закрытие клавиатуры: vv ещё мал, это не новый размер окна
-    delete root.dataset.editing;
+    if (h > baseH * 0.8) fullH = h;
     delete root.dataset.edit; // панель вкладок возвращается сразу
   }
   root.style.setProperty('--app-h', fullH + 'px');
-  root.style.setProperty('--vvy', Math.round(vv.offsetTop) + 'px'); // если iOS всё же сдвинул панораму, гасим transform'ом
 
-  if (kb > 80) {
-    if (Math.abs(store.get('kbh', 0) - kb) > 10) store.set('kbh', kb);
-    if (MODE === 'native') { setExt(2 * kb); scheduleReveal(); } // запас с избытком: iOS центрирует поле и прокручивает дальше, чем нужно
-    else {
-      root.style.setProperty('--kbpad', kb + 'px');
-      root.dataset.pad = '1';
-      ensureVisible(document.activeElement);
+  // Высота клавиатуры = на сколько видимая область стала меньше базовой. Меньше 80 pt клавиатурой не считаем.
+  const kb = editing ? Math.max(0, Math.round(baseH - vv.height)) : 0;
+  const was = root.dataset.kb;
+  root.dataset.kb = kb > 80 ? 'open' : 'closed';
+
+  if (was !== root.dataset.kb) {
+    mark('kb=' + root.dataset.kb);
+    logAdd(`клавиатура ${root.dataset.kb === 'open' ? 'ОТКРЫЛАСЬ' : 'закрылась'}  ${snap()}`);
+    // Клавиатура закрылась: запас снимаем с задержкой, пока страница плавно возвращается наверх.
+    if (root.dataset.kb === 'closed' && was === 'open') {
+      setTimeout(() => { if (root.dataset.kb === 'closed') clearExt(); }, 250);
     }
   }
+
+  if (kb > 80) {
+    // Запоминаем высоту клавиатуры: на следующем фокусе запас включится заранее, до прихода размеров от iOS.
+    if (Math.abs(store.get('kbh', 0) - kb) > 10) store.set('kbh', kb);
+    setExt(2 * kb); // с избытком, см. заголовок файла
+    scheduleReveal();
+  }
+
   listeners.forEach(fn => fn());
 }
 
-const schedule = () => { if (!raf) raf = requestAnimationFrame(sync); };
+const schedule = () => { if (!rafId) rafId = requestAnimationFrame(sync); };
+
+// ───────────────────────── Подключение ─────────────────────────
 
 export function initViewport() {
   root.dataset.kb = 'closed';
-  window.addEventListener('scroll', syncTab, { passive: true });
-  root.dataset.kbm = MODE;
 
+  // Панель вкладок следит за прокруткой страницы, пока приложение удлинено.
+  window.addEventListener('scroll', stickTabbar, { passive: true });
+
+  // Возврат из фона / поворот / восстановление страницы из кэша: окно могло измениться, пока нас не было.
   const reset = () => {
-    baseH = vv ? vv.height : innerHeight; baseW = vv ? vv.width : innerWidth;
-    window.scrollTo(0, 0); sync();
+    baseH = vv ? vv.height : innerHeight;
+    baseW = vv ? vv.width : innerWidth;
+    window.scrollTo(0, 0);
+    sync();
   };
   window.addEventListener('pageshow', reset);
   window.addEventListener('orientationchange', () => setTimeout(reset, 300));
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reset(); });
 
+  // Размеры от iOS приходят событиями visualViewport.
   if (vv) {
     vv.addEventListener('resize', () => { mark('vv.resize'); schedule(); });
-    vv.addEventListener('scroll', () => { mark('vv.scroll'); syncTab(); schedule(); });
+    vv.addEventListener('scroll', () => { mark('vv.scroll'); stickTabbar(); schedule(); });
   }
 
+  // ФОКУС в поле: всё, что можно, делаем сразу, не дожидаясь размеров от iOS.
   document.addEventListener('focusin', e => {
-    if (!isEditable(e.target)) return;
-    root.dataset.edit = '1'; // панель вкладок выходит из потока сразу (иначе её место обрезает список)
-    if (MODE === 'fluid') root.dataset.editing = '1'; // до того, как iOS начнёт сжимать окно
-    if (MODE === 'native' && root.dataset.kb !== 'open') {
-      setExt(2 * store.get('kbh', Math.round(baseH * 0.48))); // заранее, до решения iOS (оно приходит через ~90 мс)
+    if (!isEditable(e.target)) return; // дата/время/список: клавиатуры нет, логика не нужна
+    root.dataset.edit = '1';           // панель вкладок уезжает вниз сразу
+    lastRevealTarget = null;
+    revealTimers.forEach(clearTimeout);
+    revealTimers = [];
+    if (root.dataset.kb !== 'open') {
+      // Запас включаем до решения iOS (оно приходит через ~90 мс): по запомненной высоте клавиатуры,
+      // а в первый раз по оценке 48% высоты экрана.
+      setExt(2 * store.get('kbh', Math.round(baseH * 0.48)));
       clearTimeout(extTimer);
-      extTimer = setTimeout(() => { if (root.dataset.kb !== 'open') clearExt(); }, 900); // клавиатуры нет (аппаратная)
+      // Если клавиатура так и не появилась (аппаратная клавиатура), запас снимаем.
+      extTimer = setTimeout(() => { if (root.dataset.kb !== 'open') clearExt(); }, 900);
     }
-    lastWin = null;
-    revealT.forEach(clearTimeout); revealT = [];
-    startRec('open'); mark('focusin');
-    preposition(e.target);
+    startRecord('open');
+    mark('focusin');
     schedule();
   });
+
+  // УХОД из поля.
   document.addEventListener('focusout', e => {
-    startRec('close'); mark('focusout');
-    if (isEditable(e.relatedTarget)) return; // фокус переходит в другое поле
+    startRecord('close');
+    mark('focusout');
+    if (isEditable(e.relatedTarget)) return; // фокус переходит в другое поле: клавиатура остаётся
     schedule(); // панель вкладок должна вернуться сразу, а не ждать событий iOS
-    // Страницу возвращаем плавно и сразу, пока клавиатура ещё уезжает (раньше: мгновенный прыжок через 60 мс = рывок)
+    // Страницу возвращаем наверх плавно и сразу, пока клавиатура ещё уезжает.
     requestAnimationFrame(() => {
       if (!isEditable(document.activeElement) && scrollY > 0) window.scrollTo({ top: 0, behavior: 'smooth' });
     });
-    // страховка: если плавно не вышло, вернуть как есть (чёрная линия до скролла)
-    setTimeout(() => { if (!isEditable(document.activeElement)) { if (scrollY > 0) window.scrollTo(0, 0); sync(); } }, 900);
+    // Страховка через 0.9 с: если плавно не получилось, возвращаем как есть (иначе остаётся чёрная линия до скролла).
+    setTimeout(() => {
+      if (!isEditable(document.activeElement)) {
+        if (scrollY > 0) window.scrollTo(0, 0);
+        sync();
+      }
+    }, 900);
   });
 
-  // тап вне поля убирает клавиатуру
+  // Тап вне поля убирает клавиатуру (на iOS сама она при тапе по пустому месту не закрывается).
   document.addEventListener('pointerdown', e => {
-    const a = document.activeElement;
-    if (isEditable(a) && !isEditable(e.target)) a.blur();
+    const active = document.activeElement;
+    if (isEditable(active) && !isEditable(e.target)) active.blur();
   });
-  document.addEventListener('gesturestart', e => e.preventDefault());
 
-  // Пока идёт ввод, страницу пальцем не двигаем: иначе её уводит к краю документа, и под клавиатурой просвечивает фон.
-  // Прокручивать можно только сам список (.screen-scroll, у него overscroll-behavior: contain).
+  // Пока идёт ввод, страницу пальцем не двигаем (её уводит к краю документа). Прокручивается только список.
+  // passive:false обязателен, иначе preventDefault() игнорируется.
   document.addEventListener('touchmove', e => {
     if (isEditable(document.activeElement) && !e.target.closest?.('.screen-scroll')) e.preventDefault();
   }, { passive: false });
+
+  // Щипок-масштабирование: meta viewport его не запрещает на iOS полностью, жест гасим вручную.
+  document.addEventListener('gesturestart', e => e.preventDefault());
 
   sync();
 }
