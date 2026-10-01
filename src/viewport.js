@@ -12,6 +12,7 @@ const listeners = new Set();
 export const onViewportChange = fn => listeners.add(fn);
 
 let gap = 0;
+let fullH = innerHeight;
 let baseH = vv ? vv.height : innerHeight;
 let baseW = vv ? vv.width : innerWidth;
 let raf = 0, padTimer = 0, lastFit = null;
@@ -22,7 +23,9 @@ let cur = null, t0 = 0;
 function startRec(kind) { cur = rec[kind]; cur.length = 0; t0 = performance.now(); setTimeout(() => { if (cur === rec[kind]) cur = null; }, 1400); }
 function mark(tag) {
   if (!cur || !vv || cur.length > 60) return;
-  cur.push(`+${Math.round(performance.now() - t0)} ${tag} in${innerHeight} vv${Math.round(vv.height)}@${Math.round(vv.offsetTop)} y${Math.round(scrollY)}`);
+  const a = document.activeElement, sc = document.querySelector('.screen-scroll');
+  const f = isEditable(a) ? ` f${Math.round(a.getBoundingClientRect().bottom)}` : '';
+  cur.push(`+${Math.round(performance.now() - t0)} ${tag} in${innerHeight} vv${Math.round(vv.height)}@${Math.round(vv.offsetTop)} y${Math.round(scrollY)}${f} sc${sc ? Math.round(sc.scrollTop) : '-'}`);
 }
 export const recording = kind => rec[kind].join('\n') || '—';
 
@@ -122,8 +125,13 @@ function sync() {
     if (root.dataset.kb === 'closed' && was === 'open') setTimeout(() => { if (root.dataset.kb === 'closed') releasePad(); }, 250);
   }
 
-  // Размер каркаса меняем ТОЛЬКО без поля ввода: клавиатура окно не сжимает
-  if (!editing) root.style.setProperty('--app-h', Math.round(vv.height + vv.offsetTop + gap) + 'px');
+  // Высота каркаса. Документ не должен быть выше окна: iOS сжимает окно при клавиатуре и иначе прокручивает документ
+  // (шапка улетает). Поэтому при вводе каркас следует за innerHeight; верх экрана не меняется, меняется нижний край под клавиатурой.
+  if (!editing) {
+    const h = Math.round(vv.height + vv.offsetTop + gap);
+    if (h > baseH * 0.8) fullH = h; // закрытие клавиатуры: vv ещё мал, это не новый размер окна
+  }
+  root.style.setProperty('--app-h', (editing ? Math.min(fullH, innerHeight + gap) : fullH) + 'px');
   root.style.setProperty('--vvy', Math.round(vv.offsetTop) + 'px'); // если iOS всё же сдвинул панораму, гасим transform'ом
 
   if (kb > 80) {
