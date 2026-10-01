@@ -9,7 +9,6 @@
   import Field from './Field.svelte';
   import Msg from './Msg.svelte';
   import Spinner from './Spinner.svelte';
-  import { offerSavePassword } from './savePassword';
 
   let { onback, onregistered }: { onback: () => void; onregistered: (login: string) => void } = $props();
 
@@ -78,7 +77,6 @@
     busy = true;
     try {
       await api.auth.register({ id: requestId, login, password });
-      offerSavePassword(login, password, 'new-password');      // окно Apple «Сохранить пароль?»
       await api.auth.logout().catch(() => {});                 // регистрация не входит в аккаунт: вход делается отдельно
       onregistered(login);
     } catch (err) {
