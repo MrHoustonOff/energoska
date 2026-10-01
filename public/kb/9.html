@@ -1,0 +1,18 @@
+<!doctype html><html lang="ru" data-shell="old"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="color-scheme" content="dark light"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>kb 9</title><link rel="stylesheet" href="/src/styles.css"></head><body>
+<div id="app" style="height:100%">
+  <header class="header"><h1>Тест 9</h1></header><div style="padding:0 16px"><input id="a" placeholder="input ВНЕ .screen-scroll" autocomplete="off"></div>
+  <main class="screen-scroll">
+    <p class="caption">СТАТИЧНАЯ разметка приложения, без JS. Поле СНАРУЖИ скролл-контейнера (в шапке)</p>
+    <a href="/kb/" class="btn ghost lnk" style="margin-bottom:12px">← список</a>
+    <div class="card" style="height:500px">прокрути вниз</div>
+    <textarea id="b" placeholder="textarea внизу"></textarea>
+  </main>
+  <nav class="tabbar"><button class="tab">Таб</button><button class="tab">Таб</button><button class="tab">Таб</button></nav>
+</div>
+<script>const q=document.createElement('pre');q.className='dbg';q.style.cssText='position:absolute;top:60px;right:8px;font-size:10px;pointer-events:none';document.body.appendChild(q);
+['pointerdown','focusin','focusout'].forEach(e=>document.addEventListener(e,x=>{q.textContent=e+' '+x.target.tagName+'\n'+q.textContent.split('\n').slice(0,5).join('\n')},true))</script>
+</body></html>
