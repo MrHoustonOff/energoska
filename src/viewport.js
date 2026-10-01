@@ -13,7 +13,7 @@ export const onViewportChange = fn => listeners.add(fn);
 
 // Режим клавиатуры (переключатель на вкладке «Итог»): native — ничего не трогаем, fixed — каркас привязан к экрану,
 // fluid — на время ввода высота = 100% окна. Нужен, чтобы сравнить на телефоне и выбрать лучший.
-const MODE = store.get('kbm', 'fixed');
+const MODE = store.get('kbm', 'native');
 export const getKbm = () => MODE;
 export function setKbm(v) { store.set('kbm', v); location.reload(); }
 
