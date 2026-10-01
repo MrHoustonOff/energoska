@@ -8,7 +8,7 @@
 a{color:#b6ff3d;display:block;margin:12px 0;font-size:16px}pre{font:12px/1.5 monospace;white-space:pre-wrap}
 </style></head><body><div class="w"><b>Тест 4: + gesturestart и blur по pointerdown</b>
 <input placeholder="input — тапни" autocomplete="off"><textarea placeholder="textarea" rows="3"></textarea>
-<a href="/kb/">← к списку</a><pre id="l"></pre></div>
+<a href="/kb/">← к списку</a><a href="/">← в приложение</a><pre id="l"></pre></div>
 <script>const L=[],l=document.getElementById('l');const g=m=>{L.unshift(m);L.length=Math.min(L.length,8);l.textContent=L.join('\n')};
 ['pointerdown','focusin','focusout'].forEach(e=>document.addEventListener(e,x=>g(e+' '+x.target.tagName),true));
 document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('pointerdown',e=>{const a=document.activeElement;if(a&&/INPUT|TEXTAREA/.test(a.tagName)&&!/INPUT|TEXTAREA/.test(e.target.tagName))a.blur()});</script></body></html>

@@ -1,6 +1,6 @@
 import './styles.css';
 import * as store from './store.js';
-import { initViewport, readMetrics, onViewportChange, setShell, setKbMode, kickViewport, setKick, getLog } from './viewport.js';
+import { initViewport, readMetrics, onViewportChange, setShell, setKbMode, kickViewport, setKick, getLog, setMarkers } from './viewport.js';
 
 initViewport();
 
@@ -49,6 +49,10 @@ const screens = {
         ${['off', 'scale', 'zoom'].map(k => `<button class="btn" data-kick="${k}" aria-pressed="${store.get('dbg.kick', 'off') === k}">${k}</button>`).join('')}
       </div>
       <button class="btn ghost" data-act="kick">Пнуть сейчас</button>
+      <p class="caption" style="margin-top:16px">Границы</p>
+      <button class="btn ghost" data-act="markers">${'markers' in document.documentElement.dataset ? 'Скрыть' : 'Показать'} маркеры: красный = низ корня, голубой = низ окна</button>
+      <p class="caption" style="margin-top:16px">Бисект клавиатуры (страницы)</p>
+      <div class="seg">${[1, 2, 3, 4, 5].map(n => `<a class="btn ghost lnk" href="/kb/${n}.html">${n}</a>`).join('')}</div>
       <p class="caption" style="margin-top:16px">Тест клавиатуры: голый input</p>
       <input id="bare" placeholder="тапни сюда" style="background:#fff;color:#000">
       <div class="card" style="margin-top:12px"><p class="caption">Диагностика</p><pre class="dbg" id="dbg"></pre></div>
@@ -110,6 +114,7 @@ app.addEventListener('click', e => {
   else if (t.dataset.act === 'can') store.set('cans', Math.min(MAX_CANS, store.get('cans', 0) + 1));
   else if (t.dataset.act === 'reset') store.set('cans', 0);
   else if (t.dataset.act === 'kick') kickViewport(store.get('dbg.kick', 'off') === 'off' ? 'scale' : undefined);
+  else if (t.dataset.act === 'markers') { setMarkers(!('markers' in document.documentElement.dataset)); render(); }
   else if (t.dataset.kick) { setKick(t.dataset.kick); render(); }
   else if (t.dataset.shell) { setShell(t.dataset.shell); render(); }
   else if (t.dataset.kbmode) { setKbMode(t.dataset.kbmode); render(); }

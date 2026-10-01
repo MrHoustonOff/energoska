@@ -149,3 +149,9 @@ label.lbl { display: block; }
   font: 700 16px var(--font-display);
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* Отладка границ: красная = низ корня (#app), голубая = низ окна (innerHeight), жёлтая линия = экран */
+:root[data-markers] #app::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: #f00; z-index: 50; pointer-events: none; }
+:root[data-markers] body::after { content: ''; position: fixed; left: 0; right: 0; top: calc(var(--inner) - 6px); height: 6px; background: #0ff; z-index: 51; pointer-events: none; }
+
+.lnk { display: flex; align-items: center; justify-content: center; text-decoration: none; flex: 1; }

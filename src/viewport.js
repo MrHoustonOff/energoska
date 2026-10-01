@@ -81,6 +81,7 @@ function sync() {
   const plus = root.dataset.shell === 'plus';
   root.style.setProperty('--gap', (plus ? 0 : lastGap) + 'px');
   root.style.setProperty('--plus', lastGap + 'px');
+  root.style.setProperty('--inner', innerHeight + 'px');
   root.style.setProperty('--app-h', Math.round(vv.height + vv.offsetTop + (editing ? 0 : lastGap)) + 'px');
   root.style.setProperty('--kb', kb + 'px');
   root.dataset.kb = kb > 80 ? 'open' : 'closed';
@@ -131,6 +132,7 @@ export function initViewport() {
   root.dataset.shell = store.get('dbg.shell', 'plus');    // plus | fixed | dvh
   root.dataset.kbmode = store.get('dbg.kbmode', 'pan');   // pan | resize
   root.dataset.kb = 'closed';
+  if (store.get('dbg.markers', false)) root.dataset.markers = '';
 
   // Чёрная полоса при холодном старте/после фона: сбросить возможный сдвиг и пересчитать базу
   const reset = () => {
@@ -176,4 +178,9 @@ export function initViewport() {
 }
 
 export function setShell(v) { root.dataset.shell = v; store.set('dbg.shell', v); window.scrollTo(0, 0); sync(); }
+export function setMarkers(on) {
+  if (on) root.dataset.markers = ''; else delete root.dataset.markers;
+  store.set('dbg.markers', on);
+}
+
 export function setKbMode(v) { root.dataset.kbmode = v; store.set('dbg.kbmode', v); sync(); }
