@@ -1,0 +1,76 @@
+/* «Монолит»: кнопки «Энергоснулся» и «Водичка» (эталон: docs-src/components/ActionButton, WaterButton, preview.html).
+   Анимируем только transform и opacity; исключение — stroke-dashoffset кольца удержания, пока палец на кнопке.
+   Цвета приходят из переменных --b0 (фон), --b1, --b2 (пятна), --fg (текст). */
+
+.mono { position: relative; display: block; width: 100%; height: var(--h, 196px); padding: 0; border: 0; border-radius: 16px; overflow: hidden; isolation: isolate;
+  color: var(--fg, #000); background: var(--b0); flex: none; box-shadow: 4px 5px 0 rgba(0, 0, 0, .35); text-align: left; font: inherit; cursor: pointer;
+  contain: layout paint style; -webkit-tap-highlight-color: transparent; }
+.mono:active:not(.cold) { transform: scale(.99); }
+.mono::after { content: ''; position: absolute; inset: 0; background: var(--grain) 0 0 / 140px; mix-blend-mode: overlay; opacity: .35; pointer-events: none; }
+.mono .bl { position: absolute; width: 125.3%; aspect-ratio: 1; margin: -20.1% 0 0 -20.1%; border-radius: 50%; opacity: .9; z-index: -1; will-change: transform; }
+.mono .b1 { left: -25%; top: -40%; animation: mo-bl1 var(--sp, 7s) ease-in-out infinite;
+  background: radial-gradient(closest-side, var(--b1) 0, color-mix(in srgb, var(--b1) 95%, transparent) 45%, color-mix(in srgb, var(--b1) 67%, transparent) 62%, color-mix(in srgb, var(--b1) 32%, transparent) 74%, color-mix(in srgb, var(--b1) 9%, transparent) 86%, transparent 100%); }
+.mono .b2 { right: -25%; bottom: -55%; margin: 0 -20.1% -20.1% 0; animation: mo-bl2 var(--sp, 7s) ease-in-out infinite;
+  background: radial-gradient(closest-side, var(--b2) 0, color-mix(in srgb, var(--b2) 95%, transparent) 45%, color-mix(in srgb, var(--b2) 67%, transparent) 62%, color-mix(in srgb, var(--b2) 32%, transparent) 74%, color-mix(in srgb, var(--b2) 9%, transparent) 86%, transparent 100%); }
+.mono .bolt { position: absolute; right: -6px; top: -2px; opacity: .16; color: var(--fg, #000); z-index: 0; }
+.mono .tx { position: absolute; left: 20px; right: 20px; top: 18px; font-size: var(--tfs, 12px); line-height: 1.4; opacity: .8; z-index: 2; }
+.mono .tx.narrow { right: 96px; }
+.mono .lb { position: absolute; left: 20px; bottom: 18px; font-size: var(--fs, 28px); font-weight: 800; letter-spacing: -.01em; z-index: 2; line-height: 1.05; }
+.mono .rt { position: absolute; right: 16px; top: 14px; z-index: 2; text-align: right; }
+.mono .rt .num { font-size: 44px; line-height: 1; }
+.mono .rt .sub { font-size: 10px; opacity: .7; margin-top: 4px; }
+.num { font-family: var(--font-numerals); font-weight: 700; font-variant-numeric: tabular-nums; line-height: .9; }
+
+.mono .sp { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.mono .sp i { position: absolute; bottom: -8px; width: 6px; height: 6px; border-radius: 50%; background: var(--fg, #000); opacity: 0; animation: mo-rise 3.4s ease-in infinite; }
+.mono .ar { position: absolute; right: 12px; bottom: 18px; display: flex; z-index: 2; }
+.mono .ar svg { animation: mo-nud 1.2s ease-in-out infinite; }
+.mono .ar svg:nth-child(2) { animation-delay: .15s; } .mono .ar svg:nth-child(3) { animation-delay: .3s; }
+
+/* дыхание молнии: 0 банок */
+.mono.bp .bolt { animation: mo-bp 2.6s ease-in-out infinite; transform-origin: 70% 50%; }
+.mono.fl .bolt { animation: mo-flick 3s steps(1) infinite; }
+
+/* 1 банка: затухание */
+.mono.dim { filter: saturate(.45) brightness(.62); }
+.mono.dim .bl { animation-duration: 20s; animation-timing-function: steps(200, end); }
+.mono.dim .tx, .mono.dim .lb { animation: mo-fadeb 5s ease-in-out infinite; }
+
+/* 2 банки: лимит, кнопка замёрзла */
+.mono.cold { background: linear-gradient(160deg, color-mix(in srgb, var(--can-gorilla) 22%, var(--bg)), color-mix(in srgb, var(--ink) 6%, var(--bg)));
+  color: var(--ink); box-shadow: none; outline: 2px dashed var(--line-strong); outline-offset: -2px; cursor: default; }
+.mono.cold .bl, .mono.cold .sp { display: none; }
+.mono.cold .bolt { opacity: .1; color: var(--ink); }
+.mono.cold .lb { opacity: .28; }
+.mono.cold::after { opacity: .2; }
+.mono .hold { position: absolute; right: 16px; bottom: 14px; z-index: 2; width: 46px; height: 46px; }
+.mono .hold circle { fill: none; stroke-width: 4; stroke-linecap: round; }
+.mono .hold .fill { stroke-dasharray: 100; stroke-dashoffset: 100; }
+.mono.holding .hold .fill { animation: mo-holdfill 3s linear forwards; }
+.mono.holding { outline-style: solid; }
+
+/* вода */
+.mono.wb { --h: 98px; --tfs: 11px; --fs: 22px; --sp: 8s; }
+.mono.wb .lb { bottom: 12px; } .mono.wb .tx { top: 12px; }
+.mono.wb .rt .num { font-size: 30px; }
+.mono.wb .rt .num small { font: 600 12px var(--font-display); margin-left: 3px; }
+.mono .dpd { position: absolute; right: -14px; bottom: -34px; opacity: .16; color: var(--fg, #000); z-index: 0; }
+.mono .wv { position: absolute; left: 0; width: 200%; height: 16px; z-index: 0; bottom: 0; opacity: .22; animation: mo-wave 7s linear infinite; }
+.mono .wv.w3 { bottom: -4px; opacity: .14; animation: mo-wave2 5s linear infinite; }
+
+@keyframes mo-bl1 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(40.7%, 20.4%) scale(1.15); } }
+@keyframes mo-bl2 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-40.7%, -20.4%) scale(1.15); } }
+@keyframes mo-rise { 0% { transform: translateY(0) scale(.5); opacity: 0; } 15% { opacity: .9; } 100% { transform: translateY(-190px) scale(1.1); opacity: 0; } }
+@keyframes mo-flick { 0% { opacity: .16; } 20% { opacity: .34; } 24% { opacity: .1; } 60% { opacity: .16; } 64% { opacity: .4; } 68% { opacity: .12; } 100% { opacity: .16; } }
+@keyframes mo-bp { 0%, 100% { transform: scale(1); opacity: .14; } 50% { transform: scale(1.12); opacity: .24; } }
+@keyframes mo-nud { 0%, 100% { transform: translateX(0); opacity: .3; } 50% { transform: translateX(5px); opacity: 1; } }
+@keyframes mo-fadeb { 0%, 100% { opacity: .7; } 50% { opacity: .4; } }
+@keyframes mo-wave { to { transform: translateX(-50%); } }
+@keyframes mo-wave2 { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+@keyframes mo-holdfill { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+
+/* производительность: пауза под клавиатурой и при скрытой вкладке; низкий и минимальный уровни */
+:root[data-edit] :is(.mono, .wtr) *, :root[data-edit] .mono::before, [data-anim='paused'] :is(.mono, .wtr) * { animation-play-state: paused !important; }
+[data-perf='low'] .mono .sp, [data-perf='low'] .mono .ar svg, [data-perf='low'] .mono .wv { animation: none !important; opacity: 0; }
+[data-perf='min'] .mono *, [data-perf='min'] .wtr * { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .mono *, .mono.holding .hold .fill { animation: none !important; } .mono.holding .hold .fill { stroke-dashoffset: 0; } }

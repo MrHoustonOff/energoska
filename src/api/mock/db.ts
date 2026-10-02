@@ -3,7 +3,7 @@
 import * as store from '../../store';
 import type { Drink, Intake, Rating, User, WaterEntry } from '../types';
 
-export interface UserRow extends User { _pwd: string }
+export interface UserRow extends User { _pwd: string; _glasses?: number[] }
 export interface CoupleRow { id: string; timezone: string; day_boundary_hour: number }
 export interface RequestRow { id: string; from_user: string; to_user: string; status: 'pending' | 'accepted' | 'declined' }
 export type Row<T> = T & { _seq: number; _req: string };

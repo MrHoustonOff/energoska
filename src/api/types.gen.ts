@@ -287,6 +287,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/water/glasses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Свои стаканы текущего пользователя (до 3, объём 25..1000 мл) */
+        get: operations["getWaterGlasses"];
+        /** Заменить список своих стаканов целиком (идемпотентно) */
+        put: operations["setWaterGlasses"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Лента пары (новые сверху)
+         * @description Только факты прямых действий обоих участников пары: выпитый энергетик, порция воды, закрытие дневной нормы воды.
+         *     Записи «выпил» с `over_limit` в ленту попадают как обычные (пометку «сверх лимита» лента не показывает).
+         *     Курсор непрозрачный.
+         */
+        get: operations["listFeed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -368,7 +408,7 @@ export interface components {
             id: components["schemas"]["Uuid"];
             /** @description IANA, например `Europe/Minsk` */
             timezone: string;
-            /** @description Час, с которого начинается новый день (0 = полночь) */
+            /** @description Час, с которого начинается новый день (решено: 4 = с 04:00) */
             day_boundary_hour: number;
             members: components["schemas"]["Member"][];
         };
@@ -478,6 +518,31 @@ export interface components {
             limit: number;
             /** @description В этот день была запись сверх лимита */
             over_limit: boolean;
+        };
+        WaterGlasses: {
+            /** @description Объёмы своих стаканов, мл, без повторов */
+            glasses: number[];
+        };
+        FeedItem: {
+            /** @description Стабильный ключ элемента (не UUID: «норма закрыта» порождается записью воды) */
+            id: string;
+            /** @enum {string} */
+            kind: "intake" | "water" | "water_goal";
+            user_id: components["schemas"]["Uuid"];
+            at: components["schemas"]["Timestamp"];
+            drink_id?: components["schemas"]["Uuid"];
+            /** @description Для kind=intake */
+            drink_name?: string;
+            /** @description Для kind=intake: итог оценки автора этой банки, десятые; null — не оценивал */
+            score?: number | null;
+            /** @description Для kind=water */
+            ml?: number;
+            /** @description Для kind=water_goal: норма автора на тот момент */
+            goal_ml?: number;
+        };
+        FeedPage: {
+            items: components["schemas"]["FeedItem"][];
+            next_cursor: string | null;
         };
         WaterEntry: {
             id: components["schemas"]["Uuid"];
@@ -1080,6 +1145,74 @@ export interface operations {
             };
             409: components["responses"]["Problem"];
             422: components["responses"]["Problem"];
+        };
+    };
+    getWaterGlasses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Список */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaterGlasses"];
+                };
+            };
+        };
+    };
+    setWaterGlasses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaterGlasses"];
+            };
+        };
+        responses: {
+            /** @description Сохранено */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaterGlasses"];
+                };
+            };
+            422: components["responses"]["Problem"];
+        };
+    };
+    listFeed: {
+        parameters: {
+            query?: {
+                limit?: components["parameters"]["Limit"];
+                cursor?: components["parameters"]["Cursor"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Страница */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedPage"];
+                };
+            };
         };
     };
 }

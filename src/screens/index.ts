@@ -8,6 +8,8 @@ import type { Component } from 'svelte';
 import Placeholder from './Placeholder.svelte';
 import More from './More.svelte';
 import Lab from './Lab.svelte';
+import Home from '../home/Home.svelte';
+import WaterScreen from '../water/WaterScreen.svelte';
 
 export interface Screen {
   id: string;
@@ -22,9 +24,8 @@ const ph = (id: string, title: string, note: string, reference: string): Screen 
   ({ id, title, tab: id, component: Placeholder, props: { note, reference } });
 
 export const SCREENS: Screen[] = [
-  ph('home', 'Энергоська',
-    'Главная: кнопка-монолит «Энергоснулся» (ступени 0/1/2 банки), «Водичка», «Банка дня», лента пары.',
-    'ScreenHome, ActionButton, WaterButton, CanOfDayLogic'),
+  { id: 'home', title: 'Энергоська', tab: 'home', component: Home },
+  { id: 'water', title: 'Вода', tab: 'home', back: 'home', component: WaterScreen },
   ph('cans', 'Банки',
     'Каталог банок: сетка в 2 колонки, фото и состояние «фото скоро», «Витрина», фильтры, новая банка.',
     'ScreenCatalog, ScreenCatalogLoading, ScreenFilters, ScreenDrinkCard, ScreenNewDrink'),

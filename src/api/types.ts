@@ -24,6 +24,9 @@ export type DaySummary = S['DaySummary'];
 export type WaterEntry = S['WaterEntry'];
 export type WaterCreate = S['WaterCreate'];
 export type WaterDay = S['WaterDay'];
+export type WaterGlasses = S['WaterGlasses'];
+export type FeedItem = S['FeedItem'];
+export type FeedPage = S['FeedPage'];
 export type Problem = S['Problem'];
 
 export interface PageQuery { limit?: number; cursor?: string }

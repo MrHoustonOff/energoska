@@ -1,0 +1,20 @@
+/* Главная: аватары, лента, скелетон. Общие кнопки-монолиты — monolith.css. Токены и радиусы из tokens.css. */
+.hm-top { display: flex; justify-content: flex-end; gap: var(--space-2); margin-bottom: var(--space-3); min-height: 32px; }
+.hm-av { display: inline-grid; place-items: center; flex: none; border-radius: var(--radius-full); background: var(--c); color: var(--on-accent); font-weight: 800; }
+.hm-gap { height: var(--space-3); }
+.hm-sec { margin: var(--space-5) 0 var(--space-2); }
+.hm-retry { margin-top: var(--space-3); }
+
+.hm-feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.hm-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); }
+.hm-what { flex: 1; min-width: 0; font: 600 13px/1.3 var(--font-display); overflow-wrap: anywhere; }
+.hm-what small { display: block; margin-top: 2px; font: 500 11px var(--font-display); color: var(--ink-muted); }
+.hm-score { font-size: 24px; flex: none; }
+
+/* Скелетон: те же размеры, что у настоящих блоков; пульсирует только прозрачность. */
+.hm-sk { background: var(--surface-200); border-radius: var(--radius-md); animation: hm-pulse 1.4s ease-in-out infinite; }
+.hm-sk.av { width: 32px; height: 32px; border-radius: var(--radius-full); }
+.hm-sk.big { height: 196px; border-radius: 16px; }
+.hm-sk.mid { height: 98px; border-radius: 16px; margin-top: var(--space-3); }
+.hm-sk.row { height: 64px; margin-top: var(--space-2); }
+@keyframes hm-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }

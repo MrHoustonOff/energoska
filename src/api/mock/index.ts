@@ -9,6 +9,7 @@ import type { Ctx } from './ctx';
 import { authApi } from './auth';
 import { coupleApi } from './couple';
 import { drinksApi, intakesApi, ratingsApi, waterApi } from './data';
+import { feedApi } from './feed';
 import * as store from '../../store';
 import { seedAdmin } from './seed';
 
@@ -42,7 +43,7 @@ export function createMockBackend(opts: MockOptions = {}) {
     };
     const api: Api = {
       auth: authApi(ctx), couple: coupleApi(ctx), drinks: drinksApi(ctx),
-      ratings: ratingsApi(ctx), intakes: intakesApi(ctx), water: waterApi(ctx),
+      ratings: ratingsApi(ctx), intakes: intakesApi(ctx), water: waterApi(ctx), feed: feedApi(ctx),
     };
     return wrap(api, opts);
   }

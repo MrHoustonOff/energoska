@@ -95,3 +95,50 @@ export const lockoutScenarios: { name: string; events: LockEvent[]; at: number; 
   { name: 'ответ сервера 429 блокирует', events: [{ t: 0, do: 'server', retry: 45 }], at: 5, expect: { fails: 0, remainingSec: 40 } },
   { name: 'сервер просит больше минуты: берём минуту', events: [{ t: 0, do: 'server', retry: 600 }], at: 0, expect: { fails: 0, remainingSec: 60 } },
 ];
+
+/** Ступень кнопки «Энергоснулся»: банок за день → ступень. Для 3+ отдельных ступеней нет. */
+export const stageScenarios: { count: number; expect: 'live' | 'dim' | 'frozen' }[] = [
+  { count: 0, expect: 'live' }, { count: 1, expect: 'dim' }, { count: 2, expect: 'frozen' }, { count: 3, expect: 'frozen' }, { count: 5, expect: 'frozen' },
+];
+
+/** Время суток «Водички»: час → часть дня (границы 4/7/11/12/14/17/21/23). */
+export const daypartScenarios: { hour: number; expect: string }[] = [
+  { hour: 3, expect: 'night' }, { hour: 4, expect: 'dawn' }, { hour: 6, expect: 'dawn' }, { hour: 7, expect: 'morning' },
+  { hour: 10, expect: 'morning' }, { hour: 11, expect: 'brunch' }, { hour: 12, expect: 'lunch' }, { hour: 13, expect: 'lunch' },
+  { hour: 14, expect: 'afternoon' }, { hour: 16, expect: 'afternoon' }, { hour: 17, expect: 'evening' }, { hour: 20, expect: 'evening' },
+  { hour: 21, expect: 'late' }, { hour: 22, expect: 'late' }, { hour: 23, expect: 'night' }, { hour: 0, expect: 'night' },
+];
+
+/** Литры для показа: миллилитры → строка. */
+export const litersScenarios: { ml: number; expect: string }[] = [
+  { ml: 0, expect: '0,0' }, { ml: 200, expect: '0,2' }, { ml: 1200, expect: '1,2' }, { ml: 2000, expect: '2,0' }, { ml: 2250, expect: '2,25' }, { ml: 1125, expect: '1,13' },
+];
+
+/** Ручной ввод воды: строка → мл (25..2000) или null. */
+export const waterInputScenarios: { input: string; expect: number | null }[] = [
+  { input: '250', expect: 250 }, { input: '25', expect: 25 }, { input: '2000', expect: 2000 }, { input: '24', expect: null },
+  { input: '2001', expect: null }, { input: '', expect: null }, { input: '1,5', expect: null }, { input: '-5', expect: null },
+];
+
+/** Свои стаканы: список → допустим ли (до 3, 25..1000 мл, без повторов). */
+export const glassScenarios: { name: string; list: unknown; ok: boolean }[] = [
+  { name: 'пусто', list: [], ok: true }, { name: 'три стакана', list: [200, 330, 750], ok: true },
+  { name: 'четыре — много', list: [200, 300, 330, 400], ok: false }, { name: 'меньше 25', list: [20], ok: false },
+  { name: 'больше 1000', list: [1001], ok: false }, { name: 'повтор', list: [330, 330], ok: false }, { name: 'не список', list: 330, ok: false },
+];
+
+/** Контекст кнопки при 0 банок: (час, день недели 1=пн, партнёр уже пил) → контекст. */
+export const contextScenarios: { name: string; hour: number; weekday: number; partnerAhead: boolean; expect: string }[] = [
+  { name: 'партнёр уже выпил: счёт важнее времени', hour: 9, weekday: 3, partnerAhead: true, expect: 'partner_ahead' },
+  { name: 'пятница вечером', hour: 19, weekday: 5, partnerAhead: false, expect: 'friday_evening' },
+  { name: 'пятница днём — обычный день', hour: 13, weekday: 5, partnerAhead: false, expect: 'lunch' },
+  { name: 'понедельник утром', hour: 8, weekday: 1, partnerAhead: false, expect: 'monday' },
+  { name: 'вторник утром', hour: 8, weekday: 2, partnerAhead: false, expect: 'morning_weekday' },
+  { name: 'суббота утром', hour: 10, weekday: 6, partnerAhead: false, expect: 'weekend_morning' },
+  { name: 'обед', hour: 12, weekday: 3, partnerAhead: false, expect: 'lunch' },
+  { name: 'провал дня 15:40', hour: 15, weekday: 3, partnerAhead: false, expect: 'slump' },
+  { name: 'вечер', hour: 18, weekday: 3, partnerAhead: false, expect: 'evening' },
+  { name: 'поздно после 22', hour: 22, weekday: 3, partnerAhead: false, expect: 'late' },
+  { name: 'ночь до границы суток', hour: 2, weekday: 3, partnerAhead: false, expect: 'late' },
+  { name: '14:00 — между обедом и провалом', hour: 14, weekday: 3, partnerAhead: false, expect: 'default' },
+];

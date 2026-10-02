@@ -6,6 +6,6 @@ export function createHttpApi(): Api {
   const notImplemented = (): never => { throw new Error('HTTP API не реализован: бэкенда пока нет (VITE_API=mock)'); };
   const module = () => new Proxy({}, { get: () => notImplemented });
   return {
-    auth: module(), couple: module(), drinks: module(), ratings: module(), intakes: module(), water: module(),
+    auth: module(), couple: module(), drinks: module(), ratings: module(), intakes: module(), water: module(), feed: module(),
   } as Api;
 }

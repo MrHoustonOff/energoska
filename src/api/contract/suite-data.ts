@@ -173,5 +173,49 @@ export function registerDataContract(setup: () => Harness) {
       await b.water.add({ id: id(), ml: 500, at: T });
       expect((await a.water.get(localDay(T))).total_ml).toBe(0);
     });
+    it('свои стаканы: до трёх, 25..1000 мл, замена целиком', async () => {
+      const a = setup().client();
+      await signUp(a, 'anna');
+      expect(await a.water.glasses()).toEqual({ glasses: [] });
+      expect(await a.water.setGlasses({ glasses: [330, 200] })).toEqual({ glasses: [330, 200] });
+      expect(await a.water.glasses()).toEqual({ glasses: [330, 200] });
+      await expectCode(a.water.setGlasses({ glasses: [100, 200, 300, 400] }), 'validation');
+      await expectCode(a.water.setGlasses({ glasses: [1001] }), 'validation');
+      await expectCode(a.water.setGlasses({ glasses: [200, 200] }), 'validation');
+      expect(await a.water.glasses()).toEqual({ glasses: [330, 200] });
+    });
+  });
+
+  describe('лента пары', () => {
+    it('видны факты обоих: энергетик с оценкой автора, вода, закрытие нормы; новые сверху', async () => {
+      const h = setup(); const a = h.client(); const b = h.client();
+      const ua = await pair(a, b);
+      const ub = await b.auth.me();
+      await b.auth.updateMe({ water_goal_ml: 500 });
+      const d = await a.drinks.create(drinkReq({ name: 'Ягодная' }));
+      await a.ratings.create({ id: id(), drink_id: d.id, smell: 80, taste: 80, after: 80, strength: 80, at: T });
+      await a.intakes.create({ id: id(), drink_id: d.id, at: '2026-10-02T09:00:00Z' });
+      await b.water.add({ id: id(), ml: 300, at: '2026-10-02T09:10:00Z' });
+      await b.water.add({ id: id(), ml: 300, at: '2026-10-02T09:20:00Z' });
+      const feed = await a.feed.list();
+      expect(feed.items.map(i => i.kind)).toEqual(['water_goal', 'water', 'water', 'intake']);
+      expect(feed.items[3]).toMatchObject({ user_id: ua.id, drink_name: 'Ягодная', score: 80 });
+      expect(feed.items[0]).toMatchObject({ user_id: ub.id, goal_ml: 500 });
+      expect(await b.feed.list()).toEqual(feed);
+    });
+    it('чужая пара не видна; не-энергетик в ленту не попадает; страницы без повторов', async () => {
+      const h = setup(); const a = h.client(); const z = h.client();
+      await signUp(a, 'anna'); await signUp(z, 'zoya');
+      const tea = await a.drinks.create(drinkReq({ name: 'Чай', is_energy: false }));
+      await a.intakes.create({ id: id(), drink_id: tea.id, at: T });
+      for (let i = 0; i < 3; i++) await a.water.add({ id: id(), ml: 100 + i * 25, at: T });
+      const p1 = await a.feed.list({ limit: 2 });
+      expect(p1.items).toHaveLength(2);
+      const p2 = await a.feed.list({ limit: 2, cursor: p1.next_cursor! });
+      expect(p2.items).toHaveLength(1);
+      expect(p2.next_cursor).toBeNull();
+      expect(new Set([...p1.items, ...p2.items].map(i => i.id)).size).toBe(3);
+      expect((await z.feed.list()).items).toEqual([]);
+    });
   });
 }

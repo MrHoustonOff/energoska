@@ -1,0 +1,32 @@
+/* Водный футер. Слой .wtr лежит в корне приложения между фоном и оболочкой; панель вкладок становится прозрачной и поднимается над ним.
+   Поведение при вводе (уезжает вниз, следует за --kbext/--sy) повторяет правила .tabbar из styles.css; сам каркас не менялся.
+   Не проверено на устройстве: плавность, поведение с клавиатурой, чек-лист docs-src/docs/07-app-shell.md §9. */
+:root { --wa: rgba(56, 150, 255, .26); --wb: rgba(30, 110, 235, .34); }
+@media (prefers-color-scheme: light) { :root:not([data-theme='dark']) { --wa: rgba(56, 150, 255, .34); --wb: rgba(30, 110, 235, .38); } }
+
+.wtr { position: absolute; left: 0; right: 0; bottom: 0; height: var(--tab-h); z-index: 1; overflow: hidden; pointer-events: none;
+  background: var(--surface-100); box-shadow: var(--shadow-panel); contain: layout paint style;
+  transition: transform .3s cubic-bezier(.2, .9, .25, 1) var(--tab-delay, .22s); }
+.wtr::before { content: ''; position: absolute; inset: 0; background: var(--grain) 0 0 / 140px; opacity: .16; }
+:root[data-edit] .wtr, :root[data-kb='open'] .wtr { transform: translateY(calc(var(--tab-h) + 8px)); transition-delay: 0s; }
+:root[data-ext] .wtr { bottom: var(--kbext, 0px); translate: 0 var(--sy, 0px); }
+
+.wtr .lv { position: absolute; left: 0; bottom: 0; width: 100%; height: 124px; will-change: transform;
+  transform: translateY(calc(30px + (1 - var(--lv, 0)) * (var(--tab-h) + 22px))); transition: transform .9s cubic-bezier(.3, .7, .3, 1); }
+.wtr .w { position: absolute; left: 0; top: 0; width: 200%; height: 124px; will-change: transform; }
+.wtr .w1 { fill: var(--wb); animation: wf-1 9s linear infinite; }
+.wtr .w2 { fill: var(--wa); top: -11px; animation: wf-2 6s linear infinite; }
+.wtr .bb { position: absolute; bottom: 6px; width: 5px; height: 5px; border-radius: 50%; background: rgba(255, 255, 255, .55); animation: wf-bb 5s ease-in infinite; }
+@keyframes wf-1 { to { transform: translateX(-50%); } }
+@keyframes wf-2 { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+@keyframes wf-bb { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: .8; } 100% { transform: translateY(-70px); opacity: 0; } }
+
+/* Панель вкладок поверх воды: фон прозрачный, подписи читаются через text-shadow и более плотный цвет. */
+.tabbar { z-index: 2; background: transparent; box-shadow: none; }
+.tabbar::after { display: none; }
+.tab { text-shadow: 0 0 8px var(--bg); }
+.tab:not([aria-current='page']) { color: color-mix(in srgb, var(--ink) 72%, transparent); }
+
+:root[data-edit] .wtr *, [data-anim='paused'] .wtr * { animation-play-state: paused !important; }
+[data-perf='low'] .wtr .bb { animation: none; opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .wtr .w, .wtr .bb { animation: none !important; } }

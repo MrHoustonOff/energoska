@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { comparePrices, decideIntake, formatMoney, formatTenths, isIsoUtc, isTenths, isUuidV7, localDay, parseTenths, ratingTotal, uuidv7 } from './index';
-import { dayScenarios, intakeScenarios, priceScenarios, ratingScenarios, tenthsScenarios } from './scenarios';
+import { energyContext, localClock, comparePrices, decideIntake, energyStage, formatLiters, isGlassList, localHour, parseWaterMl, snapSlider, waterDaypart, waterLevel, formatMoney, formatTenths, isIsoUtc, isTenths, isUuidV7, localDay, parseTenths, ratingTotal, uuidv7 } from './index';
+import { contextScenarios, daypartScenarios, glassScenarios, litersScenarios, stageScenarios, waterInputScenarios, dayScenarios, intakeScenarios, priceScenarios, ratingScenarios, tenthsScenarios } from './scenarios';
 
 describe('лимит энергетиков', () => {
   it.each(intakeScenarios)('$name', s => expect(decideIntake(s.count, s.isEnergy, s.flag)).toEqual(s.expect));
@@ -92,5 +92,35 @@ describe('блокировка входа на телефоне', () => {
   it('часы переведены назад: ждать больше минуты не придётся', () => {
     const now = 1_000_000;
     expect(lockRemainingMs({ fails: 0, lockedUntil: now + 3_600_000 }, now)).toBe(60_000);
+  });
+});
+
+describe('главная и вода', () => {
+  it.each(stageScenarios)('ступень кнопки при $count банках', s => expect(energyStage(s.count)).toBe(s.expect));
+  it.each(daypartScenarios)('время суток в $hour ч', s => expect(waterDaypart(s.hour)).toBe(s.expect));
+  it.each(litersScenarios)('литры $ml мл', s => expect(formatLiters(s.ml)).toBe(s.expect));
+  it.each(waterInputScenarios)('ввод «$input»', s => expect(parseWaterMl(s.input)).toBe(s.expect));
+  it.each(glassScenarios)('стаканы: $name', s => expect(isGlassList(s.list)).toBe(s.ok));
+  it('час по поясу пары', () => {
+    expect(localHour('2026-10-02T09:00:00Z', 'Europe/Minsk')).toBe(12);
+    expect(localHour('2026-10-02T21:30:00Z', 'Europe/Minsk')).toBe(0);
+  });
+  it('ползунок: шаг 25 и границы', () => {
+    expect(snapSlider(110)).toBe(100);
+    expect(snapSlider(-5)).toBe(0);
+    expect(snapSlider(5000)).toBe(1000);
+  });
+  it('уровень воды 0..1', () => {
+    expect(waterLevel(1125, 2250)).toBe(0.5);
+    expect(waterLevel(3000, 2250)).toBe(1);
+    expect(waterLevel(0, 0)).toBe(0);
+  });
+});
+
+describe('контекст кнопки «Энергоснулся»', () => {
+  it.each(contextScenarios)('$name', s => expect(energyContext({ hour: s.hour, minute: 0, weekday: s.weekday }, s.partnerAhead)).toBe(s.expect));
+  it('часы и день недели по поясу пары', () => {
+    expect(localClock('2026-10-02T16:40:00Z', 'Europe/Minsk')).toEqual({ hour: 19, minute: 40, weekday: 5 });
+    expect(localClock('2026-10-04T21:30:00Z', 'Europe/Minsk')).toEqual({ hour: 0, minute: 30, weekday: 1 });
   });
 });

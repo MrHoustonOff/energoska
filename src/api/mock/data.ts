@@ -5,7 +5,7 @@ import type { Ctx } from './ctx';
 import { checkFields, createOnce, currentUser, dayFor, membersOf, nowIso, page } from './ctx';
 import type { UserRow } from './db';
 import { pub } from './db';
-import { DAILY_LIMIT, decideIntake, isIsoUtc, isTenths, isUuidV7, isWaterMl, ratingTotal } from '../../domain';
+import { DAILY_LIMIT, decideIntake, isGlassList, isIsoUtc, isTenths, isUuidV7, isWaterMl, ratingTotal } from '../../domain';
 
 const inCouple = (c: Ctx, u: UserRow) => {
   const ids = new Set(membersOf(c, u).map(m => m.id));
@@ -124,6 +124,14 @@ export function waterApi(c: Ctx): WaterApi {
       return createOnce(c, c.db.water, req, r => r.user_id === u.id, () => ({
         id: req.id, user_id: u.id, ml: req.ml, at: req.at, local_day: dayFor(c, u, req.at),
       }));
+    },
+    async glasses() { return { glasses: [...(currentUser(c)._glasses ?? [])] }; },
+    async setGlasses(req) {
+      const u = currentUser(c);
+      checkFields([['glasses', isGlassList(req.glasses), 'До 3 разных объёмов, 25–1000 мл']]);
+      u._glasses = [...req.glasses];
+      c.save();
+      return { glasses: [...u._glasses] };
     },
   };
 }

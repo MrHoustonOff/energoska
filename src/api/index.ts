@@ -4,7 +4,7 @@
 import type {
   User, UserPatch, RegisterRequest, LoginRequest, LoginAvailability, CoupleState, CouplePatch, JoinRequest,
   Drink, DrinkCreate, DrinkPage, Rating, RatingCreate, Intake, IntakeCreate, IntakePage, DaySummary,
-  WaterEntry, WaterCreate, WaterDay, PageQuery,
+  WaterEntry, WaterCreate, WaterDay, WaterGlasses, FeedPage, PageQuery,
 } from './types';
 
 export * from './types';
@@ -43,6 +43,11 @@ export interface IntakesApi {
 export interface WaterApi {
   get(day?: string): Promise<WaterDay>;
   add(req: WaterCreate): Promise<WaterEntry>;
+  glasses(): Promise<WaterGlasses>;
+  setGlasses(req: WaterGlasses): Promise<WaterGlasses>;
+}
+export interface FeedApi {
+  list(q?: PageQuery): Promise<FeedPage>;
 }
 
 /** Единый интерфейс данных. Новый блок: модуль здесь + эндпоинты в api/openapi.yaml + реализации + контрактные тесты. */
@@ -53,6 +58,7 @@ export interface Api {
   ratings: RatingsApi;
   intakes: IntakesApi;
   water: WaterApi;
+  feed: FeedApi;
 }
 
 import { createMockApi } from './mock';

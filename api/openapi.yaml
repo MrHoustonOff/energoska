@@ -27,6 +27,7 @@ tags:
   - { name: intakes, description: Записи «выпил» }
   - { name: ratings, description: Оценки }
   - { name: water, description: Вода }
+  - { name: feed, description: Лента пары }
 security:
   - session: []
 
@@ -383,6 +384,52 @@ paths:
         '409': { $ref: '#/components/responses/Problem' }
         '422': { $ref: '#/components/responses/Problem' }
 
+  /water/glasses:
+    get:
+      tags: [water]
+      operationId: getWaterGlasses
+      summary: Свои стаканы текущего пользователя (до 3, объём 25..1000 мл)
+      responses:
+        '200':
+          description: Список
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WaterGlasses' }
+    put:
+      tags: [water]
+      operationId: setWaterGlasses
+      summary: Заменить список своих стаканов целиком (идемпотентно)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WaterGlasses' }
+      responses:
+        '200':
+          description: Сохранено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WaterGlasses' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /feed:
+    get:
+      tags: [feed]
+      operationId: listFeed
+      summary: Лента пары (новые сверху)
+      description: |
+        Только факты прямых действий обоих участников пары: выпитый энергетик, порция воды, закрытие дневной нормы воды.
+        Записи «выпил» с `over_limit` в ленту попадают как обычные (пометку «сверх лимита» лента не показывает).
+        Курсор непрозрачный.
+      parameters:
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: Страница
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FeedPage' }
+
 components:
   securitySchemes:
     session:
@@ -639,6 +686,34 @@ components:
         energy_count: { type: integer }
         limit: { type: integer, description: Дневной лимит (2) }
         over_limit: { type: boolean, description: В этот день была запись сверх лимита }
+    WaterGlasses:
+      type: object
+      required: [glasses]
+      properties:
+        glasses:
+          type: array
+          maxItems: 3
+          items: { type: integer, minimum: 25, maximum: 1000 }
+          description: Объёмы своих стаканов, мл, без повторов
+    FeedItem:
+      type: object
+      required: [id, kind, user_id, at]
+      properties:
+        id: { type: string, description: 'Стабильный ключ элемента (не UUID: «норма закрыта» порождается записью воды)' }
+        kind: { type: string, enum: [intake, water, water_goal] }
+        user_id: { $ref: '#/components/schemas/Uuid' }
+        at: { $ref: '#/components/schemas/Timestamp' }
+        drink_id: { $ref: '#/components/schemas/Uuid' }
+        drink_name: { type: string, description: 'Для kind=intake' }
+        score: { type: integer, minimum: 0, maximum: 100, nullable: true, description: 'Для kind=intake: итог оценки автора этой банки, десятые; null — не оценивал' }
+        ml: { type: integer, description: 'Для kind=water' }
+        goal_ml: { type: integer, description: 'Для kind=water_goal: норма автора на тот момент' }
+    FeedPage:
+      type: object
+      required: [items, next_cursor]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/FeedItem' } }
+        next_cursor: { type: string, nullable: true }
     WaterEntry:
       type: object
       required: [id, user_id, ml, at, local_day]
