@@ -20,6 +20,11 @@ import NewDrinkSaved from '../newdrink/Saved.svelte';
 import { nd } from '../newdrink/newDrinkState.svelte';
 import Partner from '../partner/Partner.svelte';
 import Profile from '../profile/Profile.svelte';
+import Records from '../dicts/Records.svelte';
+import Brand from '../dicts/Brand.svelte';
+import Shop from '../dicts/Shop.svelte';
+import Shops from '../dicts/Shops.svelte';
+import { navParams } from '../nav';
 import Pickers from '../dicts/Pickers.svelte';
 import Rating from '../rating/Rating.svelte';
 import DrinkChat from '../drink/DrinkChat.svelte';
@@ -56,6 +61,11 @@ export const SCREENS: Screen[] = [
   { id: 'avatar', title: 'Настройки', tab: 'more', back: 'more', component: Profile },
   { ...ph('settings', 'Настройки', 'Настройки (этап 2).', 'ScreenSettings'), tab: 'more', back: 'avatar' },
   { ...ph('tags', 'Теги', 'Справочник тегов.', 'ScreenRecords'), tab: 'more', back: 'avatar' },
+  { id: 'records', title: 'Бренды', tab: 'more', back: 'more', component: Records },
+  { ...ph('archive', 'Архив', 'Архив брендов.', 'ScreenRecords'), tab: 'more', back: 'records' },
+  { id: 'brand', title: 'Бренд', tab: 'cans', back: 'drink', component: Brand },
+  { id: 'shop', title: '', tab: 'cans', get back() { return navParams.from === 'shops' ? 'shops' : 'drink'; }, component: Shop },
+  { id: 'shops', title: 'Магазины', tab: 'more', back: 'more', component: Shops },
   ph('add', 'Запись',
     'Центральная кнопка-молния: быстрая запись банки, затем оценка (4 параметра, шаг 0.1).',
     'ScreenRating, ActionButton, ScreenNewDrinkSaved'),

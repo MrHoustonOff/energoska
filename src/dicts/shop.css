@@ -1,0 +1,93 @@
+/* Магазин и рейтинг магазинов (ScreenShop). Значения из preview.html. */
+.sh { display: flex; flex-direction: column; gap: 16px; }
+.sh > * { flex: none; }
+.sh-top { display: flex; justify-content: flex-end; height: 44px; margin-top: -8px; }
+.sh-top svg, .sh-rate svg, .sh-edit svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.sh-hd { display: flex; align-items: center; gap: 22px; padding-left: 8px; }
+.sh-hd > div { min-width: 0; }
+.sh-name { font-size: 30px; font-weight: 800; line-height: 1; }
+.sh-cn { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.sh-cn small { font-size: 12px; color: var(--ink-muted); }
+.sh-bdg { font-size: 10px; font-weight: 700; letter-spacing: .04em; padding: 3px 7px; border-radius: 7px; background: var(--f1); color: var(--ink-muted); }
+.sh-sp { font-size: 11px; margin-top: 8px; color: var(--ink-muted); }
+.sh-sp b { font-size: 16px; color: var(--ink); }
+.sh-card { border-radius: 16px; overflow: hidden; padding: 16px; }
+.sh-ch { display: flex; justify-content: space-between; align-items: center; }
+.sh-ch span:first-child, .sh-k { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+.sh-big { display: flex; align-items: flex-end; gap: 16px; margin-top: 10px; }
+.sh-big .num { font-size: 84px; letter-spacing: -.03em; line-height: .85; color: var(--ink); }
+.sh-big > div { padding-bottom: 4px; }
+.sh-pl { font-size: 22px; font-weight: 800; line-height: 1; }
+.sh-pl small { font-size: 12px; font-weight: 500; color: var(--ink-muted); }
+.sh-cp { font-size: 12px; font-weight: 700; color: var(--me-mark); margin-top: 8px; }
+.sh-cp.dear { color: var(--ink-muted); }
+.sh-bar { height: 6px; border-radius: 3px; background: var(--f1); margin-top: 14px; overflow: hidden; }
+.sh-bar i { display: block; height: 100%; background: var(--me-mark); border-radius: 3px; }
+.sh-note { font-size: 10px; line-height: 1.5; margin-top: 10px; color: var(--ink-muted); }
+.sh-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sh-tiles .u-card { padding: 14px; border-radius: 16px; overflow: hidden; }
+.sh-tiles .num { font-size: 44px; margin-top: 10px; display: block; }
+.sh-tiles .num small { font-size: 20px; color: var(--ink-muted); font-family: inherit; }
+.sh-lh { display: flex; justify-content: space-between; align-items: center; }
+.sh-lh .u-ib { width: 32px; height: 32px; border-radius: 10px; }
+.sh-sort { display: flex; gap: 8px; }
+.sh-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 0; border-top: 1px solid var(--line); background: none; color: var(--ink); width: 100%; text-align: left; font-family: inherit; cursor: pointer; content-visibility: auto; contain-intrinsic-size: auto 80px; }
+.sh-row:first-child { border-top: 0; }
+.sh-can { width: 52px; height: 60px; position: relative; display: grid; place-items: center; flex: none; }
+.sh-can i { position: absolute; width: 40px; height: 40px; border-radius: 50%; background: var(--c); left: 6px; top: 10px; }
+.sh-can .u-can { position: relative; }
+.sh-np { width: 52px; height: 60px; border-radius: 10px; background: var(--c); color: var(--k); padding: 6px; display: flex; align-items: flex-start; flex: none; overflow: hidden; }
+.sh-np span { font-weight: 800; line-height: 1.04; text-transform: uppercase; color: inherit; letter-spacing: -.01em; overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto; display: block; }
+.sh-bi { flex: 1; min-width: 0; }
+.sh-bi small { font-size: 10px; margin-top: 3px; color: var(--ink-muted); display: block; }
+.sh-bi b { font-size: 13px; font-weight: 800; line-height: 1.15; margin-top: 2px; display: block; }
+.sh-pr { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.sh-pr .num { font-size: 28px; }
+.sh-pr .tg { font-size: 10px; font-weight: 800; background: var(--ink); color: var(--bg); padding: 4px 8px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.sh-pr .tg svg { fill: currentColor; stroke: none; }
+.sh-pr .dl { font-size: 10px; white-space: nowrap; color: var(--ink-muted); }
+/* Шторка «Магазин» */
+.sh-sheet { top: 70px; bottom: 0; height: calc(100% - 70px); border-radius: 24px 24px 0 0; gap: 14px; padding: 10px 16px 0; z-index: 21; overflow-y: auto; max-height: none; }
+.sh-sheet > * { flex: none; }
+.sh-eh { display: flex; align-items: center; justify-content: space-between; }
+.sh-eh b { font-size: 22px; font-weight: 800; }
+.sh-eh .u-ib { width: 40px; height: 40px; }
+.sh-ep { display: flex; align-items: center; gap: 16px; }
+.sh-pw { position: relative; flex: none; }
+.sh-cam { position: absolute; right: -6px; bottom: -6px; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; border: 2px solid var(--bg); }
+.sh-eb { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.sh-eb .u-fld { height: 44px; font-size: 12px; padding: 0 14px; border: 0; font-family: inherit; text-align: left; cursor: pointer; width: 100%; }
+.sh-eb .u-fld > span { display: flex; gap: 8px; align-items: center; color: var(--ink); }
+.sh-eb .u-fld.dg > span { color: var(--danger); }
+.sh-hint { font-size: 11px; line-height: 1.5; color: var(--ink-muted); }
+.sh-edit .u-seg { padding: 2px; }
+.sh-edit .u-seg > button { min-height: 34px; padding: 0 14px; font-size: 12px; }
+.sh-edit .u-fld input { text-align: right; flex: 1; }
+.sh-edit .sec { margin-bottom: 10px; }
+.sh-pv .u-ro { height: 56px; padding: 0 12px; gap: 12px; cursor: default; }
+.sh-pv .u-ro b { font-size: 14px; font-weight: 700; display: block; }
+.sh-pv .u-ro small { font-size: 10px; margin-top: 2px; color: var(--ink-muted); display: block; }
+.sh-pv .u-ro .num { font-size: 22px; }
+.sh-btns { display: flex; gap: 10px; margin-top: auto; padding-bottom: calc(6px + var(--sab)); position: sticky; bottom: 0; background: color-mix(in srgb, var(--ink) 9%, var(--bg)); padding-top: 6px; }
+.sh-btns .u-cta:first-child { flex: 1; }
+.sh-btns .u-cta:last-child { flex: 2; }
+/* Рейтинг магазинов */
+.sr-seg { display: flex; justify-content: space-between; align-items: center; }
+.sr-seg .u-seg { padding: 2px; }
+.sr-seg .u-seg > button { min-height: 30px; padding: 0 12px; font-size: 11px; }
+.sr-seg small { font-size: 10px; text-align: right; line-height: 1.4; color: var(--ink-muted); }
+.sr-gh { display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px; }
+.sr-gh span:last-child { font-size: 10px; color: var(--ink-muted); }
+.sr-r { display: flex; align-items: center; gap: 12px; height: 62px; padding: 0 12px; border: 0; border-top: 1px solid var(--line); background: none; color: var(--ink); width: 100%; text-align: left; font-family: inherit; cursor: pointer; }
+.sr-r:first-child { border-top: 0; }
+.sr-r .p { font-size: 22px; width: 20px; color: var(--ink-muted); font-family: var(--font-numerals); font-weight: 700; }
+.sr-r .p.f { color: var(--ink); }
+.sr-r > div { flex: 1; min-width: 0; }
+.sr-r b { font-size: 14px; font-weight: 800; display: block; }
+.sr-r small { font-size: 10px; margin-top: 2px; color: var(--ink-muted); display: block; }
+.sr-r .crown { width: 26px; height: 26px; border-radius: 9px; background: var(--ink); color: var(--bg); display: grid; place-items: center; flex: none; }
+.sr-r .crown svg { fill: currentColor; stroke: none; }
+.sr-r .sc { font-size: 28px; }
+.sr-r .sc.m { color: var(--ink-muted); }
+.sr-top { display: flex; justify-content: flex-end; height: 44px; margin-top: -8px; }
+.sr-top svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

@@ -45,7 +45,7 @@
         <div class="dk-canbox"><div class="dk-disc"></div><div class="dk-can"><StickerCan photo={tile.photo} h={300} tilt={-4} size="h384" /></div></div>
       {/if}
       <div class="dk-info">
-        <div><div class="sec">{tile.brand}</div><div class="dk-name">{tile.flavor}</div></div>
+        <div><button class="dk-brand sec" onclick={() => { navParams.brandId = tile!.brand.toLowerCase().startsWith('monster') ? 'monster' : tile!.brand.toLowerCase().split(' ')[0]; go('brand'); }}>{tile.brand}</button><div class="dk-name">{tile.flavor}</div></div>
         <div><div class="num dk-total">{tile.me}</div><div class="dk-pt"><span class="num u-pa" style="font-size:40px">{tile.partner}</span><small>партнёр</small></div></div>
         <div class="dk-params">
           {#each d.params as p}
@@ -77,7 +77,7 @@
         <button class="u-chip" onclick={cycle}>{CLABEL[dk.country]}<span><svg viewBox="0 0 24 24" width="12" height="12"><path d="M9 5l7 7-7 7" /></svg></span></button></div>
       <div class="u-grp">
         {#each d.shops as s}
-          <button class="dk-shop" onclick={() => { navParams.shopId = s.id; go('shop'); }}>
+          <button class="dk-shop" onclick={() => { navParams.shopId = s.id; navParams.from = 'drink'; go('shop'); }}>
             <i class="u-dot" style="--c:{s.color}"></i>
             <div><b>{s.name}</b><small>{s.buys}</small></div>
             <svg viewBox="0 0 52 24" width="52" height="24"><polyline points={s.points} stroke={s.color} stroke-dasharray="4 3" /></svg>

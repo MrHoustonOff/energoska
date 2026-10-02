@@ -5,13 +5,15 @@
   import { forcedState } from '../demo-ui/states';
   import Fader from '../ui/Fader.svelte';
   import { getRatingBase } from './source';
-  import { rate } from './ratingState.svelte';
+  import { rate, resetRate } from './ratingState.svelte';
 
   let { go }: { go: (id: string) => void } = $props();
   const base = getRatingBase();
   const forced = forcedState('rating');
-  let step = $state<1 | 2>(forced === 'details' ? 2 : 1);
-  const vals = $state(base.params.map(p => p.was));
+  if (forced === 'faders') resetRate();
+  if (forced === 'details') { resetRate(); rate.step = 2; }
+  if (rate.vals.length === 0) rate.vals = base.params.map(p => p.was);
+  const vals = rate.vals;
   const avg = (a: number[]) => Math.round((a.reduce((s, v) => s + v, 0) / a.length) * 10) / 10;
   const total = $derived(avg(vals));
   const was = avg(base.params.map(p => p.was));
@@ -24,8 +26,8 @@
 
 <div class="rt">
   <div class="rt-tot"><span class="num">{f1(total)}</span>
-    {#if step === 1}<span>итог<br>было {f1(was)} · <b>{base.partnerName} {f1(partnerTotal)}</b></span>{:else}<span>шаг 2 из 2<br>детали</span>{/if}</div>
-  {#if step === 1}
+    {#if rate.step === 1}<span>итог<br>было {f1(was)} · <b>{base.partnerName} {f1(partnerTotal)}</b></span>{:else}<span>шаг 2 из 2<br>детали</span>{/if}</div>
+  {#if rate.step === 1}
     <div class="rt-cols">
       {#each base.params as p, i}
         <div class="rt-col"><span class="num">{f1(vals[i])}</span>
@@ -35,13 +37,13 @@
           <span class="dl" class:up={vals[i] > p.was} class:dn={vals[i] < p.was}>{delta(vals[i], p.was)}</span></div>
       {/each}
     </div>
-    <button class="u-cta main" onclick={() => (step = 2)}>Дальше</button>
+    <button class="u-cta main" onclick={() => (rate.step = 2)}>Дальше</button>
   {:else}
     <button class="u-fld rt-d" onclick={() => go('pickers')} style="border:0;font-family:inherit"><span>Магазин</span>
       <b>{rate.shop} <svg viewBox="0 0 24 24" width="16" height="16"><path d="M9 5l7 7-7 7" /></svg></b></button>
     <div class="u-fld rt-pr"><span>Цена</span><input type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" bind:value={rate.price} aria-label="Цена" />
       <div class="u-seg">{#each ['BYN', 'RUB'] as c}<button class:on={rate.currency === c} onclick={() => (rate.currency = c as 'BYN' | 'RUB')}>{c}</button>{/each}</div></div>
     <textarea class="rt-ta" placeholder="Комментарий" bind:value={rate.comment} aria-label="Комментарий"></textarea>
-    <div class="rt-btns"><button class="u-cta gh" onclick={() => (step = 1)}>Назад</button><button class="u-cta" onclick={() => go('saved')}>Сохранить</button></div>
+    <div class="rt-btns"><button class="u-cta gh" onclick={() => (rate.step = 1)}>Назад</button><button class="u-cta" onclick={() => { resetRate(); go('drink'); }}>Сохранить</button></div>
   {/if}
 </div>

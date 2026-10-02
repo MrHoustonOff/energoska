@@ -97,3 +97,4 @@
 .dkc-send { width: 44px; height: 44px; border-radius: 50%; background: var(--me); color: var(--on-accent); display: grid; place-items: center; flex: none; border: 0; cursor: pointer; padding: 0; }
 .dkc-send:disabled { opacity: .45; }
 .dkc-send svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dk-brand { display: block; background: none; border: 0; padding: 0; text-align: left; font-family: inherit; cursor: pointer; }

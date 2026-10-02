@@ -7,20 +7,24 @@
 
   let { go }: { go: (id: string) => void } = $props();
 
-  const ITEMS = [
-    ['Бренды', 'ScreenBrand'],
-    ['Магазины', 'ScreenShop'],
-    ['Теги и записи', 'ScreenRecords'],
-    ['Партнёр', 'ScreenPartner'],
-    ['Уведомления', 'ScreenNotifications'],
-    ['Настройки', 'ScreenSettings'],
+  /** [название, экран, эталон]: экраны без id пока заглушки следующих этапов. */
+  const ITEMS: [string, string | null, string][] = [
+    ['Бренды', 'records', 'ScreenRecords'],
+    ['Магазины', 'shops', 'ScreenShop'],
+    ['Теги и записи', 'tags', 'ScreenRecords'],
+    ['Партнёр', 'partner', 'ScreenPartner'],
+    ['Новая банка', 'newdrink', 'ScreenNewDrink'],
+    ['Уведомления', null, 'ScreenNotifications'],
+    ['Настройки', 'avatar', 'ScreenAvatarEditor'],
   ];
 </script>
 
-{#each ITEMS as [name, ref]}
-  <div class="menu-row is-soon" aria-disabled="true">
-    <span>{name}</span><span class="caption">{ref}</span>
-  </div>
+{#each ITEMS as [name, id, ref]}
+  {#if id}
+    <button class="menu-row" onclick={() => go(id)}><span>{name}</span><span class="caption">{ref}</span></button>
+  {:else}
+    <div class="menu-row is-soon" aria-disabled="true"><span>{name}</span><span class="caption">{ref}</span></div>
+  {/if}
 {/each}
 
 <p class="caption" style="margin-top:24px">Служебное</p>
