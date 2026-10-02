@@ -11,7 +11,7 @@
   import CodRecView from './CodRecView.svelte';
 
   let { go }: { go: (id: string) => void } = $props();
-  registerGo(go);
+  $effect(() => registerGo(go));
   const f = forcedState('canrec');
   let idx = $state(Math.max(0, COD_REC_ORDER.indexOf((f ?? 'friday') as 'friday')));
   cod.recSeen = true;

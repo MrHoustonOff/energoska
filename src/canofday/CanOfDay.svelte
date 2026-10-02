@@ -20,7 +20,7 @@
   import { IC } from './icons';
 
   let { go }: { go: (id: string) => void } = $props();
-  registerGo(go);
+  $effect(() => registerGo(go));
   const sum = getSummary();
   let timer: ReturnType<typeof setTimeout> | undefined;
   let scrollTo = $state(0);

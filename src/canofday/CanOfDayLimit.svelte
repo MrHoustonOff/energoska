@@ -16,7 +16,7 @@
   import { IC } from './icons';
 
   let { go }: { go: (id: string) => void } = $props();
-  registerGo(go);
+  $effect(() => registerGo(go));
   type St = 'last' | 'second' | 'duel' | 'frozen';
   const st = (forcedState('canlimit') as St | null) ?? 'last';
   const L = COD_LIMIT;
