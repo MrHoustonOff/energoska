@@ -202,7 +202,7 @@ function writeRows(c: Ctx, me: UserRow) {
       const d = e.drink;
       const row: Row<Drink & { _couple: string }> = {
         id: uuidv7(e.t), name: d.name, brand: d.brand, is_energy: d.energy, volume_ml: d.volume_ml, sugar_g_per_100ml: d.sugar,
-        country: d.country, created_by: e.by.id, created_at: iso(e.t), photo: d.photo ? demoPhoto(d.color) : null, _couple: couple, _seq: seq, _req: '',
+        country: d.country, created_by: e.by.id, created_at: iso(e.t), photo: d.photo ? demoPhoto(d.photo) : null, _couple: couple, _seq: seq, _req: '',
       };
       drinkIds.set(d.name, row.id);
       db.drinks.push(row);
