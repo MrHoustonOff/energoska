@@ -6,3 +6,4 @@ import './dicts';
 import './partner';
 import './brandShop';
 import './canOfDay';
+import './stats';

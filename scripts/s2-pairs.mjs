@@ -10,6 +10,7 @@ const MAP = {
   ScreenCanOfDayRec: ['canrec:friday', 'canrec:dasha', 'canrec:long'],
   ScreenCanOfDayLimit: ['canlimit:last', 'canlimit:second', 'canlimit:duel', 'canlimit:frozen'],
   RecommendationCatalog: ['reccat:all'],
+  ScreenStats: ['stats:top', 'stats:brands', 'stats:ratings', 'stats:records'],
 };
 let pw;
 for (const p of ['playwright', '/opt/node-tools/node_modules/playwright/index.mjs']) {
