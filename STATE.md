@@ -37,6 +37,9 @@ _Обновляется в конце каждой сессии. Последн�
    - Ветка Gemini (T4) отклонена и удалена, из неё ничего не берём.
 6. Далее по блокам из `docs-src/docs/app-ux.INDEX.md`.
 
+## Этап 1 (S1): 14 экранов сделаны на фикстурах (ветка claude/amazing-bardeen-0irrme)
+Код: `src/catalog`, `src/drink`, `src/rating`, `src/newdrink`, `src/partner`, `src/profile`, `src/dicts`, общие `src/ui`, фикстуры `src/demo-ui`, реестр состояний `src/demo-ui/states.ts` (+ Лаборатория → «Состояния экранов», ссылка `?s=экран:состояние&theme=`). Пары «эталон | моё»: `docs-src/reports/S1/pairs`, инвентаризации `docs-src/reports/S1/*.md`. Скрипт пар: `scripts/s1-pairs.mjs`. Дальше: этап 2 (`docs-src/prompts/S2.md`).
+
 ## Правила процесса
 - Одна задача = одна ветка (`task/<имя>` или заданная средой `claude/...`) + push; PR и `main` только по просьбе владельца. Владелец проверяет через `git pull` на Windows/macOS: имена файлов не должны различаться только регистром.
 - Заморожено: см. `CLAUDE.md`, раздел «ЗАМОРОЖЕНО».
