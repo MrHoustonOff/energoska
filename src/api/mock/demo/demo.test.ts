@@ -95,6 +95,11 @@ describe('демо через API мока (как в приложении)', ()
     expect(drinks.some(d => d.photo)).toBe(true);
     expect(drinks.some(d => d.photo === null)).toBe(true);
   });
+  it('есть энергетики, фото которых «в обработке» (photo: null), уже с «обычного дня»', async () => {
+    const api = await signedIn('one');
+    const pending = (await api.drinks.list({ limit: 100 })).items.filter(d => d.is_energy && d.photo === null);
+    expect(pending.length).toBeGreaterThanOrEqual(2);
+  });
   it('партнёрша входит своим паролем и видит те же данные пары', async () => {
     const backend = createMockBackend({ now: () => NOW, demo: 'one' });
     const her = backend.client();
