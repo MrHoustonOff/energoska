@@ -39,7 +39,7 @@
   async function add() {
     if (busy || typedMl === null) return;
     busy = true; error = '';
-    try { await addWater(typedMl); typing = null; } catch (e) { error = msg(e); } finally { busy = false; }
+    try { await addWater(typedMl); typing = null; go('home'); } catch (e) { error = msg(e); } finally { busy = false; }
   }
 
   async function saveSheet(v: number) {
