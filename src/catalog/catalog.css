@@ -1,0 +1,141 @@
+.ct-drink-tile {
+  border-radius: 14px;
+  background: var(--surface-100);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 216px;
+}
+
+.ct-drink-top {
+  position: relative;
+  aspect-ratio: 1 / 1.16;
+  display: grid;
+  place-items: center;
+}
+
+.ct-drink-disk {
+  position: absolute;
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  background: var(--c);
+  left: 26px;
+  top: 40px;
+}
+
+.ct-drink-can-wrap {
+  position: relative;
+  margin-top: 10px;
+}
+
+.ct-drink-info {
+  padding: 0 12px 12px;
+}
+
+.ct-drink-title {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  height: 29px;
+  overflow: hidden;
+  font-family: var(--font-display);
+}
+
+.ct-drink-scores {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.ct-num {
+  font-family: 'Oswald', 'Arial Narrow', sans-serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: .9;
+}
+
+.ct-me {
+  color: var(--me-mark);
+  font-size: 28px;
+}
+
+.ct-pa {
+  color: var(--partner-mark);
+  font-size: 18px;
+}
+
+.ct-brand-tile {
+  border-radius: 14px;
+  background: var(--c);
+  color: var(--on-accent);
+  padding: 14px;
+  aspect-ratio: 1 / 1.32;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 228px;
+}
+
+.ct-brand-name {
+  font-size: 24.3px;
+  font-weight: 800;
+  line-height: 1.04;
+  text-transform: uppercase;
+  color: var(--on-accent);
+  letter-spacing: -.01em;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  display: block;
+  font-family: var(--font-display);
+}
+
+.ct-brand-chip {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(0, 0, 0, .28);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-family: var(--font-display);
+}
+
+.ct-brand-sub {
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 8px;
+  font-family: var(--font-display);
+}
+
+.ct-chips {
+  display: flex;
+  gap: 8px;
+  margin: 0 -16px;
+  padding: 0 16px;
+  overflow: hidden;
+  flex: none;
+}
+
+.ct-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.ct-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex: none;
+}
+
+.ct-hr {
+  display: flex;
+  gap: 8px;
+}
