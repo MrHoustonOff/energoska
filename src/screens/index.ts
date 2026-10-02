@@ -14,6 +14,8 @@ import WaterScreen from '../water/WaterScreen.svelte';
 import Catalog from '../catalog/Catalog.svelte';
 import CatalogHeader from '../catalog/HeaderRight.svelte';
 import Search from '../catalog/Search.svelte';
+import Drink from '../drink/Drink.svelte';
+import DrinkChat from '../drink/DrinkChat.svelte';
 
 export interface Screen {
   id: string;
@@ -36,7 +38,9 @@ export const SCREENS: Screen[] = [
   { id: 'water', title: 'Вода', tab: 'home', back: 'home', component: WaterScreen, fullscreen: true },
   { id: 'cans', title: 'Банки', tab: 'cans', component: Catalog, headerRight: CatalogHeader },
   { id: 'catsearch', title: 'Поиск', tab: 'cans', back: 'cans', component: Search },
-  { ...ph('drink', 'Банка', 'Карточка банки.', 'ScreenDrinkCard'), tab: 'cans', back: 'cans' },
+  { id: 'drink', title: 'Банка', tab: 'cans', back: 'cans', component: Drink },
+  { id: 'drinkchat', title: 'Чат', tab: 'cans', back: 'drink', component: DrinkChat, fullscreen: true },
+  { ...ph('pricesheet', 'Динамика цен', 'Лейбл цены (этап 2).', 'ScreenPriceSheet'), tab: 'cans', back: 'drink' },
   ph('add', 'Запись',
     'Центральная кнопка-молния: быстрая запись банки, затем оценка (4 параметра, шаг 0.1).',
     'ScreenRating, ActionButton, ScreenNewDrinkSaved'),
