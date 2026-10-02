@@ -3,3 +3,5 @@ import { COD_SUMMARY, COD_PARAMS, COD_EMPTY } from '../demo-ui/canOfDay';  // MO
 export const getSummary = () => COD_SUMMARY;
 export const getParams = () => COD_PARAMS;
 export const getEmpty = () => COD_EMPTY;
+import { REC_TYPES } from '../demo-ui/recTypes';  // MOCK-DEMO
+export const getRecTypes = () => REC_TYPES;

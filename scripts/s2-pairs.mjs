@@ -9,6 +9,7 @@ const MAP = {
   ScreenCanOfDay: ['canday:ready', 'canday:spin', 'canday:result', 'canday:empty', 'canday:sheet', 'canday:sheet2'],
   ScreenCanOfDayRec: ['canrec:friday', 'canrec:dasha', 'canrec:long'],
   ScreenCanOfDayLimit: ['canlimit:last', 'canlimit:second', 'canlimit:duel', 'canlimit:frozen'],
+  RecommendationCatalog: ['reccat:all'],
 };
 let pw;
 for (const p of ['playwright', '/opt/node-tools/node_modules/playwright/index.mjs']) {
@@ -29,7 +30,7 @@ for (const theme of ['dark', 'light']) {
       const mine = path.join(out, `.tmp-${theme}.png`);
       await page.screenshot({ path: mine });
       const ref = `docs-src/reports/S2/ref/${name}-${i + 1}-${theme}.png`;
-      await sheet.setContent(`<body style="margin:0;display:flex;gap:10px;background:#444"><img src="${fs.existsSync(ref) ? b64(ref) : ''}" height="844"><img src="${b64(mine)}" height="844"></body>`);
+      await sheet.setContent(`<body style="margin:0;display:flex;gap:10px;background:#444">${name === 'RecommendationCatalog' ? `<div style="width:390px;height:844px;overflow:hidden;background:#000"><img src="${b64(ref)}" style="width:1800px;margin:0 0 0 -16px;display:block"></div>` : `<img src="${fs.existsSync(ref) ? b64(ref) : ''}" height="844">`}<img src="${b64(mine)}" height="844"></body>`);
       await sheet.screenshot({ path: path.join(out, `${name}-${i + 1}-${theme}.png`) });
     }
   }

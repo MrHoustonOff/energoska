@@ -31,6 +31,7 @@ import DrinkChat from '../drink/DrinkChat.svelte';
 import CanOfDay from '../canofday/CanOfDay.svelte';
 import CanOfDayRec from '../canofday/CanOfDayRec.svelte';
 import CanOfDayLimit from '../canofday/CanOfDayLimit.svelte';
+import RecommendationCatalog from '../canofday/RecommendationCatalog.svelte';
 
 export interface Screen {
   id: string;
@@ -53,6 +54,7 @@ export const SCREENS: Screen[] = [
   { id: 'water', title: 'Вода', tab: 'home', back: 'home', component: WaterScreen, fullscreen: true },
   { id: 'canday', title: 'Банка дня', tab: 'home', back: 'home', component: CanOfDay, fullscreen: true },
   { id: 'canrec', title: 'Банка дня', tab: 'home', back: 'home', component: CanOfDayRec, fullscreen: true },
+  { id: 'reccat', title: 'Рекомендации', tab: 'more', back: 'lab', component: RecommendationCatalog },
   { id: 'canlimit', title: 'Банка дня', tab: 'home', back: 'home', component: CanOfDayLimit, fullscreen: true },
   { id: 'cans', title: 'Банки', tab: 'cans', component: Catalog, headerRight: CatalogHeader },
   { id: 'catsearch', title: 'Поиск', tab: 'cans', back: 'cans', component: Search },

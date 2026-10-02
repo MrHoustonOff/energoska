@@ -107,4 +107,5 @@ registerStates([
   { screen: 'canlimit', state: 'second', label: 'Лимит · рекомендация «Вторая и последняя» (кадр 2)' },
   { screen: 'canlimit', state: 'duel', label: 'Лимит · дуэль двух банок (кадр 3)' },
   { screen: 'canlimit', state: 'frozen', label: 'Лимит · 2 из 2, экран заморожен (кадр 4)' },
+  { screen: 'reccat', state: 'all', label: 'Каталог типов рекомендаций: 24 типа (RecommendationCatalog)' },
 ]);
