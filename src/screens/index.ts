@@ -15,6 +15,11 @@ import Catalog from '../catalog/Catalog.svelte';
 import CatalogHeader from '../catalog/HeaderRight.svelte';
 import Search from '../catalog/Search.svelte';
 import Drink from '../drink/Drink.svelte';
+import NewDrink from '../newdrink/NewDrink.svelte';
+import NewDrinkSaved from '../newdrink/Saved.svelte';
+import { nd } from '../newdrink/newDrinkState.svelte';
+import Pickers from '../dicts/Pickers.svelte';
+import Rating from '../rating/Rating.svelte';
 import DrinkChat from '../drink/DrinkChat.svelte';
 
 export interface Screen {
@@ -41,6 +46,10 @@ export const SCREENS: Screen[] = [
   { id: 'drink', title: 'Банка', tab: 'cans', back: 'cans', component: Drink },
   { id: 'drinkchat', title: 'Чат', tab: 'cans', back: 'drink', component: DrinkChat, fullscreen: true },
   { ...ph('pricesheet', 'Динамика цен', 'Лейбл цены (этап 2).', 'ScreenPriceSheet'), tab: 'cans', back: 'drink' },
+  { id: 'rating', title: 'Оценка', tab: 'cans', back: 'drink', component: Rating, fullscreen: true },
+  { id: 'pickers', title: 'Магазин', tab: 'cans', back: 'rating', component: Pickers, fullscreen: true },
+  { id: 'newdrink', get title() { return nd.energy ? 'Новая банка' : 'Новый напиток'; }, tab: 'cans', back: 'cans', component: NewDrink, fullscreen: true },
+  { id: 'newdrinksaved', title: 'Новая банка', tab: 'cans', back: 'cans', component: NewDrinkSaved, fullscreen: true },
   ph('add', 'Запись',
     'Центральная кнопка-молния: быстрая запись банки, затем оценка (4 параметра, шаг 0.1).',
     'ScreenRating, ActionButton, ScreenNewDrinkSaved'),

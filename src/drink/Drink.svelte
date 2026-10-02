@@ -2,7 +2,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import './drink.css';
-  import { navParams, registerGo } from '../nav';
+  import { navParams, registerGo, setTitle } from '../nav';
   import { forcedState } from '../demo-ui/states';
   import StickerCan from '../ui/StickerCan.svelte';
   import { fitFont } from '../ui/fitFont';
@@ -102,7 +102,7 @@
     <div style="height:12px"></div>
 
     <div class="dk-ctaw"><div class="mono-box dk-cta">
-      <button class="mono sm bp" style="--b0:var(--can-{tile.color});--b1:color-mix(in srgb,var(--can-{tile.color}) 55%,#fff);--b2:color-mix(in srgb,var(--can-{tile.color}) 70%,#000);--fg:{tile.ink};--fs:24px;--sp:7s;--tfs:11px" onclick={() => go('rating')}>
+      <button class="mono sm bp" style="--b0:var(--can-{tile.color});--b1:color-mix(in srgb,var(--can-{tile.color}) 55%,#fff);--b2:color-mix(in srgb,var(--can-{tile.color}) 70%,#000);--fg:{tile.ink};--fs:24px;--sp:7s;--tfs:11px" onclick={() => { setTitle('rating', `${tile!.brand} ${tile!.flavor}`); go('rating'); }}>
         <i class="bl b1"></i><i class="bl b2"></i>
         <span class="bolt" aria-hidden="true"><svg viewBox="0 0 24 24" width="190" height="190"><path d="M13 2L4 14h6l-1 8 9-12h-6z" fill="currentColor" /></svg></span>
         <span class="tx">{tile.flavor} ждёт</span><span class="lb">Энергоснулся</span>

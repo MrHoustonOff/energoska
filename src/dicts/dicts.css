@@ -1,0 +1,23 @@
+/* Справочники (ScreenRecords, ScreenPickers). Значения из preview.html. */
+.dc { display: flex; flex-direction: column; gap: 12px; }
+.dc > * { flex: none; }
+.dc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 44px; }
+.dc-top .tt { font-size: 14px; font-weight: 600; }
+.dc-top svg, .dc-ro svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.dc-tile { border-radius: 14px; padding: 12px; min-height: 104px; display: flex; flex-direction: column; justify-content: space-between; background: var(--c); color: var(--k); text-transform: uppercase; border: 0; text-align: left; font-family: inherit; cursor: pointer; content-visibility: auto; contain-intrinsic-size: auto 104px; }
+.dc-tile > span > span { font-weight: 800; line-height: 1.04; text-transform: uppercase; color: inherit; letter-spacing: -.01em; overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto; display: block; }
+.dc-tile small { font-size: 11px; font-weight: 600; text-transform: none; opacity: .8; }
+.dc-ro { gap: 12px; }
+.dc-hint { font-size: 12px; line-height: 1.5; padding: 0 4px; color: var(--ink-muted); }
+.dc-ed { font-size: 22px; font-weight: 800; background: var(--f1); border-radius: 12px; height: 56px; display: flex; align-items: center; padding: 0 16px; }
+.dc-ed input { flex: 1; width: 100%; border: 0; background: transparent; color: var(--ink); font: 800 22px var(--font-display); outline: none; padding: 0; }
+.dc-btns { display: flex; gap: 10px; }
+.dc-btns .u-cta { flex: 1; }
+/* Цвет (ScreenPickers, кадр 2) */
+.pk-prev { display: flex; gap: 16px; }
+.pk-prev > div { flex: 1; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.pk-prev small { font-size: 12px; color: var(--ink-muted); }
+.pk-prev .u-tag { height: 40px; border-radius: 12px; font-size: 14px; padding: 0 14px; }
+.pk-tile { width: 130px; height: 170px; border-radius: 16px; background: var(--c); color: var(--k); padding: 14px; font-size: 22px; font-weight: 800; text-transform: uppercase; flex: none; overflow-wrap: break-word; }
+.pk-done { margin: auto 0 8px; }
