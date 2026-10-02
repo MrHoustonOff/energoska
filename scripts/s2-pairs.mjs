@@ -13,6 +13,7 @@ const MAP = {
   ScreenStats: ['stats:top', 'stats:brands', 'stats:ratings', 'stats:records'],
   ScreenActiveChart: ['chart:week12'],
   ScreenPriceSheet: ['pricesheet:byn', 'pricesheet:rub', 'pricesheet:pick'],
+  ScreenWaterStats: ['stats:water', 'stats:waterweek', 'stats:waterboth', 'stats:wateryear'],
 };
 let pw;
 for (const p of ['playwright', '/opt/node-tools/node_modules/playwright/index.mjs']) {

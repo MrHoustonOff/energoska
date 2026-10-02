@@ -13,14 +13,19 @@
   import StatsRatings from './StatsRatings.svelte';
   import StatsRecords from './StatsRecords.svelte';
   import { WHO } from './source';
+  import WaterCard from './WaterCard.svelte';
+  import { stats } from './statsState.svelte';
 
   let { go }: { go: (id: string) => void } = $props();
   $effect(() => registerGo(go));
   const forced = forcedState('stats');
-  let who = $state(0);
   let compact = $state(false);
   let sections: HTMLDivElement[] = [];
   const ORDER = ['top', 'brands', 'ratings', 'records'];
+  if (forced === 'water') stats.water = false;
+  else if (forced === 'waterweek') { stats.water = true; stats.who = 0; stats.period = 0; }
+  else if (forced === 'waterboth') { stats.water = true; stats.who = 2; stats.period = 1; }
+  else if (forced === 'wateryear') { stats.water = true; stats.who = 1; stats.period = 2; }
   let list: HTMLElement | null = null;
   const onscroll = () => { compact = (list?.scrollTop ?? 0) > 56; };
   onMount(() => {
@@ -35,12 +40,13 @@
 <div class="st">
   <header class="st-head" class:compact>
     <div class="st-top"><span class="st-title">Цифры</span>
-      {#if compact}<div class="st-hr"><div class="u-seg st-wseg">{#each WHO as w, i}<button class:on={who === i} onclick={() => (who = i)}>{w}</button>{/each}</div>
+      {#if compact}<div class="st-hr"><div class="u-seg st-wseg">{#each WHO as w, i}<button class:on={stats.who === i} onclick={() => (stats.who = i)}>{w}</button>{/each}</div>
         <button class="u-ib st-fb" aria-label="Фильтры" onclick={() => (cat.filtersOpen = true)}><Ico d={IC.filters} /></button></div>
       {:else}<button class="u-ib st-fb big" aria-label="Фильтры" onclick={() => (cat.filtersOpen = true)}><Ico d={IC.filters} /></button>{/if}
     </div>
-    {#if !compact}<div class="u-seg st-wseg big">{#each WHO as w, i}<button class:on={who === i} onclick={() => (who = i)}>{w}</button>{/each}</div>{/if}
+    {#if !compact}<div class="u-seg st-wseg big">{#each WHO as w, i}<button class:on={stats.who === i} onclick={() => (stats.who = i)}>{w}</button>{/each}</div>{/if}
   </header>
+  <div class="st-water"><WaterCard /></div>
   <div class="st-sec" bind:this={sections[0]}><StatsDrunk onchart={() => go('chart')} /></div>
   <div class="st-sec" bind:this={sections[1]}><StatsBrands /></div>
   <div class="st-sec" bind:this={sections[2]}><StatsRatings /></div>

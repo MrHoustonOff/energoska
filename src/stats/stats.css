@@ -101,3 +101,5 @@
 .st-dnum { font-size: 26px; line-height: 1; }
 .st-diff { font-size: 11px; color: var(--me-mark); font-weight: 700; margin-top: 4px; }
 .st-diff.bad { color: var(--danger); }
+.st-water { position: sticky; top: 52px; z-index: 4; margin: 0 0 0; }
+.st-head.compact + .st-water { top: 44px; }

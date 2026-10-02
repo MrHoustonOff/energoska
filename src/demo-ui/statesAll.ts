@@ -9,3 +9,4 @@ import './canOfDay';
 import './stats';
 import './activeChart';
 import './priceSheet';
+import './waterStats';

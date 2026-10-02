@@ -6,3 +6,5 @@ export const getDrunk = () => STATS_DRUNK;
 export const getBrands = () => STATS_BRANDS;
 export const getRatings = () => STATS_RATINGS;
 export const getRecords = () => STATS_RECORDS;
+import { WATER } from '../demo-ui/waterStats';  // MOCK-DEMO
+export const getWater = () => WATER;
