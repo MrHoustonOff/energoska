@@ -3,3 +3,4 @@ import './catalog';
 import './drink';
 import './rating';
 import './dicts';
+import './partner';

@@ -1,0 +1,56 @@
+/* Профиль и фото (ScreenAvatarEditor). Значения из preview.html. */
+.pf { display: flex; flex-direction: column; gap: 12px; }
+.pf > * { flex: none; }
+.pf-top { height: 52px; display: flex; align-items: center; justify-content: space-between; }
+.pf-hd { display: flex; align-items: center; gap: 14px; padding: 14px; }
+.pf-ava { position: relative; flex: none; border: 0; padding: 0; background: none; cursor: pointer; }
+.pf-av { display: block; border-radius: 50%; flex: none; }
+.pf-av.l { width: 64px; height: 64px; box-shadow: 0 0 0 2px var(--bg), 0 0 0 5px var(--c); }
+.pf-av.m { width: 40px; height: 40px; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--c); }
+.pf-av.s { width: 28px; height: 28px; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--c); }
+.pf-cam { position: absolute; right: -6px; bottom: -6px; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; border: 2px solid var(--bg); }
+.pf svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pf-who { flex: 1; }
+.pf-who b { font-size: 16px; font-weight: 800; display: block; }
+.pf-who small { font-size: 12px; margin-top: 2px; display: block; color: var(--ink-muted); }
+.pf-badge { font-size: 10px; background: var(--f1); padding: 5px 9px; border-radius: 8px; }
+.pf .u-ro .v .u-seg { padding: 2px; }
+.pf .u-ro .v .u-seg > button { min-height: 30px; padding: 0 12px; }
+.pf-sw { width: 48px; height: 30px; border-radius: 15px; background: var(--me); position: relative; display: block; border: 0; padding: 0; cursor: pointer; }
+.pf-sw::after { content: ''; position: absolute; right: 3px; top: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--on-accent); transition: transform .2s; }
+.pf-sw.off { background: var(--f1); }
+.pf-sw.off::after { transform: translateX(-18px); background: var(--ink-muted); }
+.pf-water { display: flex; align-items: center; gap: 10px; }
+.pf-water .ic { display: flex; color: #3a9bff; }
+.pf-water svg { fill: currentColor; stroke: currentColor; }
+/* Лист выбора источника (iOS action sheet) */
+.pf-as { position: absolute; inset: 0; z-index: 20; }
+.pf-as .u-dim { background: rgba(0, 0, 0, .62); z-index: 20; }
+.pf-as-b { position: absolute; left: 8px; right: 8px; bottom: calc(8px + var(--sab)); z-index: 21; display: flex; flex-direction: column; gap: 8px; animation: u-up .26s cubic-bezier(.2, .9, .25, 1) both; }
+.pf-as-g, .pf-as-c { background: color-mix(in srgb, var(--bg) 82%, var(--ink) 18%); border-radius: 20px; overflow: hidden; }
+.pf-as-t { padding: 14px 16px 4px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); text-align: center; }
+.pf-as-r { display: flex; align-items: center; gap: 14px; height: 56px; padding: 0 16px; color: var(--ink); font: 600 15px var(--font-display); border: 0; background: none; width: 100%; text-align: left; cursor: pointer; border-top: 1px solid var(--line); }
+.pf-as-r.first { border-top: 0; }
+.pf-as-r.dg { color: var(--danger); }
+.pf-as-c { height: 56px; display: grid; place-items: center; font: 800 15px var(--font-display); color: var(--ink); border: 0; width: 100%; cursor: pointer; }
+/* Редактор кадрирования */
+.pc { display: flex; flex-direction: column; gap: 12px; min-height: calc(var(--app-h, 100dvh) - 150px); }
+.pc > * { flex: none; }
+.pc-scene { position: relative; width: 358px; max-width: 100%; aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #000; touch-action: none; margin: 0 auto; }
+.pc-img { position: absolute; left: 0; top: 0; max-width: none; pointer-events: none; user-select: none; }
+.pc-mask { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, transparent 0 139px, rgba(0, 0, 0, .66) 140px); pointer-events: none; }
+.pc-ring { position: absolute; left: 39px; top: 39px; width: 280px; height: 280px; border-radius: 50%; border: 2px solid #fff; box-sizing: border-box; pointer-events: none; }
+.pc-grid { position: absolute; left: 39px; top: 39px; width: 280px; height: 280px; border-radius: 50%; overflow: hidden; pointer-events: none; }
+.pc-grid i { position: absolute; background: rgba(255, 255, 255, .28); }
+.pc-hint { font-size: 12px; text-align: center; color: var(--ink-muted); }
+.pc-zoom { display: flex; align-items: center; gap: 12px; color: var(--ink-muted); }
+.pc-zoom button { display: flex; background: none; border: 0; color: inherit; padding: 8px; margin: -8px; cursor: pointer; }
+.pc-track { flex: 1; height: 4px; border-radius: 2px; background: var(--f2); position: relative; touch-action: none; }
+.pc-track i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink); border-radius: 2px; }
+.pc-track b { position: absolute; top: -9px; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%; background: var(--ink); box-shadow: 0 2px 8px rgba(0, 0, 0, .5); }
+.pc-prev { display: flex; align-items: center; gap: 16px; padding: 14px 16px; }
+.pc-prev small { font-size: 11px; line-height: 1.4; margin-left: auto; text-align: right; color: var(--ink-muted); }
+.pc-btns { display: flex; gap: 10px; margin-top: auto; padding-bottom: 8px; }
+.pc-btns .u-cta:first-child { flex: 1; }
+.pc-btns .u-cta:last-child { flex: 2; }
+.pc-zoom svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

@@ -86,3 +86,4 @@
 .u-fld input, .u-fld textarea { width: auto; }
 .u-fld svg, .nd-chk svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .u-fld input { font: 600 16px var(--font-display); }
+.u-ro svg, .u-rr svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

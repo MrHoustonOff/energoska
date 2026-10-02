@@ -18,6 +18,8 @@ import Drink from '../drink/Drink.svelte';
 import NewDrink from '../newdrink/NewDrink.svelte';
 import NewDrinkSaved from '../newdrink/Saved.svelte';
 import { nd } from '../newdrink/newDrinkState.svelte';
+import Partner from '../partner/Partner.svelte';
+import Profile from '../profile/Profile.svelte';
 import Pickers from '../dicts/Pickers.svelte';
 import Rating from '../rating/Rating.svelte';
 import DrinkChat from '../drink/DrinkChat.svelte';
@@ -50,6 +52,10 @@ export const SCREENS: Screen[] = [
   { id: 'pickers', title: 'Магазин', tab: 'cans', back: 'rating', component: Pickers, fullscreen: true },
   { id: 'newdrink', get title() { return nd.energy ? 'Новая банка' : 'Новый напиток'; }, tab: 'cans', back: 'cans', component: NewDrink, fullscreen: true },
   { id: 'newdrinksaved', title: 'Новая банка', tab: 'cans', back: 'cans', component: NewDrinkSaved, fullscreen: true },
+  { id: 'partner', title: 'Партнёр', tab: 'more', back: 'more', component: Partner },
+  { id: 'avatar', title: 'Настройки', tab: 'more', back: 'more', component: Profile },
+  { ...ph('settings', 'Настройки', 'Настройки (этап 2).', 'ScreenSettings'), tab: 'more', back: 'avatar' },
+  { ...ph('tags', 'Теги', 'Справочник тегов.', 'ScreenRecords'), tab: 'more', back: 'avatar' },
   ph('add', 'Запись',
     'Центральная кнопка-молния: быстрая запись банки, затем оценка (4 параметра, шаг 0.1).',
     'ScreenRating, ActionButton, ScreenNewDrinkSaved'),
