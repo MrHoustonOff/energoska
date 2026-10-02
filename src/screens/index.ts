@@ -32,6 +32,7 @@ import CanOfDay from '../canofday/CanOfDay.svelte';
 import CanOfDayRec from '../canofday/CanOfDayRec.svelte';
 import CanOfDayLimit from '../canofday/CanOfDayLimit.svelte';
 import ActiveChart from '../chart/ActiveChart.svelte';
+import PriceSheet from '../price/PriceSheet.svelte';
 import Stats from '../stats/Stats.svelte';
 import RecommendationCatalog from '../canofday/RecommendationCatalog.svelte';
 
@@ -62,7 +63,7 @@ export const SCREENS: Screen[] = [
   { id: 'catsearch', title: 'Поиск', tab: 'cans', back: 'cans', component: Search },
   { id: 'drink', title: 'Банка', tab: 'cans', back: 'cans', component: Drink },
   { id: 'drinkchat', title: 'Чат', tab: 'cans', back: 'drink', component: DrinkChat, fullscreen: true },
-  { ...ph('pricesheet', 'Динамика цен', 'Лейбл цены (этап 2).', 'ScreenPriceSheet'), tab: 'cans', back: 'drink' },
+  { id: 'pricesheet', title: '', tab: 'cans', back: 'drink', component: PriceSheet },
   { id: 'rating', title: 'Оценка', tab: 'cans', back: 'drink', component: Rating, fullscreen: true },
   { id: 'pickers', title: 'Магазин', tab: 'cans', back: 'rating', component: Pickers, fullscreen: true },
   { id: 'newdrink', get title() { return nd.energy ? 'Новая банка' : 'Новый напиток'; }, tab: 'cans', back: 'cans', component: NewDrink, fullscreen: true },
