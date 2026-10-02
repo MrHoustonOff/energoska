@@ -28,6 +28,7 @@ import { navParams } from '../nav';
 import Pickers from '../dicts/Pickers.svelte';
 import Rating from '../rating/Rating.svelte';
 import DrinkChat from '../drink/DrinkChat.svelte';
+import CanOfDay from '../canofday/CanOfDay.svelte';
 
 export interface Screen {
   id: string;
@@ -48,6 +49,7 @@ const ph = (id: string, title: string, note: string, reference: string): Screen 
 export const SCREENS: Screen[] = [
   { id: 'home', title: 'Энергоська', tab: 'home', component: Home, headerRight: HeaderRight },
   { id: 'water', title: 'Вода', tab: 'home', back: 'home', component: WaterScreen, fullscreen: true },
+  { id: 'canday', title: 'Банка дня', tab: 'home', back: 'home', component: CanOfDay, fullscreen: true },
   { id: 'cans', title: 'Банки', tab: 'cans', component: Catalog, headerRight: CatalogHeader },
   { id: 'catsearch', title: 'Поиск', tab: 'cans', back: 'cans', component: Search },
   { id: 'drink', title: 'Банка', tab: 'cans', back: 'cans', component: Drink },

@@ -59,7 +59,7 @@
     onpress={() => record(false)} onhold={() => record(true)} />
   <div class="hm-gap"></div>
   <WaterButton daypart={waterDaypart(clock.hour)} totalMl={today.water.total_ml} goalMl={today.water.goal_ml} onpress={() => go('water')} />
-  <DayPick onpress={() => go('cans')} />
+  <DayPick onpress={() => go('canday')} />
   <p class="sec hm-sec">Лента</p>
   {#if today.feed.length}
     <Feed items={today.feed} couple={today.couple} meId={me.id} {meName} />
