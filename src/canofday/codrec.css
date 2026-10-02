@@ -1,0 +1,44 @@
+/* Рекомендация и лимит (ScreenCanOfDayRec, ScreenCanOfDayLimit). */
+.cr-nm { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; }
+.cr-nmin { min-width: 0; }
+.cr-nmt { font-size: 21px; font-weight: 800; line-height: 1.1; margin-top: 3px; }
+.cr-chip { height: 28px; font-size: 11px; cursor: default; }
+.cr-why { display: flex; align-items: center; gap: 14px; padding: 12px 16px; }
+.cr-whyt { flex: 1; }
+.cr-whyt .sec { font-size: 10px; }
+.cr-whyx { font-size: 12px; line-height: 1.45; margin-top: 5px; }
+.cr-sc { text-align: right; display: flex; flex-direction: column; gap: 6px; }
+.cr-sc .num { font-size: 28px; line-height: 1; display: block; }
+.cr-rand { flex: 1; font-size: 12px; }
+.cr-rand span { display: flex; align-items: center; gap: 8px; }
+.cr-take { flex: 1.3; }
+.cr-take { width: auto; }
+.cd-btns .cd-take { width: auto; }
+/* дуэль */
+.cl-duel { position: relative; display: flex; gap: 10px; }
+.cl-card { flex: 1; border-radius: 20px; border: 1px solid var(--line); background: var(--surface-100); position: relative; padding: 14px 10px 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; font: inherit; color: inherit; cursor: pointer; }
+.cl-card.sel { border: 2px solid var(--me); background: color-mix(in srgb, var(--me) 10%, var(--surface-100)); }
+.cl-tick { position: absolute; right: 10px; top: 10px; width: 26px; height: 26px; border-radius: 50%; background: var(--me); color: var(--on-accent); display: grid; place-items: center; }
+.cl-art { position: relative; height: 220px; width: 100%; display: grid; place-items: center; }
+.cl-disc { position: absolute; width: 124px; height: 124px; border-radius: 50%; }
+.cl-can { position: relative; }
+.cl-brand { font-size: 10px; }
+.cl-name { font-size: 14px; font-weight: 800; text-align: center; line-height: 1.2; }
+.cl-scs { display: flex; gap: 10px; align-items: baseline; }
+.cl-scs .num { font-size: 24px; }
+.cl-vs { position: absolute; left: 50%; top: 50%; margin: -26px 0 0 -26px; width: 52px; height: 52px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; font: 800 17px/1 var(--font-display); z-index: 3; }
+.cl-note { justify-content: center; text-align: center; line-height: 1.4; }
+/* замёрзший экран */
+.cl-ice { position: relative; height: 250px; display: grid; place-items: center; }
+.cl-ring { position: absolute; width: 200px; height: 200px; border-radius: 50%; border: 3px dashed var(--line-strong); }
+.cl-ghost { position: relative; opacity: .4; }
+.cl-lock { position: absolute; display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--bg); border: 2px solid var(--line-strong); }
+.cl-ft { text-align: center; }
+.cl-ftt { font-size: 22px; font-weight: 800; }
+.cl-fts { font-size: 12px; line-height: 1.5; margin-top: 6px; }
+.cl-next { padding: 14px; display: flex; gap: 12px; align-items: center; }
+.cl-next .ic { display: flex; color: var(--ink-muted); }
+.cl-nt { flex: 1; }
+.cl-nt b { display: block; font-size: 13px; font-weight: 700; }
+.cl-nt span { display: block; font-size: 11px; margin-top: 3px; }
+.cl-tune { margin-top: 2px; }

@@ -2,6 +2,7 @@
      Подбора нет: «Крутить» и кубик показывают следующий фикстурный вариант по кругу (CanOfDayLogic — этап 3). -->
 <script lang="ts">
   import './canofday.css';
+  import { registerGo } from '../nav';
   import '../home/monolith.css';
   import { onDestroy } from 'svelte';
   import { forcedState } from '../demo-ui/states';
@@ -19,6 +20,7 @@
   import { IC } from './icons';
 
   let { go }: { go: (id: string) => void } = $props();
+  registerGo(go);
   const sum = getSummary();
   let timer: ReturnType<typeof setTimeout> | undefined;
   let scrollTo = $state(0);

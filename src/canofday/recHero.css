@@ -1,0 +1,9 @@
+/* Герой-карточка рекомендации (эталон RecommendationCatalog / ScreenCanOfDayRec): рамка и общие классы. Остальные значения: recHero1.css (rcs-N). */
+.rc-rh { position: relative; width: 100%; height: 300px; border-radius: 22px; overflow: hidden; flex: none; border: 1px solid var(--line); }
+.rc-rh .rc-lab { position: absolute; left: 16px; top: 14px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; z-index: 3; }
+.rc-rh .num { font-family: var(--font-numerals); font-weight: 700; font-variant-numeric: tabular-nums; line-height: .9; }
+.rc-av { display: inline-grid; place-items: center; font-weight: 800; color: var(--on-accent); flex: none; overflow: hidden; }
+.rc-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rc-imb { max-width: 76%; padding: 8px 13px 9px; font-weight: 500; line-height: 1.3; border-radius: 19px; color: var(--on-accent); }
+.rc-imb.rc-pa { background: var(--partner); }
+.rc-imb.rc-tl.rc-pa { border-bottom-left-radius: 6px; }

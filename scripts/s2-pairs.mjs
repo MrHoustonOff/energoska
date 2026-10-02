@@ -7,6 +7,8 @@ import { pathToFileURL } from 'node:url';
 const base = process.argv[2] ?? 'http://localhost:5173';
 const MAP = {
   ScreenCanOfDay: ['canday:ready', 'canday:spin', 'canday:result', 'canday:empty', 'canday:sheet', 'canday:sheet2'],
+  ScreenCanOfDayRec: ['canrec:friday', 'canrec:dasha', 'canrec:long'],
+  ScreenCanOfDayLimit: ['canlimit:last', 'canlimit:second', 'canlimit:duel', 'canlimit:frozen'],
 };
 let pw;
 for (const p of ['playwright', '/opt/node-tools/node_modules/playwright/index.mjs']) {
