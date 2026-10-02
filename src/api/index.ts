@@ -67,7 +67,7 @@ import { createHttpApi } from './http';
 
 /** Сборка по VITE_API. Мок по умолчанию; задержка имитирует сеть. */
 export function createApi(kind: string = import.meta.env.VITE_API ?? 'mock'): Api {
-  return kind === 'http' ? createHttpApi() : createMockApi({ latencyMs: 200, persist: true, seedAdmin: true, online: () => navigator.onLine });
+  return kind === 'http' ? createHttpApi() : createMockApi({ latencyMs: 200, persist: true, seedAdmin: true, demo: true /* MOCK-DEMO */, online: () => navigator.onLine });
 }
 
 export const api: Api = createApi();

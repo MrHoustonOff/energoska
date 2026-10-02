@@ -1,57 +1,56 @@
-// MOCK-DEMO: демо-данные из макета (docs-src/components/ScreenHome/preview.html и соседних): пара «я» и Даша, банки с фото, оценки, лента, вода.
-// Они лишь ЗАПОЛНЯЮТ мок: экраны получают их только через src/api. Удалить демо: удалить этот каталог (src/api/mock/demo) и строку `seedDemo` в seed.ts
-// (`grep -rn MOCK-DEMO src` покажет все места).
-import type { Db, UserRow } from '../db';
-import { hashPassword } from '../db';
-import { DAY_BOUNDARY_HOUR, DEFAULT_TIMEZONE, localDay, ratingTotal, uuidv7 } from '../../../domain';
-import avatarMe from './avatar-me.svg';
-import avatarPartner from './avatar-partner.svg';
-import gorilla from './can-gorilla.webp';
-import lit from './can-lit.webp';
-import burn from './can-burn.webp';
-import adrenaline from './can-adr.webp';
+// MOCK-DEMO: точка входа демо-данных. Подключается ОДНОЙ строкой в src/api/mock/index.ts и одним флагом в src/api/index.ts.
+//
+// Как это работает: при старте мок спрашивает ensureDemo(). Если демо ещё не создано, создано в другой день или выбран другой профиль,
+// база пересоздаётся генератором (generate.ts) в форме контракта, а «я» (admin) входит автоматически, если до этого был вход или это первый запуск.
+// Данные «живут» по календарю: каждый день демо создаётся заново, чтобы «сегодня» оставалось сегодняшним (свои записи за вчера не переживут).
+//
+// КАК УДАЛИТЬ ДЕМО ЦЕЛИКОМ: 1) удалить каталог src/api/mock/demo/ и src/screens/DemoPanel.svelte;
+// 2) убрать строки с MOCK-DEMO (grep -rn MOCK-DEMO src); 3) в src/api/index.ts вернуть `seedAdmin: true` и убрать `demo: true`.
+import * as store from '../../../store';
+import type { Db } from '../db';
+import { DAY_BOUNDARY_HOUR, DEFAULT_TIMEZONE, localDay } from '../../../domain';
+import { generateDemo } from './generate';
+import { DEFAULT_PROFILE, PROFILES, profileById } from './profiles';
 
-/** Поднимать при изменении набора: старые демо-данные сотрутся и создадутся заново. */
-const DEMO_VERSION = 'T3-2';
+export { PROFILES, DEFAULT_PROFILE } from './profiles';
+export type { DemoProfile } from './profiles';
 
-const rating = (n: number) => ({ smell: n, taste: n, after: n, strength: n });
+const KEY = 'mock.demo';
+const TOKEN_KEY = 'mock.token';
+interface Marker { profile: string; day: string }
 
-export function seedDemo(db: Db, admin: UserRow, now: number): void {
-  if (db.demo === DEMO_VERSION) return;
-  const coupleId = admin.couple_id;
-  // стереть прежнее демо: Даша и всё, что принадлежит паре
-  db.users = db.users.filter(u => u.login !== 'dasha');
-  db.drinks = db.drinks.filter(d => d._couple !== coupleId);
-  db.ratings = []; db.intakes = []; db.water = [];
+const dayOf = (now: number) => localDay(new Date(now).toISOString(), DEFAULT_TIMEZONE, DAY_BOUNDARY_HOUR);
 
-  admin.avatar_url = avatarMe;
-  admin.water_goal_ml = 2000;
-  admin._glasses = [330];
-  const iso = (t: number) => new Date(t).toISOString();
-  const dasha: UserRow = {
-    id: uuidv7(now), login: 'dasha', display_name: 'Даша', color: '#ff4fa3', water_goal_ml: 2000, avatar_url: avatarPartner,
-    couple_id: coupleId, invite_code: 'EV-2000', created_at: iso(now), _pwd: hashPassword('dasha', 'dasha'),
-  };
-  db.users.push(dasha);
+/** Какой профиль выбран сейчас (для подсветки в переключателе). */
+export const currentProfile = (): string => store.get<Marker | null>(KEY, null)?.profile ?? DEFAULT_PROFILE;
 
-  const mk = (name: string, brand: string, photo: string) => ({
-    id: uuidv7(now), name, brand, is_energy: true, volume_ml: 450, sugar_g_per_100ml: null, country: 'BY' as const, photo_url: photo,
-    created_by: admin.id, created_at: iso(now), _couple: coupleId, _seq: ++db.seq, _req: '',
-  });
-  const gor = mk('Gorilla Mango Coconut', 'Gorilla', gorilla);
-  const strawberry = mk('Lit Strawberry', 'Lit', lit);
-  db.drinks.push(gor, strawberry, mk('Burn Original', 'Burn', burn), mk('Adrenaline Rush', 'Adrenaline', adrenaline));
+/** Создать демо, если нужно. Вызывать после openDb, до создания клиента. */
+export function ensureDemo(db: Db, save: () => void, now: number, persist: boolean, forced?: string): void {
+  const marker = persist ? store.get<Marker | null>(KEY, null) : null;
+  const profile = profileById(forced ?? marker?.profile ?? DEFAULT_PROFILE);
+  const today = dayOf(now);
+  if (!forced && marker && marker.day === today && db.users.length) return;
 
-  const rate = (user: string, drink: string, n: number) => {
-    const p = rating(n);
-    db.ratings.push({ id: uuidv7(now), drink_id: drink, user_id: user, ...p, total: ratingTotal(p), comment: null, at: iso(now - 86_400_000), _seq: ++db.seq, _req: '' });
-  };
-  rate(admin.id, gor.id, 85); rate(dasha.id, gor.id, 70); rate(dasha.id, strawberry.id, 75);
+  const token = persist ? store.get<string | null>(TOKEN_KEY, null) : null;
+  const wasSignedIn = !!(token && db.sessions[token]);
+  const first = !marker && !db.users.length;
+  const { meId } = generateDemo(db, profile, now);
+  if (persist) {
+    store.set(KEY, { profile: profile.id, day: today } satisfies Marker);
+    if (wasSignedIn || first) {
+      const t = `demo-${meId}`;
+      db.sessions[t] = meId;
+      store.set(TOKEN_KEY, t);
+    } else {
+      store.set(TOKEN_KEY, null);
+    }
+  }
+  save();
+}
 
-  const day = (t: number) => localDay(iso(t), DEFAULT_TIMEZONE, DAY_BOUNDARY_HOUR);
-  // вчера: Даша выпила Lit Strawberry (в ленте). Вода сегодня — 1,1 л из 2 л, как на макете.
-  db.water.push({ id: uuidv7(now), user_id: admin.id, ml: 1100, at: iso(now - 1000), local_day: day(now - 1000), _seq: ++db.seq, _req: '' });
-  db.intakes.push({ id: uuidv7(now), drink_id: strawberry.id, user_id: dasha.id, at: iso(now - 20 * 3600_000), local_day: day(now - 20 * 3600_000), over_limit: false, _seq: ++db.seq, _req: '' });
-  db.dayPick = { drink_id: gor.id, tag: 'Даша по пятницам' };
-  db.demo = DEMO_VERSION;
+/** Переключатель в Лаборатории: выбрать профиль и перезагрузить страницу (база пересоздастся при старте). */
+export function switchDemoProfile(id: string): void {
+  if (!PROFILES.some(p => p.id === id)) return;
+  store.set(KEY, { profile: id, day: '' } satisfies Marker);
+  location.reload();
 }

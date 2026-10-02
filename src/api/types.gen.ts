@@ -471,10 +471,21 @@ export interface components {
             sugar_g_per_100ml?: number | null;
             /** @enum {string} */
             country: "BY" | "RU";
-            /** @description Вырезанное фото банки (WebP); null — «фото скоро» */
-            photo_url?: string | null;
             created_by: components["schemas"]["Uuid"];
             created_at: components["schemas"]["Timestamp"];
+            /** @description Вырезанное фото банки; null — «фото скоро» (плитка бренда). Заполняет воркер фото, клиент это поле не отправляет */
+            photo?: components["schemas"]["DrinkPhoto"] | null;
+        };
+        DrinkPhoto: {
+            /** @description Основной цвет банки (для диска-стикера и плитки) */
+            dominant: string;
+            /** @description WebP с прозрачностью по высоте в px; обводка не вшита */
+            urls: {
+                h96: string;
+                h192: string;
+                h256: string;
+                h384: string;
+            };
         };
         DayPick: {
             drink: components["schemas"]["Drink"] | null;

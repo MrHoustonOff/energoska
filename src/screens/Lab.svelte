@@ -12,6 +12,7 @@
   import { setRedBackground, isRedBackground, fullReport, screenReport } from '../debug';
   import EnergyLab from '../home/EnergyLab.svelte';
   import { registerWorker, pushStatus, enablePush, scheduleTest } from '../push.js';
+  import DemoPanel from './DemoPanel.svelte';  // MOCK-DEMO
 
   type Field = [name: string, attrs: Record<string, string>];
 
@@ -93,6 +94,8 @@
 
 <p class="caption">Редактируемый блок</p>
 <div class="field" contenteditable="true" data-ph="contenteditable"></div>
+
+<DemoPanel />  <!-- MOCK-DEMO -->
 
 <!-- data-nolog: тапы внутри этих блоков в лог не пишутся, чтобы не засорять его -->
 <section data-nolog>

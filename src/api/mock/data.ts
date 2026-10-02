@@ -42,7 +42,7 @@ export function drinksApi(c: Ctx): DrinksApi {
       ]);
       return createOnce(c, c.db.drinks as any[], req, r => r._couple === u.couple_id, () => ({
         id: req.id, name: req.name.trim(), brand: req.brand.trim(), is_energy: req.is_energy ?? true, volume_ml: req.volume_ml,
-        sugar_g_per_100ml: req.sugar_g_per_100ml ?? null, country: req.country, created_by: u.id, created_at: nowIso(c), _couple: u.couple_id,
+        sugar_g_per_100ml: req.sugar_g_per_100ml ?? null, photo: null, country: req.country, created_by: u.id, created_at: nowIso(c), _couple: u.couple_id,
       }));
 
     },

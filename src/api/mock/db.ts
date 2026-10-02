@@ -19,8 +19,6 @@ export interface Db {
   water: Row<WaterEntry>[];
   sessions: Record<string, string>;
   attempts: Record<string, { fails: number; lockedUntil: number }>;
-  /** MOCK-DEMO: версия засеянных демо-данных (src/api/mock/demo). */
-  demo?: string;
   /** MOCK-DEMO: выбор «Банки дня» из демо-данных. */
   dayPick?: { drink_id: string; tag: string };
 }

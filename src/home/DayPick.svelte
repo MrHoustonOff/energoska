@@ -20,7 +20,7 @@
     <span class="hm-more">рандом или рекомендация<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg></span></div>
   <button class="card hm-pick" onclick={onpress}>
     <span class="hm-can" aria-hidden="true">
-      {#if today.pick.drink.photo_url}<i style="--photo:url({today.pick.drink.photo_url})"></i>
+      {#if today.pick.drink.photo}<i style="--photo:url('{today.pick.drink.photo.urls.h96}')"></i>
       {:else}<svg viewBox="0 0 44 84" width="44" height="84"><rect x="9" y="4" width="26" height="76" rx="9" fill="#fff" stroke="#fff" stroke-width="5" stroke-linejoin="round" /><rect x="9" y="4" width="26" height="76" rx="9" fill="#10265e" /></svg>{/if}
     </span>
     <span class="hm-pname">{today.pick.drink.name}

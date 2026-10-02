@@ -622,9 +622,26 @@ components:
         volume_ml: { type: integer, minimum: 1 }
         sugar_g_per_100ml: { type: integer, minimum: 0, description: 'Сахар, десятые грамма на 100 мл; null — неизвестно', nullable: true }
         country: { type: string, enum: [BY, RU] }
-        photo_url: { type: string, nullable: true, description: 'Вырезанное фото банки (WebP); null — «фото скоро»' }
         created_by: { $ref: '#/components/schemas/Uuid' }
         created_at: { $ref: '#/components/schemas/Timestamp' }
+        photo:
+          nullable: true
+          allOf: [{ $ref: '#/components/schemas/DrinkPhoto' }]
+          description: 'Вырезанное фото банки; null — «фото скоро» (плитка бренда). Заполняет воркер фото, клиент это поле не отправляет'
+    DrinkPhoto:
+      type: object
+      required: [dominant, urls]
+      properties:
+        dominant: { type: string, pattern: '^#[0-9a-f]{6}$', description: 'Основной цвет банки (для диска-стикера и плитки)' }
+        urls:
+          type: object
+          description: 'WebP с прозрачностью по высоте в px; обводка не вшита'
+          required: [h96, h192, h256, h384]
+          properties:
+            h96: { type: string }
+            h192: { type: string }
+            h256: { type: string }
+            h384: { type: string }
     DayPick:
       type: object
       required: [drink, tag]

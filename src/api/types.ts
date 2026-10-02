@@ -14,6 +14,7 @@ export type CouplePatch = S['CouplePatch'];
 export type JoinRequest = S['JoinRequest'];
 export type Drink = S['Drink'];
 export type DayPick = S['DayPick'];
+export type DrinkPhoto = S['DrinkPhoto'];
 export type DrinkCreate = S['DrinkCreate'];
 export type DrinkPage = S['DrinkPage'];
 export type Rating = S['Rating'];

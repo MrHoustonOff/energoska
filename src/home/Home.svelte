@@ -39,7 +39,7 @@
       partnerCount: homeDev.ctx === 'partner_ahead' ? (homeDev.stage === 'dim' ? 2 : 1) : 0,
       duel: homeDev.ctx === 'you_ahead' ? { me: 3, partner: 1 } : null, streakDays: homeDev.ctx === 'streak' ? 12 : 0, jubileeNext: homeDev.ctx === 'jubilee',
     };
-    return energyView(homeDev.stage, homeDev.ctx, fake, { partner: names.partner || 'Даша', softDrink: homeDev.soft ? 'Липтон лимон' : null });
+    return energyView(homeDev.stage, homeDev.ctx, fake, { partner: names.partner, softDrink: homeDev.soft ? 'Напиток' : null });
   });
 
   function record(overLimit: boolean) { intakeFlow.overLimit = overLimit; go('add'); }
