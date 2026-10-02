@@ -2,7 +2,7 @@
      стаканы 3×2 (125/250/500 и свои до трёх), «Добавить N мл». Вода не влияет на лимит энергетиков. -->
 <script lang="ts">
   import './water.css';
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
   import { ApiError } from '../api';
   import { formatGoalLiters, formatLiters, GLASS_MAX_COUNT, parseWaterMl, snapSlider, SLIDER_MAX_ML, SLIDER_STEP_ML, STANDARD_GLASSES, WATER_MAX_ML, WATER_MIN_ML } from '../domain';
   import Msg from '../auth/Msg.svelte';
@@ -19,7 +19,6 @@
   let error = $state('');
   let menuAt = $state<number | null>(null);    // индекс своего стакана, у которого открыто меню
   let sheet = $state<{ index: number; initial: number } | null>(null); // index -1 — новый стакан
-  let sheetEl = $state<HTMLElement | undefined>();
 
   onMount(() => { if (today.status !== 'ready') loadToday(); });
 
@@ -54,10 +53,8 @@
     busy = true; error = '';
     try { await saveGlasses(glasses.filter((_, i) => i !== index)); sheet = null; menuAt = null; } catch (e) { error = msg(e); } finally { busy = false; }
   }
-  async function openSheet(index: number, initial: number) {
+  function openSheet(index: number, initial: number) {
     menuAt = null; error = ''; sheet = { index, initial };
-    await tick();
-    sheetEl?.scrollIntoView({ block: 'center' });
   }
 
   // Удержание своего стакана (~500 мс) открывает меню; короткий тап выбирает объём.
@@ -132,17 +129,13 @@
     </div>
 
     {#if menuAt !== null}<button class="wt-dim" aria-label="Закрыть меню" onclick={() => { menuAt = null; }}></button>{/if}
+    {#if error && !sheet}<Msg kind="error" center>{error}</Msg>{/if}
+    <button class="wt-cta" disabled={!inputOk || busy} onclick={add}>
+      {#if busy}<Spinner />{/if}Добавить{typedMl !== null ? ` ${typedMl} мл` : ''}
+    </button>
     {#if sheet}
-      <button class="wt-dim" aria-label="Закрыть" onclick={() => { sheet = null; error = ''; }}></button>
-      <div bind:this={sheetEl}>
-        <GlassSheet initial={sheet.initial} existing={sheet.index >= 0} {busy} {error}
-          onsave={saveSheet} ondelete={() => deleteGlass(sheet!.index)} />
-      </div>
-    {:else}
-      {#if error}<Msg kind="error" center>{error}</Msg>{/if}
-      <button class="wt-cta" disabled={!inputOk || busy} onclick={add}>
-        {#if busy}<Spinner />{/if}Добавить{typedMl !== null ? ` ${typedMl} мл` : ''}
-      </button>
+      <GlassSheet initial={sheet.initial} existing={sheet.index >= 0} {busy} {error}
+        onsave={saveSheet} ondelete={() => deleteGlass(sheet!.index)} onclose={() => { sheet = null; error = ''; }} />
     {/if}
   {/if}
 </div>

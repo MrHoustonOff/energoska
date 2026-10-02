@@ -10,6 +10,7 @@
   import * as eventlog from '../eventlog';
   import { liveLine, onViewportChange } from '../viewport.js';
   import { setRedBackground, isRedBackground, fullReport, screenReport } from '../debug';
+  import EnergyLab from '../home/EnergyLab.svelte';
   import { registerWorker, pushStatus, enablePush, scheduleTest } from '../push.js';
 
   type Field = [name: string, attrs: Record<string, string>];
@@ -103,6 +104,8 @@
   </div>
   <div class="card"><pre class="dbg">{pushText}</pre></div>
 </section>
+
+<EnergyLab />
 
 <section data-nolog>
   <p class="caption" style="margin-top:24px">Отладка</p>

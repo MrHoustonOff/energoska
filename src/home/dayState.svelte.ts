@@ -1,7 +1,7 @@
 // Данные «сегодня» для главной, воды и футера: пара, счёт энергетиков, вода, свои стаканы, лента.
 // Источник правды — api (мок или бэкенд); здесь только отражение для экранов. Один набор на приложение: футер с водой виден на всех вкладках.
 import { api, ApiError, type CoupleState, type DaySummary, type Drink, type FeedItem, type WaterDay } from '../api';
-import { localDay, uuidv7 } from '../domain';
+import { uuidv7 } from '../domain';
 
 type Status = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -46,12 +46,4 @@ export async function addWater(ml: number): Promise<void> {
 
 export async function saveGlasses(glasses: number[]): Promise<void> {
   today.glasses = (await api.water.setGlasses({ glasses })).glasses;
-}
-
-/** Сколько энергетиков выпил партнёр в день `summary.day` (по ленте). */
-export function partnerCountToday(myId: string): number {
-  const cp = today.couple?.couple;
-  const day = today.summary?.day;
-  if (!cp || !day) return 0;
-  return today.feed.filter(i => i.kind === 'intake' && i.is_energy && i.user_id !== myId && localDay(i.at, cp.timezone, cp.day_boundary_hour) === day).length;
 }

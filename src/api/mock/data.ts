@@ -109,7 +109,16 @@ export function intakesApi(c: Ctx): IntakesApi {
       checkDay(day);
       const d = day ?? dayFor(c, u, nowIso(c));
       const over = c.db.intakes.some(i => i.user_id === u.id && i.local_day === d && i.over_limit);
-      return { day: d, energy_count: countFor(u, d), limit: DAILY_LIMIT, over_limit: over };
+      const partner = membersOf(c, u).find(m => m.id !== u.id);
+      const last = c.db.intakes.filter(i => i.user_id === u.id && i.local_day === d).sort((a, b) => b._seq - a._seq)[0];
+      const lastDrink = last && c.db.drinks.find(x => x.id === last.drink_id);
+      return {
+        day: d, energy_count: countFor(u, d), limit: DAILY_LIMIT, over_limit: over,
+        partner_energy_count: partner ? countFor(partner, d) : 0,
+        // Мокается «в лоб» до блока «Цифры» (docs-src/docs/12-home-mock-data.md): счёт и серия считает будущий бэкенд.
+        duel: partner ? { me: 0, partner: 0 } : null, streak_days: 0, jubilee_next: false,
+        last_soft_drink: lastDrink && !lastDrink.is_energy ? lastDrink.name : null,
+      };
     },
   };
 }

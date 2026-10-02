@@ -22,7 +22,7 @@
 .mono .lb { position: absolute; left: 20px; bottom: 18px; font-size: var(--fs, 28px); font-weight: 800; letter-spacing: -.01em; z-index: 2; line-height: 1.05; }
 .mono .rt { position: absolute; right: 16px; top: 14px; z-index: 2; text-align: right; }
 .mono .rt .num { font-size: 44px; line-height: 1; }
-.mono .rt .sub { font-size: 10px; opacity: .7; margin-top: 4px; }
+.mono .rt .sub { display: block; font-size: 10px; opacity: .7; margin-top: 4px; }
 .num { font-family: var(--font-numerals); font-weight: 700; font-variant-numeric: tabular-nums; line-height: .9; }
 
 .mono .sp { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
@@ -35,23 +35,32 @@
 .mono.bp .bolt { animation: mo-bp 2.6s ease-in-out infinite; transform-origin: 70% 50%; }
 .mono.fl .bolt { animation: mo-flick 3s steps(1) infinite; }
 
+/* контексты «серия» и «юбилей»: радужный вращающийся слой вместо пятен; «юбилей» ещё вращает молнию */
+.mono.spin2 .bl { opacity: 0; }
+.mono.spin2::before { content: ''; position: absolute; inset: -50%; z-index: -1; opacity: .75; will-change: transform; animation: mo-rim 7s linear infinite;
+  background: radial-gradient(circle closest-side, color-mix(in srgb, var(--can-lit) 45%, var(--can-gorilla)) 0, color-mix(in srgb, var(--can-lit) 45%, var(--can-gorilla)) 3%, transparent 17%), conic-gradient(from 0deg, var(--can-burn), var(--can-lit), var(--can-gorilla), var(--can-adrenaline), var(--can-burn)); }
+.mono.rot .bolt { animation: mo-rim 9s linear infinite; }
+@keyframes mo-rim { to { transform: rotate(360deg); } }
+
 /* 1 банка: затухание */
 .mono.dim { filter: saturate(.45) brightness(.62); }
 .mono.dim .bl { animation-duration: 20s; animation-timing-function: steps(200, end); }
 .mono.dim .tx, .mono.dim .lb { animation: mo-fadeb 5s ease-in-out infinite; }
 
-/* 2 банки: лимит, кнопка замёрзла */
-.mono.cold { background: linear-gradient(160deg, color-mix(in srgb, var(--can-gorilla) 22%, var(--bg)), color-mix(in srgb, var(--ink) 6%, var(--bg)));
-  color: var(--ink); outline: 2px dashed var(--line-strong); outline-offset: -2px; cursor: default; }
+/* 2 банки: лимит, кнопка замёрзла. cold — плоский фон, пунктир, вздрагивает (раз в 5,5 с); ice (лимит) — иней: градиент и сплошная рамка, без вздрагивания */
+.mono.cold { background: color-mix(in srgb, var(--ink) 9%, var(--bg)); color: var(--ink); outline: 2px dashed var(--line-strong); outline-offset: -2px; cursor: default; animation: mo-shake 5.5s ease-in-out infinite; }
+.mono.cold.ice { background: linear-gradient(160deg, color-mix(in srgb, var(--can-gorilla) 22%, var(--bg)), color-mix(in srgb, var(--ink) 6%, var(--bg))); outline: 2px solid var(--line-strong); animation: none; }
 .mono.cold .bl, .mono.cold .sp { display: none; }
-.mono.cold .bolt { opacity: .1; color: var(--ink); }
-.mono.cold .lb { opacity: .28; }
+.mono.cold .bolt { opacity: .1; color: var(--ink); animation: none; }
+.mono.cold .lb { opacity: .5; }
+.mono.cold.ice .lb { opacity: .28; }
 .mono.cold::after { opacity: .2; }
 .mono .hold { position: absolute; right: 16px; bottom: 14px; z-index: 2; width: 46px; height: 46px; }
 .mono .hold circle { fill: none; stroke-width: 4; stroke-linecap: round; }
 .mono .hold .fill { stroke-dasharray: 100; stroke-dashoffset: 100; }
 .mono.holding .hold .fill { animation: mo-holdfill 3s linear forwards; }
 .mono.holding { outline-style: solid; }
+@keyframes mo-shake { 0%, 84%, 100% { transform: translateZ(0) translateX(0); } 86% { transform: translateZ(0) translateX(-6px); } 88% { transform: translateZ(0) translateX(6px); } 90% { transform: translateZ(0) translateX(-4px); } 92% { transform: translateZ(0) translateX(4px); } 94% { transform: translateZ(0) translateX(0); } }
 
 /* вода */
 .mono-box.wb { --h: 98px; }

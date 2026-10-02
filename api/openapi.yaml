@@ -700,8 +700,18 @@ components:
         next_cursor: { type: string, nullable: true }
     DaySummary:
       type: object
-      required: [day, energy_count, limit, over_limit]
+      required: [day, energy_count, limit, over_limit, partner_energy_count, duel, streak_days, jubilee_next, last_soft_drink]
       properties:
+        partner_energy_count: { type: integer, description: Энергетики партнёра за этот день }
+        duel:
+          type: object
+          nullable: true
+          description: 'Счёт «кто больше выпил» за всё время (кнопка «Энергоснулся», контекст «ты впереди»); null — партнёра нет или данных нет. Пока мокается: см. docs-src/docs/12-home-mock-data.md'
+          required: [me, partner]
+          properties: { me: { type: integer }, partner: { type: integer } }
+        streak_days: { type: integer, description: 'Дней подряд в пределах лимита (контекст «серия»). Пока мокается' }
+        jubilee_next: { type: boolean, description: 'Следующая банка юбилейная (контекст «юбилей»). Пока мокается' }
+        last_soft_drink: { type: string, nullable: true, description: 'Название напитка без галочки «Энергетик», если он последняя запись пользователя за день; иначе null' }
         day: { $ref: '#/components/schemas/Day' }
         energy_count: { type: integer }
         limit: { type: integer, description: Дневной лимит (2) }

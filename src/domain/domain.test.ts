@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { formatGoalLiters, comparePrices, decideIntake, energyStage, formatLiters, isGlassList, localHour, parseWaterMl, snapSlider, waterDaypart, waterLevel, formatMoney, formatTenths, isIsoUtc, isTenths, isUuidV7, localDay, parseTenths, ratingTotal, uuidv7 } from './index';
-import { daypartScenarios, glassScenarios, litersScenarios, stageScenarios, waterInputScenarios, dayScenarios, intakeScenarios, priceScenarios, ratingScenarios, tenthsScenarios } from './scenarios';
+import { energyContext, energyScore, localClock, pluralDays, formatGoalLiters, comparePrices, decideIntake, energyStage, formatLiters, isGlassList, localHour, parseWaterMl, snapSlider, waterDaypart, waterLevel, formatMoney, formatTenths, isIsoUtc, isTenths, isUuidV7, localDay, parseTenths, ratingTotal, uuidv7 } from './index';
+import { contextScenarios, pluralScenarios, daypartScenarios, glassScenarios, litersScenarios, stageScenarios, waterInputScenarios, dayScenarios, intakeScenarios, priceScenarios, ratingScenarios, tenthsScenarios } from './scenarios';
 
 describe('лимит энергетиков', () => {
   it.each(intakeScenarios)('$name', s => expect(decideIntake(s.count, s.isEnergy, s.flag)).toEqual(s.expect));
@@ -122,5 +122,23 @@ describe('цель воды в литрах', () => {
     expect(formatGoalLiters(2000)).toBe('2');
     expect(formatGoalLiters(2250)).toBe('2,25');
     expect(formatGoalLiters(2500)).toBe('2,5');
+  });
+});
+
+describe('контекст кнопки «Энергоснулся»', () => {
+  const base = { count: 0, partnerCount: 0, duel: null, streakDays: 0, jubileeNext: false };
+  it.each(contextScenarios)('$name', s => {
+    const { hour, weekday, ...rest } = s.input;
+    expect(energyContext({ ...base, ...rest, clock: { hour, minute: 0, weekday } })).toBe(s.expect);
+  });
+  it.each(pluralScenarios)('дни: $n', s => expect(pluralDays(s.n)).toBe(s.expect));
+  it('счёт справа: сегодняшний у «партнёр впереди», общий у «ты впереди»', () => {
+    const i = { ...base, clock: { hour: 9, minute: 0, weekday: 3 }, count: 1, partnerCount: 2, duel: { me: 3, partner: 1 } };
+    expect(energyScore('partner_ahead', i)).toEqual({ me: 1, partner: 2 });
+    expect(energyScore('you_ahead', i)).toEqual({ me: 3, partner: 1 });
+    expect(energyScore('lunch', i)).toBeNull();
+  });
+  it('часы и день недели по поясу пары', () => {
+    expect(localClock('2026-10-02T16:40:00Z', 'Europe/Minsk')).toEqual({ hour: 19, minute: 40, weekday: 5 });
   });
 });

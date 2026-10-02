@@ -539,6 +539,19 @@ export interface components {
             next_cursor: string | null;
         };
         DaySummary: {
+            /** @description Энергетики партнёра за этот день */
+            partner_energy_count: number;
+            /** @description Счёт «кто больше выпил» за всё время (кнопка «Энергоснулся», контекст «ты впереди»); null — партнёра нет или данных нет. Пока мокается: см. docs-src/docs/12-home-mock-data.md */
+            duel: {
+                me: number;
+                partner: number;
+            } | null;
+            /** @description Дней подряд в пределах лимита (контекст «серия»). Пока мокается */
+            streak_days: number;
+            /** @description Следующая банка юбилейная (контекст «юбилей»). Пока мокается */
+            jubilee_next: boolean;
+            /** @description Название напитка без галочки «Энергетик», если он последняя запись пользователя за день; иначе null */
+            last_soft_drink: string | null;
             day: components["schemas"]["Day"];
             energy_count: number;
             /** @description Дневной лимит (2) */

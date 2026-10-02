@@ -9,17 +9,6 @@ export function energyStage(countToday: number): EnergyStage {
   return countToday === DAILY_LIMIT - 1 ? 'dim' : 'live';
 }
 
-/** Часы, минуты и день недели момента `at` по поясу пары. */
-export interface Clock { hour: number; minute: number; /** 1 = понедельник … 7 = воскресенье */ weekday: number }
-const WEEKDAYS: Record<string, number> = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
-export function localClock(at: string, timezone = DEFAULT_TIMEZONE): Clock {
-  const t = Date.parse(at);
-  if (Number.isNaN(t)) throw new RangeError(`некорректное время: ${at}`);
-  const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: timezone, hourCycle: 'h23', hour: '2-digit', minute: '2-digit', weekday: 'short' })
-    .formatToParts(new Date(t)).map(x => [x.type, x.value]));
-  return { hour: Number(p.hour), minute: Number(p.minute), weekday: WEEKDAYS[p.weekday] };
-}
-
 /** Время суток «Водички» (ScreenHome/WaterButton): границы часов из README компонента. */
 export type WaterDaypart = 'dawn' | 'morning' | 'brunch' | 'lunch' | 'afternoon' | 'evening' | 'late' | 'night';
 

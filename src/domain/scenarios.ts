@@ -126,3 +126,28 @@ export const glassScenarios: { name: string; list: unknown; ok: boolean }[] = [
   { name: 'четыре — много', list: [200, 300, 330, 400], ok: false }, { name: 'меньше 25', list: [20], ok: false },
   { name: 'больше 1000', list: [1001], ok: false }, { name: 'повтор', list: [330, 330], ok: false }, { name: 'не список', list: 330, ok: false },
 ];
+
+/** Контекст кнопки «Энергоснулся»: (час, день недели 1=пн, счёт, серия…) → контекст. Границы часов — ActionButton/preview.html. */
+export const contextScenarios: { name: string; input: { hour: number; weekday: number; count?: number; partnerCount?: number; duel?: { me: number; partner: number } | null; streakDays?: number; jubileeNext?: boolean }; expect: string }[] = [
+  { name: 'юбилей важнее всего', input: { hour: 9, weekday: 3, jubileeNext: true, streakDays: 12, partnerCount: 1 }, expect: 'jubilee' },
+  { name: 'серия дней в лимите', input: { hour: 9, weekday: 3, streakDays: 12 }, expect: 'streak' },
+  { name: 'партнёр уже выпил', input: { hour: 9, weekday: 3, partnerCount: 1 }, expect: 'partner_ahead' },
+  { name: 'у меня банок не меньше — не «впереди партнёр»', input: { hour: 9, weekday: 3, count: 1, partnerCount: 1 }, expect: 'morning_weekday' },
+  { name: 'ты впереди по общему счёту', input: { hour: 13, weekday: 3, duel: { me: 3, partner: 1 } }, expect: 'you_ahead' },
+  { name: 'пятница вечером', input: { hour: 19, weekday: 5 }, expect: 'friday_evening' },
+  { name: 'пятница в 22 — уже поздно', input: { hour: 22, weekday: 5 }, expect: 'late' },
+  { name: 'ночь до границы суток', input: { hour: 2, weekday: 3 }, expect: 'late' },
+  { name: 'понедельник', input: { hour: 8, weekday: 1 }, expect: 'monday' },
+  { name: 'утро в будни', input: { hour: 8, weekday: 2 }, expect: 'morning_weekday' },
+  { name: 'утро в выходной', input: { hour: 9, weekday: 6 }, expect: 'weekend_morning' },
+  { name: 'обед', input: { hour: 12, weekday: 3 }, expect: 'lunch' },
+  { name: 'провал дня', input: { hour: 15, weekday: 3 }, expect: 'slump' },
+  { name: 'вечер', input: { hour: 20, weekday: 3 }, expect: 'evening' },
+  { name: 'между контекстами — обычная', input: { hour: 14, weekday: 3 }, expect: 'default' },
+];
+
+/** «N дней» по-русски. */
+export const pluralScenarios: { n: number; expect: string }[] = [
+  { n: 1, expect: '1 день' }, { n: 2, expect: '2 дня' }, { n: 5, expect: '5 дней' }, { n: 11, expect: '11 дней' },
+  { n: 12, expect: '12 дней' }, { n: 21, expect: '21 день' }, { n: 24, expect: '24 дня' },
+];
