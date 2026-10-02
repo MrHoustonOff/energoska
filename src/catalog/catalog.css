@@ -1,3 +1,18 @@
+.ct-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* padding: 0 16px; is provided by .screen-scroll */
+}
+
+.ct-drink-tile, .ct-brand-tile {
+  appearance: none;
+  font: inherit;
+  text-align: left;
+  margin: 0;
+  cursor: pointer;
+}
+
 .ct-drink-tile {
   border-radius: 14px;
   background: var(--surface-100);
@@ -5,6 +20,7 @@
   overflow: hidden;
   content-visibility: auto;
   contain-intrinsic-size: auto 216px;
+  padding: 0;
 }
 
 .ct-drink-top {
@@ -22,6 +38,19 @@
   background: var(--c);
   left: 26px;
   top: 40px;
+}
+
+.ct-drink-disk::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--grain);
+  background-size: 140px;
+  mix-blend-mode: overlay;
+  opacity: .28;
+  pointer-events: none;
+  z-index: 3;
 }
 
 .ct-drink-can-wrap {
@@ -69,6 +98,7 @@
 .ct-brand-tile {
   border-radius: 14px;
   background: var(--c);
+  border: 0;
   color: var(--on-accent);
   padding: 14px;
   aspect-ratio: 1 / 1.32;
@@ -115,17 +145,15 @@
 .ct-chips {
   display: flex;
   gap: 8px;
-  margin: 0 -16px;
-  padding: 0 16px;
-  overflow: hidden;
+  margin: -4px -16px;
+  padding: 4px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   flex: none;
 }
-
-.ct-catalog {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 0 16px;
+.ct-chips::-webkit-scrollbar {
+  display: none;
 }
 
 .ct-grid {
