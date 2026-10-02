@@ -1,0 +1,61 @@
+/* Каталог «Банки» (ScreenCatalog, ScreenCatalogLoading). Значения из preview.html. */
+.header:has(.cat-hr) h1 { font-size: 26px; font-weight: 800; }
+.cat-hr { display: flex; gap: 8px; }
+.cat { display: flex; flex-direction: column; gap: 12px; }
+.cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: none; }
+.cat-grid.dim { opacity: .4; }
+.cat-grid.dim6 { opacity: .6; transition: opacity .2s; }
+/* Плитка витрины (ScreenCatalog) */
+.cat-tile { display: block; border-radius: 14px; background: var(--surface-100); border: 1px solid var(--line); overflow: hidden; padding: 0; text-align: left; color: var(--ink); font-family: inherit; cursor: pointer; content-visibility: auto; contain-intrinsic-size: auto 280px; }
+.cat-img { position: relative; aspect-ratio: 1 / 1.16; display: grid; place-items: center; }
+.cat-disc { position: absolute; width: 118px; height: 118px; border-radius: 50%; background: var(--c); left: calc(50% - 59px); top: 40px; }
+.cat-can { position: relative; margin-top: 10px; }
+.cat-info { padding: 0 12px 12px; }
+.cat-name { font-size: 12px; font-weight: 700; line-height: 1.2; height: 29px; overflow: hidden; }
+.cat-sc { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; }
+/* Плитка состояний загрузки (.tl) */
+.cat-tl { border-radius: 14px; background: var(--surface-100); border: 1px solid var(--line); overflow: hidden; position: relative; display: block; padding: 0; text-align: left; color: var(--ink); font-family: inherit; cursor: pointer; }
+.cat-tl .im { position: relative; height: 178px; display: grid; place-items: center; }
+.cat-tl .tx { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 5px; }
+.cat-tl .nm { font-size: 13px; font-weight: 700; line-height: 1.2; }
+.cat-tl .disc { position: absolute; left: 50%; top: 50%; width: 110px; height: 110px; margin: -55px 0 0 -55px; border-radius: 50%; background: var(--c); }
+.cat-tl .disc.ghost { opacity: .18; }
+.cat-tl .can { position: relative; margin-top: 6px; }
+.cat-tl .scores { display: flex; gap: 8px; align-items: baseline; }
+.cat-tl .broken { position: relative; margin-top: 6px; width: 58px; height: 140px; border-radius: 14px; border: 2px dashed var(--line-strong); display: grid; place-items: center; color: var(--ink-muted); background: none; padding: 0; font: inherit; cursor: pointer; }
+.cat-tl .broken svg, .cat-bn svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.cat-sk-can { width: 58px; height: 140px; border-radius: 14px; margin-top: 6px; }
+.cat-more { display: flex; justify-content: center; align-items: center; gap: 10px; padding: 6px 0; flex: none; }
+.cat-more span { font-size: 12px; color: var(--ink-muted); }
+.cat-bn { cursor: pointer; }
+.cat-bn > span:first-child { display: flex; color: var(--warn-amber); }
+.cat-bn .t { flex: 1; line-height: 1.35; }
+.cat-bn .t small { font-size: 11px; color: var(--ink-muted); }
+.cat-bn .r { font-weight: 800; font-size: 12px; background: none; border: 0; color: var(--ink); font-family: inherit; cursor: pointer; }
+/* Применённые фильтры: чипы с крестиком и «Сбросить» */
+.cat-act { display: flex; gap: 8px; align-items: center; flex: none; }
+.cat-act .u-chip { height: 30px; font-size: 12px; gap: 6px; padding: 0 10px; }
+.cat-act .u-chip span { display: flex; opacity: .7; }
+.cat-act .u-chip svg, .cat-fh svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.cat-reset { font-size: 12px; margin-left: auto; padding-left: 8px; white-space: nowrap; color: var(--ink-muted); background: none; border: 0; font-family: inherit; cursor: pointer; }
+.cat-badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--me); color: var(--on-accent); font: 700 11px/18px var(--font-numerals); text-align: center; box-shadow: 0 0 0 2px var(--bg); z-index: 5; }
+/* Шторка фильтров */
+.cat-fs { padding-bottom: 30px; gap: 18px; }
+.cat-fs > * { flex: none; }
+.cat-fh { display: flex; align-items: center; justify-content: space-between; }
+.cat-fh b { font-size: 22px; font-weight: 800; }
+.cat-fs .u-ib { width: 40px; height: 40px; }
+.cat-fs .sec { margin-bottom: 10px; }
+.cat-fs .u-seg > button { min-height: 42px; font-size: 13px; white-space: nowrap; }
+.cat-note { font-size: 11px; line-height: 1.5; color: var(--ink-muted); margin-top: 8px; }
+.cat-note.box { margin-top: 0; padding: 10px 12px; border-radius: 12px; background: var(--f2); }
+.cat-fb { display: flex; gap: 10px; margin-top: 6px; }
+.cat-fb .u-cta:first-child { flex: 1; }
+.cat-fb .u-cta:last-child { flex: 2; }
+/* Поиск (кадр 4) */
+.cat-sf { display: flex; align-items: center; gap: 10px; height: 48px; border-radius: 14px; background: var(--f1); padding: 0 14px; flex: none; }
+.cat-sf > span { display: flex; color: var(--ink-muted); }
+.cat-sf svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.cat-sf input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink); font: 400 16px var(--font-system); outline: none; padding: 0; }
+.cat-sh { display: flex; justify-content: space-between; align-items: center; flex: none; font-size: 12px; color: var(--ink-muted); }
+@media (prefers-reduced-motion: reduce) { .cat-tl .u-fin { animation: none; } }

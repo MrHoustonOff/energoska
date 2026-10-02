@@ -13,6 +13,9 @@
   import EnergyLab from '../home/EnergyLab.svelte';
   import { registerWorker, pushStatus, enablePush, scheduleTest } from '../push.js';
   import DemoPanel from './DemoPanel.svelte';  // MOCK-DEMO
+  import StatesPanel from './StatesPanel.svelte';  // MOCK-DEMO
+
+  let { go }: { go: (id: string) => void } = $props();
 
   type Field = [name: string, attrs: Record<string, string>];
 
@@ -95,6 +98,7 @@
 <p class="caption">Редактируемый блок</p>
 <div class="field" contenteditable="true" data-ph="contenteditable"></div>
 
+<StatesPanel {go} />  <!-- MOCK-DEMO -->
 <DemoPanel />  <!-- MOCK-DEMO -->
 
 <!-- data-nolog: тапы внутри этих блоков в лог не пишутся, чтобы не засорять его -->

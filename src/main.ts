@@ -12,7 +12,9 @@ import './surface.css';
 import { initViewport } from './viewport.js';
 import { initDebug } from './debug';
 import App from './App.svelte';
+import { initFromUrl } from './demo-ui/states';  // MOCK-DEMO
 
 initViewport();
 initDebug();
+initFromUrl();
 mount(App, { target: document.getElementById('app')! });

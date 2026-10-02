@@ -1,0 +1,80 @@
+/* Общие контролы (эталоны Controls, StickerCan, ImageLoading). Значения дословно из preview.html; классы с префиксом u-. */
+:root {
+  --f1: color-mix(in srgb, var(--ink) 12%, transparent);
+  --f2: color-mix(in srgb, var(--ink) 8%, transparent);
+  --f3: color-mix(in srgb, var(--ink) 5%, transparent);
+  --warn-amber: #ffb020;
+}
+.u-mut { color: var(--ink-muted); }
+.u-me { color: var(--me-mark); }
+.u-pa { color: var(--partner-mark); }
+.u-btn { border: 0; font: inherit; cursor: pointer; }
+.u-cta { flex: none; height: 56px; border-radius: 12px; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-size: 14px; font-weight: 800; letter-spacing: .03em; text-align: center; padding: 0 12px; width: 100%; border: 0; font-family: inherit; cursor: pointer; position: relative; }
+.u-cta.gh { background: var(--f1); color: var(--ink); }
+.u-cta.dg { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.u-cta.c { background: var(--c); color: var(--on-accent); }
+.u-cta:disabled { opacity: .45; cursor: default; }
+.u-seg { display: flex; background: var(--f1); border-radius: 12px; padding: 3px; flex: none; position: relative; }
+.u-seg > button { flex: 1; display: grid; place-items: center; padding: 0 12px; min-height: 34px; border-radius: 9px; font: 500 12px var(--font-display); color: var(--ink-muted); white-space: nowrap; background: none; border: 0; cursor: pointer; }
+.u-seg > button.on { background: var(--ink); color: var(--bg); font-weight: 600; }
+.u-chip { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 12px; background: var(--f1); font: 500 12px var(--font-display); color: var(--ink); white-space: nowrap; flex: none; border: 0; cursor: pointer; position: relative; }
+.u-chip.on { background: var(--ink); color: var(--bg); font-weight: 600; }
+.u-chips { display: flex; gap: 8px; margin: 0 -16px; padding: 0 16px; overflow-x: auto; flex: none; scrollbar-width: none; }
+.u-chips::-webkit-scrollbar { display: none; }
+.u-tag { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 9px; font: 600 12px var(--font-display); background: color-mix(in srgb, var(--c) 22%, var(--bg)); color: var(--ink); border: 1px solid color-mix(in srgb, var(--c) 55%, transparent); position: relative; }
+.u-fld { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--f2); border-radius: 12px; padding: 0 16px; height: 56px; font-size: 13px; color: var(--ink-muted); flex: none; position: relative; }
+.u-fld > b, .u-fld > .u-val { color: var(--ink); font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.u-fld.ta { height: 96px; align-items: flex-start; padding-top: 18px; }
+.u-fld input, .u-fld textarea { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: var(--ink); font: 400 16px var(--font-system); text-align: right; padding: 0; outline: none; }
+.u-fld input::placeholder, .u-fld textarea::placeholder { color: var(--ink-muted); }
+.u-grp { background: var(--surface-100); border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; flex: none; position: relative; }
+.u-ro { display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 16px; font: 600 14px var(--font-display); color: var(--ink); border: 0; border-top: 1px solid var(--line); background: none; width: 100%; text-align: left; cursor: pointer; }
+.u-ro:first-child { border-top: 0; }
+.u-ro .v { margin-left: auto; font-size: 13px; color: var(--ink-muted); font-weight: 400; display: flex; align-items: center; gap: 8px; }
+.u-dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; flex: none; background: var(--c); }
+.u-ib { width: 44px; height: 44px; border-radius: 12px; background: var(--f1); display: grid; place-items: center; flex: none; color: var(--ink); border: 0; padding: 0; cursor: pointer; position: relative; }
+.u-ib svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.u-warn { font-size: 12px; color: var(--warning); background: color-mix(in srgb, var(--warning) 14%, transparent); border-radius: 12px; padding: 12px 14px; line-height: 1.45; position: relative; }
+.u-stp { display: flex; gap: 6px; flex: none; }
+.u-stp i { flex: 1; height: 4px; border-radius: 2px; background: var(--f1); }
+.u-stp i.on { background: var(--ink); }
+.u-pal { display: flex; gap: 10px; flex-wrap: wrap; }
+.u-pal button { width: 34px; height: 34px; border-radius: 50%; display: block; flex: none; background: var(--c); border: 0; padding: 0; cursor: pointer; }
+.u-pal button.s { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--ink); }
+.u-card { background: var(--surface-100); border: 1px solid var(--line); border-radius: 14px; position: relative; }
+.u-rr { display: flex; align-items: center; gap: 12px; height: 52px; padding: 0 10px; border-radius: 12px; font: 600 14px var(--font-display); color: var(--ink); flex: none; border: 0; background: none; width: 100%; text-align: left; cursor: pointer; }
+.u-rr .c { margin-left: auto; font-size: 12px; color: var(--ink-muted); font-weight: 400; }
+.u-rr.sel { background: var(--f1); }
+.u-rr.mk { background: var(--f2); border: 1px dashed var(--line-strong); }
+.u-sw { width: 46px; height: 28px; border-radius: 14px; background: var(--f1); position: relative; flex: none; border: 0; padding: 0; cursor: pointer; }
+.u-sw::after { content: ''; position: absolute; left: 3px; top: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--ink-muted); transition: transform .2s; }
+.u-sw.on { background: var(--me); }
+.u-sw.on::after { transform: translateX(18px); background: var(--on-accent); }
+.u-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 44px; flex: none; }
+.u-tt { font-size: 14px; font-weight: 600; }
+/* Шторка и затемнение: лежат в #app поверх экрана (position:absolute от #app). */
+.u-dim { position: absolute; inset: 0; background: rgba(0, 0, 0, .6); z-index: 7; border: 0; padding: 0; animation: u-fade .2s ease-out both; }
+.u-sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; background: color-mix(in srgb, var(--ink) 9%, var(--bg)); border-radius: 22px 22px 0 0; border-top: 1px solid var(--line-strong); padding: 10px 16px max(34px, calc(var(--sab) + 12px)); display: flex; flex-direction: column; gap: 12px; max-height: 88%; overflow-y: auto; animation: u-up .26s cubic-bezier(.2, .9, .25, 1) both; scrollbar-width: none; }
+.u-hd { width: 40px; height: 5px; border-radius: 3px; background: var(--line-strong); align-self: center; flex: none; }
+@keyframes u-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes u-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+/* Стикер и диск (эталон StickerCan) */
+.u-can { aspect-ratio: 178 / 511; background-size: contain; background-repeat: no-repeat; background-position: center; flex: none; }
+.u-stk { filter: drop-shadow(2.5px 0 0 var(--sticker-white)) drop-shadow(-2.5px 0 0 var(--sticker-white)) drop-shadow(0 2.5px 0 var(--sticker-white)) drop-shadow(0 -2.5px 0 var(--sticker-white)) drop-shadow(4px 5px 0 rgba(0, 0, 0, .7)); }
+.u-stk.s { filter: drop-shadow(1.6px 0 0 var(--sticker-white)) drop-shadow(-1.6px 0 0 var(--sticker-white)) drop-shadow(0 1.6px 0 var(--sticker-white)) drop-shadow(0 -1.6px 0 var(--sticker-white)) drop-shadow(2px 3px 0 rgba(0, 0, 0, .7)); }
+/* Скелетон и спиннер (эталон ImageLoading / ScreenCatalogLoading) */
+.u-sk { position: relative; overflow: hidden; background: var(--f1); border-radius: 8px; }
+.u-sk::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--ink) 9%, transparent) 50%, transparent 70%); transform: translateX(-100%); animation: u-shm 1.4s ease-in-out infinite; will-change: transform; }
+.u-spn { display: block; width: 20px; height: 20px; border-radius: 50%; border: 3px solid var(--f1); border-top-color: var(--ink); animation: u-spn .8s linear infinite; will-change: transform; }
+.u-fin { animation: u-fin .25s ease-out both; }
+.u-banner { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; background: color-mix(in srgb, var(--warn-amber) 16%, var(--bg)); border: 1px solid color-mix(in srgb, var(--warn-amber) 45%, transparent); font-size: 12px; flex: none; }
+.u-cnt { position: absolute; right: -4px; top: -4px; min-width: 20px; height: 20px; border-radius: 10px; background: var(--me); color: var(--on-accent); font: 700 12px/20px var(--font-numerals); text-align: center; padding: 0 5px; }
+@keyframes u-shm { to { transform: translateX(100%); } }
+@keyframes u-spn { to { transform: rotate(360deg); } }
+@keyframes u-fin { from { opacity: 0; } to { opacity: 1; } }
+/* Зерно на поверхностях (reference: .card, .cta, .chip, .ib …) */
+.u-card::after, .u-grp::after, .u-fld::after, .u-chip::after, .u-ib::after, .u-cta::after, .u-seg::after, .u-sheet::after, .u-tag::after, .u-warn::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; background: var(--grain); background-size: 140px; mix-blend-mode: overlay; opacity: .28; pointer-events: none; z-index: 3; }
+.u-sheet { position: absolute; }
+.u-cta::after { opacity: .14; }
+@media (prefers-reduced-motion: reduce) { .u-sk::after, .u-spn { animation: none; } }
