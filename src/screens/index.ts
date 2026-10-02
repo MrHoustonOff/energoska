@@ -31,6 +31,7 @@ import DrinkChat from '../drink/DrinkChat.svelte';
 import CanOfDay from '../canofday/CanOfDay.svelte';
 import CanOfDayRec from '../canofday/CanOfDayRec.svelte';
 import CanOfDayLimit from '../canofday/CanOfDayLimit.svelte';
+import ActiveChart from '../chart/ActiveChart.svelte';
 import Stats from '../stats/Stats.svelte';
 import RecommendationCatalog from '../canofday/RecommendationCatalog.svelte';
 
@@ -79,7 +80,7 @@ export const SCREENS: Screen[] = [
     'Центральная кнопка-молния: быстрая запись банки, затем оценка (4 параметра, шаг 0.1).',
     'ScreenRating, ActionButton, ScreenNewDrinkSaved'),
   { id: 'stats', title: '', tab: 'stats', component: Stats },
-  ph('chart', 'Оценка', 'График (этап 2).', 'ScreenActiveChart'),
+  { id: 'chart', title: 'Оценка', tab: 'stats', back: 'stats', component: ActiveChart, fullscreen: true },
   { id: 'more', title: 'Ещё', tab: 'more', component: More },
   { id: 'lab', title: 'Лаборатория', tab: 'more', back: 'more', component: Lab },
 ];

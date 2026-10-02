@@ -1,0 +1,25 @@
+/* График оценок (ScreenActiveChart). */
+.ac { display: flex; flex-direction: column; gap: 12px; }
+.ac > * { flex: none; }
+.ac-big { font-size: 96px; letter-spacing: -.02em; }
+.ac-leg { display: flex; gap: 16px; font-size: 11px; align-items: center; margin-top: -2px; }
+.ac-leg span { display: flex; align-items: center; gap: 6px; }
+.ac-leg i { width: 16px; height: 3px; border-radius: 2px; display: block; background: var(--me-mark); }
+.ac-leg i.pa { background: var(--partner-mark); }
+.ac-un { margin-left: auto; }
+.ac-svg { display: block; touch-action: pan-y; cursor: pointer; }
+.ac-gp { filter: drop-shadow(0 0 5px var(--partner-mark)); }
+.ac-gm { filter: drop-shadow(0 0 6px var(--me-mark)); }
+.ac-panel { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.ac-cap { font-size: 13px; font-weight: 800; }
+.ac-row { display: flex; gap: 24px; }
+.ac-k { font-size: 11px; }
+.ac-v { font-size: 34px; margin-top: 6px; }
+.ac-v small { font-family: var(--font-display); font-size: 14px; }
+.ac-v .u-pa { font-size: 24px; }
+.ac-best { display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+.ac-bc { width: 30px; display: grid; place-items: center; }
+.ac-bn { font-size: 18px; font-weight: 800; margin-top: 2px; }
+.ac-seg { padding: 2px; flex: none; }
+.ac-seg > button { min-height: 32px; padding: 0 10px; font-size: 11px; }
+.header:has(.ac-seg) .hd-close-gap { display: none; }

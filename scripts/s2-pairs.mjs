@@ -11,6 +11,7 @@ const MAP = {
   ScreenCanOfDayLimit: ['canlimit:last', 'canlimit:second', 'canlimit:duel', 'canlimit:frozen'],
   RecommendationCatalog: ['reccat:all'],
   ScreenStats: ['stats:top', 'stats:brands', 'stats:ratings', 'stats:records'],
+  ScreenActiveChart: ['chart:week12'],
 };
 let pw;
 for (const p of ['playwright', '/opt/node-tools/node_modules/playwright/index.mjs']) {
