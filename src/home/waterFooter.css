@@ -24,9 +24,26 @@
 /* Панель вкладок поверх воды: фон прозрачный, подписи читаются через text-shadow и более плотный цвет. */
 .tabbar { z-index: 2; background: transparent; box-shadow: none; }
 .tabbar::after { display: none; }
-.tab { text-shadow: 0 0 8px var(--bg); }
+.tab { min-height: 58px; gap: 4px; font: 500 10px var(--font-display); letter-spacing: 0; text-transform: none; text-shadow: 0 0 8px var(--bg); }
+.tab-gap { flex: none; width: 76px; }
+
+/* Центральная кнопка-молния (эталон: .fab в ScreenHome/preview.html): коробка держит тень и скругление, кнопка обрезает переливающийся слой. */
+.fab { position: absolute; left: 50%; top: -14px; width: 64px; height: 64px; margin-left: -32px; border-radius: 20px;
+  box-shadow: 0 0 0 5px var(--bg), 4px 5px 0 5px rgba(0, 0, 0, .35); background: var(--bg); }
+.fab-in { position: relative; display: grid; place-items: center; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 20px; overflow: hidden; isolation: isolate;
+  -webkit-appearance: none; appearance: none; -webkit-mask-image: -webkit-radial-gradient(white, black); transform: translateZ(0);
+  background: var(--can-gorilla); color: #fff; cursor: pointer; }
+.fab-in::before { content: ''; position: absolute; left: 0; top: -100%; width: 300%; height: 300%; z-index: -1; will-change: transform;
+  background: linear-gradient(135deg, var(--can-gorilla), var(--can-lit), var(--can-burn), var(--can-gorilla)); animation: wf-fab 6s ease-in-out infinite; }
+.fab-in svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes wf-fab { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-66.667%); } }
+@media (prefers-reduced-motion: reduce) { .fab-in::before { animation: none; } }
+:root[data-edit] .fab-in::before, [data-anim='paused'] .fab-in::before { animation-play-state: paused; }
 .tab:not([aria-current='page']) { color: color-mix(in srgb, var(--ink) 72%, transparent); }
 
 :root[data-edit] .wtr *, [data-anim='paused'] .wtr * { animation-play-state: paused !important; }
 [data-perf='low'] .wtr .bb { animation: none; opacity: 0; }
 @media (prefers-reduced-motion: reduce) { .wtr .w, .wtr .bb { animation: none !important; } }
+
+/* Полноэкранные экраны (вода): без панели вкладок и воды */
+:root[data-full] .tabbar, :root[data-full] .wtr { display: none; }

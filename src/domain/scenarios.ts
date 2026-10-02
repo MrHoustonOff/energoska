@@ -126,19 +126,3 @@ export const glassScenarios: { name: string; list: unknown; ok: boolean }[] = [
   { name: 'четыре — много', list: [200, 300, 330, 400], ok: false }, { name: 'меньше 25', list: [20], ok: false },
   { name: 'больше 1000', list: [1001], ok: false }, { name: 'повтор', list: [330, 330], ok: false }, { name: 'не список', list: 330, ok: false },
 ];
-
-/** Контекст кнопки при 0 банок: (час, день недели 1=пн, партнёр уже пил) → контекст. */
-export const contextScenarios: { name: string; hour: number; weekday: number; partnerAhead: boolean; expect: string }[] = [
-  { name: 'партнёр уже выпил: счёт важнее времени', hour: 9, weekday: 3, partnerAhead: true, expect: 'partner_ahead' },
-  { name: 'пятница вечером', hour: 19, weekday: 5, partnerAhead: false, expect: 'friday_evening' },
-  { name: 'пятница днём — обычный день', hour: 13, weekday: 5, partnerAhead: false, expect: 'lunch' },
-  { name: 'понедельник утром', hour: 8, weekday: 1, partnerAhead: false, expect: 'monday' },
-  { name: 'вторник утром', hour: 8, weekday: 2, partnerAhead: false, expect: 'morning_weekday' },
-  { name: 'суббота утром', hour: 10, weekday: 6, partnerAhead: false, expect: 'weekend_morning' },
-  { name: 'обед', hour: 12, weekday: 3, partnerAhead: false, expect: 'lunch' },
-  { name: 'провал дня 15:40', hour: 15, weekday: 3, partnerAhead: false, expect: 'slump' },
-  { name: 'вечер', hour: 18, weekday: 3, partnerAhead: false, expect: 'evening' },
-  { name: 'поздно после 22', hour: 22, weekday: 3, partnerAhead: false, expect: 'late' },
-  { name: 'ночь до границы суток', hour: 2, weekday: 3, partnerAhead: false, expect: 'late' },
-  { name: '14:00 — между обедом и провалом', hour: 14, weekday: 3, partnerAhead: false, expect: 'default' },
-];

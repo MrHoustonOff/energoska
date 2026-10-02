@@ -1,6 +1,8 @@
-<!-- Квадратный-круглый знак игрока: буква на заливке цвета игрока (цвет берём из данных, не хардкодим). -->
+<!-- Аватар игрока: фото профиля (или плейсхолдер, если фото нет) в кольце цвета игрока: 2px фоном + 2px цветом (ScreenHome/preview.html). -->
 <script lang="ts">
-  let { letter, color, size = 32 }: { letter: string; color: string; size?: number } = $props();
+  import placeholder from '../assets/avatar-placeholder.svg';
+
+  let { src, color, size = 40 }: { src?: string | null; color: string; size?: number } = $props();
 </script>
 
-<span class="hm-av" style="--c:{color};width:{size}px;height:{size}px;font-size:{Math.round(size * 0.4)}px" aria-hidden="true">{letter}</span>
+<span class="hm-av" style="--c:{color};--s:{size}px"><img src={src ?? placeholder} alt="" draggable="false" /></span>

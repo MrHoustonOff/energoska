@@ -177,6 +177,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/day-pick": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** «Банка дня» для карточки на главной (подбор и типы рекомендаций — блок «Банка дня», §4) */
+        get: operations["getDayPick"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/drinks/{id}": {
         parameters: {
             query?: never;
@@ -314,7 +331,7 @@ export interface paths {
         };
         /**
          * Лента пары (новые сверху)
-         * @description Только факты прямых действий обоих участников пары: выпитый энергетик, порция воды, закрытие дневной нормы воды.
+         * @description Только факты прямых действий обоих участников пары: выпитый напиток (энергетик или нет), порция воды, закрытие дневной нормы воды.
          *     Записи «выпил» с `over_limit` в ленту попадают как обычные (пометку «сверх лимита» лента не показывает).
          *     Курсор непрозрачный.
          */
@@ -397,6 +414,8 @@ export interface components {
             couple_id: components["schemas"]["Uuid"];
             /** @description Личный код приглашения, например `EV-7429` */
             invite_code: string;
+            /** @description Фото профиля; null — плейсхолдер */
+            avatar_url?: string | null;
             created_at: components["schemas"]["Timestamp"];
         };
         UserPatch: {
@@ -416,6 +435,7 @@ export interface components {
             id: components["schemas"]["Uuid"];
             display_name: string;
             color: string;
+            avatar_url?: string | null;
         };
         CoupleRequest: {
             id: components["schemas"]["Uuid"];
@@ -451,8 +471,15 @@ export interface components {
             sugar_g_per_100ml?: number | null;
             /** @enum {string} */
             country: "BY" | "RU";
+            /** @description Вырезанное фото банки (WebP); null — «фото скоро» */
+            photo_url?: string | null;
             created_by: components["schemas"]["Uuid"];
             created_at: components["schemas"]["Timestamp"];
+        };
+        DayPick: {
+            drink: components["schemas"]["Drink"] | null;
+            /** @description Плашка типа выбора, например «Даша по пятницам» */
+            tag: string | null;
         };
         DrinkCreate: {
             id: components["schemas"]["Uuid"];
@@ -533,6 +560,8 @@ export interface components {
             drink_id?: components["schemas"]["Uuid"];
             /** @description Для kind=intake */
             drink_name?: string;
+            /** @description Для kind=intake: энергетик ли (в лимит и счёт идут только энергетики) */
+            is_energy?: boolean;
             /** @description Для kind=intake: итог оценки автора этой банки, десятые; null — не оценивал */
             score?: number | null;
             /** @description Для kind=water */
@@ -923,6 +952,26 @@ export interface operations {
             };
             409: components["responses"]["Problem"];
             422: components["responses"]["Problem"];
+        };
+    };
+    getDayPick: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Выбор на сегодня; drink = null, если выбора нет */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DayPick"];
+                };
+            };
         };
     };
     getDrink: {

@@ -3,7 +3,7 @@
 // Выбор: переменная окружения VITE_API=mock|http (по умолчанию mock). Обе проверяются одним набором контрактных тестов.
 import type {
   User, UserPatch, RegisterRequest, LoginRequest, LoginAvailability, CoupleState, CouplePatch, JoinRequest,
-  Drink, DrinkCreate, DrinkPage, Rating, RatingCreate, Intake, IntakeCreate, IntakePage, DaySummary,
+  Drink, DrinkCreate, DrinkPage, DayPick, Rating, RatingCreate, Intake, IntakeCreate, IntakePage, DaySummary,
   WaterEntry, WaterCreate, WaterDay, WaterGlasses, FeedPage, PageQuery,
 } from './types';
 
@@ -30,6 +30,7 @@ export interface DrinksApi {
   list(q?: PageQuery): Promise<DrinkPage>;
   create(req: DrinkCreate): Promise<Drink>;
   get(id: string): Promise<Drink>;
+  dayPick(): Promise<DayPick>;
 }
 export interface RatingsApi {
   list(drinkId: string): Promise<Rating[]>;

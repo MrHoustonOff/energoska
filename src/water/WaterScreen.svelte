@@ -4,7 +4,7 @@
   import './water.css';
   import { onMount, tick } from 'svelte';
   import { ApiError } from '../api';
-  import { formatLiters, GLASS_MAX_COUNT, parseWaterMl, snapSlider, SLIDER_MAX_ML, SLIDER_STEP_ML, STANDARD_GLASSES, WATER_MAX_ML, WATER_MIN_ML } from '../domain';
+  import { formatGoalLiters, formatLiters, GLASS_MAX_COUNT, parseWaterMl, snapSlider, SLIDER_MAX_ML, SLIDER_STEP_ML, STANDARD_GLASSES, WATER_MAX_ML, WATER_MIN_ML } from '../domain';
   import Msg from '../auth/Msg.svelte';
   import Spinner from '../auth/Spinner.svelte';
   import { addWater, loadToday, saveGlasses, today } from '../home/dayState.svelte';
@@ -76,10 +76,10 @@
   {:else if !water}
     <p class="wt-sub" aria-busy="true">Загрузка…</p>
   {:else}
-    <p class="wt-sub" aria-live="polite">Сегодня выпито {formatLiters(water.total_ml)} л из {formatLiters(water.goal_ml)} л</p>
+    <p class="wt-sub" aria-live="polite">Сегодня выпито {formatLiters(water.total_ml)} л из {formatGoalLiters(water.goal_ml)} л</p>
 
     <div class="wt-hero">
-      <div class="wt-disc"><WaterGlass ml={typedMl ?? 0} width={100} label /></div>
+      <div class="wt-disc"><WaterGlass ml={typedMl ?? 0} width={100} label full={1000} /></div>
       <div class="wt-numrow">
         <input class="wt-num" type="text" inputmode="numeric" enterkeyhint="done" autocomplete="off" aria-label="Объём, мл"
           placeholder={String(ml)} value={typing ?? String(ml)}

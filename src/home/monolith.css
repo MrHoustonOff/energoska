@@ -2,16 +2,20 @@
    Анимируем только transform и opacity; исключение — stroke-dashoffset кольца удержания, пока палец на кнопке.
    Цвета приходят из переменных --b0 (фон), --b1, --b2 (пятна), --fg (текст). */
 
-.mono { position: relative; display: block; width: 100%; height: var(--h, 196px); padding: 0; border: 0; border-radius: 16px; overflow: hidden; isolation: isolate;
-  color: var(--fg, #000); background: var(--b0); flex: none; box-shadow: 4px 5px 0 rgba(0, 0, 0, .35); text-align: left; font: inherit; cursor: pointer;
-  contain: layout paint style; -webkit-tap-highlight-color: transparent; }
-.mono:active:not(.cold) { transform: scale(.99); }
-.mono::after { content: ''; position: absolute; inset: 0; background: var(--grain) 0 0 / 140px; mix-blend-mode: overlay; opacity: .35; pointer-events: none; }
+/* Внешняя коробка держит скругление и жёсткую тень; сама кнопка обрезает содержимое. Маска и appearance:none — против потери скругления
+   у кнопки с анимированными слоями на iOS Safari (не проверено на устройстве). */
+.mono-box { position: relative; flex: none; height: var(--h, 196px); border-radius: 16px; box-shadow: 4px 5px 0 rgba(0, 0, 0, .35); }
+.mono-box.cold { box-shadow: none; }
+.mono { position: relative; display: block; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 16px; overflow: hidden; isolation: isolate;
+  -webkit-appearance: none; appearance: none; -webkit-mask-image: -webkit-radial-gradient(white, black); transform: translateZ(0);
+  color: var(--fg, #000); background: var(--b0); text-align: left; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.mono:active:not(.cold) { transform: translateZ(0) scale(.99); }
+.mono::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: var(--grain) 0 0 / 140px; mix-blend-mode: overlay; opacity: .35; pointer-events: none; }
 .mono .bl { position: absolute; width: 125.3%; aspect-ratio: 1; margin: -20.1% 0 0 -20.1%; border-radius: 50%; opacity: .9; z-index: -1; will-change: transform; }
 .mono .b1 { left: -25%; top: -40%; animation: mo-bl1 var(--sp, 7s) ease-in-out infinite;
-  background: radial-gradient(closest-side, var(--b1) 0, color-mix(in srgb, var(--b1) 95%, transparent) 45%, color-mix(in srgb, var(--b1) 67%, transparent) 62%, color-mix(in srgb, var(--b1) 32%, transparent) 74%, color-mix(in srgb, var(--b1) 9%, transparent) 86%, transparent 100%); }
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--b1) 100%, transparent) 0%, color-mix(in srgb, var(--b1) 99.3%, transparent) 35%, color-mix(in srgb, var(--b1) 95.6%, transparent) 45%, color-mix(in srgb, var(--b1) 83.1%, transparent) 55%, color-mix(in srgb, var(--b1) 66.9%, transparent) 62%, color-mix(in srgb, var(--b1) 49.6%, transparent) 68%, color-mix(in srgb, var(--b1) 32.3%, transparent) 74%, color-mix(in srgb, var(--b1) 18.2%, transparent) 80%, color-mix(in srgb, var(--b1) 8.8%, transparent) 86%, color-mix(in srgb, var(--b1) 3.6%, transparent) 92%, color-mix(in srgb, var(--b1) 0.8%, transparent) 100%); }
 .mono .b2 { right: -25%; bottom: -55%; margin: 0 -20.1% -20.1% 0; animation: mo-bl2 var(--sp, 7s) ease-in-out infinite;
-  background: radial-gradient(closest-side, var(--b2) 0, color-mix(in srgb, var(--b2) 95%, transparent) 45%, color-mix(in srgb, var(--b2) 67%, transparent) 62%, color-mix(in srgb, var(--b2) 32%, transparent) 74%, color-mix(in srgb, var(--b2) 9%, transparent) 86%, transparent 100%); }
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--b2) 100%, transparent) 0%, color-mix(in srgb, var(--b2) 99.3%, transparent) 35%, color-mix(in srgb, var(--b2) 95.6%, transparent) 45%, color-mix(in srgb, var(--b2) 83.1%, transparent) 55%, color-mix(in srgb, var(--b2) 66.9%, transparent) 62%, color-mix(in srgb, var(--b2) 49.6%, transparent) 68%, color-mix(in srgb, var(--b2) 32.3%, transparent) 74%, color-mix(in srgb, var(--b2) 18.2%, transparent) 80%, color-mix(in srgb, var(--b2) 8.8%, transparent) 86%, color-mix(in srgb, var(--b2) 3.6%, transparent) 92%, color-mix(in srgb, var(--b2) 0.8%, transparent) 100%); }
 .mono .bolt { position: absolute; right: -6px; top: -2px; opacity: .16; color: var(--fg, #000); z-index: 0; }
 .mono .tx { position: absolute; left: 20px; right: 20px; top: 18px; font-size: var(--tfs, 12px); line-height: 1.4; opacity: .8; z-index: 2; }
 .mono .tx.narrow { right: 96px; }
@@ -38,7 +42,7 @@
 
 /* 2 банки: лимит, кнопка замёрзла */
 .mono.cold { background: linear-gradient(160deg, color-mix(in srgb, var(--can-gorilla) 22%, var(--bg)), color-mix(in srgb, var(--ink) 6%, var(--bg)));
-  color: var(--ink); box-shadow: none; outline: 2px dashed var(--line-strong); outline-offset: -2px; cursor: default; }
+  color: var(--ink); outline: 2px dashed var(--line-strong); outline-offset: -2px; cursor: default; }
 .mono.cold .bl, .mono.cold .sp { display: none; }
 .mono.cold .bolt { opacity: .1; color: var(--ink); }
 .mono.cold .lb { opacity: .28; }
@@ -50,7 +54,8 @@
 .mono.holding { outline-style: solid; }
 
 /* вода */
-.mono.wb { --h: 98px; --tfs: 11px; --fs: 22px; --sp: 8s; }
+.mono-box.wb { --h: 98px; }
+.mono.wb { --tfs: 11px; --fs: 22px; --sp: 8s; }
 .mono.wb .lb { bottom: 12px; } .mono.wb .tx { top: 12px; }
 .mono.wb .rt .num { font-size: 30px; }
 .mono.wb .rt .num small { font: 600 12px var(--font-display); margin-left: 3px; }

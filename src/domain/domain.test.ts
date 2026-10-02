@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { energyContext, localClock, comparePrices, decideIntake, energyStage, formatLiters, isGlassList, localHour, parseWaterMl, snapSlider, waterDaypart, waterLevel, formatMoney, formatTenths, isIsoUtc, isTenths, isUuidV7, localDay, parseTenths, ratingTotal, uuidv7 } from './index';
-import { contextScenarios, daypartScenarios, glassScenarios, litersScenarios, stageScenarios, waterInputScenarios, dayScenarios, intakeScenarios, priceScenarios, ratingScenarios, tenthsScenarios } from './scenarios';
+import { formatGoalLiters, comparePrices, decideIntake, energyStage, formatLiters, isGlassList, localHour, parseWaterMl, snapSlider, waterDaypart, waterLevel, formatMoney, formatTenths, isIsoUtc, isTenths, isUuidV7, localDay, parseTenths, ratingTotal, uuidv7 } from './index';
+import { daypartScenarios, glassScenarios, litersScenarios, stageScenarios, waterInputScenarios, dayScenarios, intakeScenarios, priceScenarios, ratingScenarios, tenthsScenarios } from './scenarios';
 
 describe('лимит энергетиков', () => {
   it.each(intakeScenarios)('$name', s => expect(decideIntake(s.count, s.isEnergy, s.flag)).toEqual(s.expect));
@@ -117,10 +117,10 @@ describe('главная и вода', () => {
   });
 });
 
-describe('контекст кнопки «Энергоснулся»', () => {
-  it.each(contextScenarios)('$name', s => expect(energyContext({ hour: s.hour, minute: 0, weekday: s.weekday }, s.partnerAhead)).toBe(s.expect));
-  it('часы и день недели по поясу пары', () => {
-    expect(localClock('2026-10-02T16:40:00Z', 'Europe/Minsk')).toEqual({ hour: 19, minute: 40, weekday: 5 });
-    expect(localClock('2026-10-04T21:30:00Z', 'Europe/Minsk')).toEqual({ hour: 0, minute: 30, weekday: 1 });
+describe('цель воды в литрах', () => {
+  it('целые литры без дроби, иначе как есть', () => {
+    expect(formatGoalLiters(2000)).toBe('2');
+    expect(formatGoalLiters(2250)).toBe('2,25');
+    expect(formatGoalLiters(2500)).toBe('2,5');
   });
 });

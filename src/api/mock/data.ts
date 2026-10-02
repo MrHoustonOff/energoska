@@ -25,6 +25,12 @@ export function drinksApi(c: Ctx): DrinksApi {
   return {
     async list(q) { const u = currentUser(c); return page(c.db.drinks.filter(d => d._couple === u.couple_id), q) as any; },
     async get(id) { return pub(drinkOf(c, currentUser(c), id)) as Drink; },
+    async dayPick() {
+      // MOCK-DEMO: выбор «Банки дня» задают только демо-данные (db.dayPick); настоящий подбор — блок «Банка дня».
+      const u = currentUser(c);
+      const d = c.db.dayPick && c.db.drinks.find(x => x.id === c.db.dayPick!.drink_id && x._couple === u.couple_id);
+      return d ? { drink: pub(d) as Drink, tag: c.db.dayPick!.tag } : { drink: null, tag: null };
+    },
     async create(req) {
       const u = currentUser(c);
       checkFields([

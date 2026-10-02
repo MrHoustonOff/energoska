@@ -1,4 +1,4 @@
-// Мок: лента пары. Собирается из записей «выпил» (энергетики), порций воды и закрытия дневной нормы воды обоих участников.
+// Мок: лента пары. Собирается из записей «выпил» (все напитки), порций воды и закрытия дневной нормы воды обоих участников.
 import { ApiError } from '../errors';
 import type { FeedApi, FeedItem } from '..';
 import type { Ctx } from './ctx';
@@ -14,9 +14,9 @@ export function feedApi(c: Ctx): FeedApi {
 
       for (const i of c.db.intakes.filter(x => ids.has(x.user_id))) {
         const drink = c.db.drinks.find(d => d.id === i.drink_id);
-        if (!drink?.is_energy) continue;
+        if (!drink) continue;
         const rating = c.db.ratings.filter(r => r.drink_id === i.drink_id && r.user_id === i.user_id).sort((a, b) => b._seq - a._seq)[0];
-        items.push({ id: i.id, kind: 'intake', user_id: i.user_id, at: i.at, drink_id: i.drink_id, drink_name: drink.name, score: rating?.total ?? null, _seq: (i as any)._seq });
+        items.push({ id: i.id, kind: 'intake', user_id: i.user_id, at: i.at, drink_id: i.drink_id, drink_name: drink.name, is_energy: drink.is_energy, score: rating?.total ?? null, _seq: (i as any)._seq });
       }
       for (const m of members) {
         const own = c.db.water.filter(w => w.user_id === m.id).sort((a, b) => a._seq - b._seq);

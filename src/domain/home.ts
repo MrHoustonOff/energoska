@@ -9,6 +9,17 @@ export function energyStage(countToday: number): EnergyStage {
   return countToday === DAILY_LIMIT - 1 ? 'dim' : 'live';
 }
 
+/** Часы, минуты и день недели момента `at` по поясу пары. */
+export interface Clock { hour: number; minute: number; /** 1 = понедельник … 7 = воскресенье */ weekday: number }
+const WEEKDAYS: Record<string, number> = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
+export function localClock(at: string, timezone = DEFAULT_TIMEZONE): Clock {
+  const t = Date.parse(at);
+  if (Number.isNaN(t)) throw new RangeError(`некорректное время: ${at}`);
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: timezone, hourCycle: 'h23', hour: '2-digit', minute: '2-digit', weekday: 'short' })
+    .formatToParts(new Date(t)).map(x => [x.type, x.value]));
+  return { hour: Number(p.hour), minute: Number(p.minute), weekday: WEEKDAYS[p.weekday] };
+}
+
 /** Время суток «Водички» (ScreenHome/WaterButton): границы часов из README компонента. */
 export type WaterDaypart = 'dawn' | 'morning' | 'brunch' | 'lunch' | 'afternoon' | 'evening' | 'late' | 'night';
 
@@ -43,6 +54,11 @@ export function formatLiters(ml: number): string {
   return s.replace('.', ',');
 }
 
+/** Цель воды для показа: 2000 → «2», 2250 → «2,25», 2500 → «2,5». */
+export function formatGoalLiters(ml: number): string {
+  return String(Math.round(ml) / 1000).replace('.', ',');
+}
+
 /** Свои стаканы: до трёх, объём 25..1000 мл (ScreenWater). */
 export const GLASS_MAX_COUNT = 3;
 export const GLASS_MAX_ML = 1000;
@@ -64,3 +80,4 @@ export function parseWaterMl(s: string): number | null {
   const v = Number(s);
   return v >= WATER_MIN_ML && v <= WATER_MAX_ML ? v : null;
 }
+

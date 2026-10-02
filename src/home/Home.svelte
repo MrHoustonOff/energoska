@@ -4,15 +4,14 @@
   import './home.css';
   import './monolith.css';
   import { onMount } from 'svelte';
-  import { energyContext, energyStage, localClock, waterDaypart } from '../domain';
+  import { energyStage, localClock, waterDaypart } from '../domain';
   import { session } from '../auth/session.svelte';
   import Msg from '../auth/Msg.svelte';
   import { loadToday, partnerCountToday, today } from './dayState.svelte';
   import { intakeFlow } from './intakeFlow.svelte';
-  import { LOOKS, liveText } from './actionPalette';
   import ActionButton from './ActionButton.svelte';
   import WaterButton from './WaterButton.svelte';
-  import Avatar from './Avatar.svelte';
+  import DayPick from './DayPick.svelte';
   import Feed from './Feed.svelte';
 
   let { go }: { go: (id: string) => void } = $props();
@@ -25,11 +24,7 @@
   const meName = $derived(me?.display_name ?? '');
   const count = $derived(today.summary?.energy_count ?? 0);
   const stage = $derived(energyStage(count));
-  const partnerCount = $derived(me ? partnerCountToday(me.id) : 0);
   const clock = $derived(localClock(new Date().toISOString(), today.couple?.couple.timezone));
-  const ctx = $derived(energyContext(clock, !!partner && count === 0 && partnerCount > count));
-  const text = $derived(liveText(ctx, clock, partner?.display_name ?? ''));
-  const score = $derived(ctx === 'partner_ahead' && partner ? { me: count, partner: partnerCount, name: partner.display_name } : undefined);
 
   function record(overLimit: boolean) { intakeFlow.overLimit = overLimit; go('add'); }
 </script>
@@ -39,21 +34,17 @@
   <button class="btn hm-retry" onclick={loadToday}>Повторить</button>
 {:else if today.status !== 'ready' || !today.couple || !today.summary || !today.water || !me}
   <div class="hm-skel" aria-busy="true" aria-label="Загрузка">
-    <div class="hm-top"><span class="hm-sk av"></span><span class="hm-sk av"></span></div>
     <div class="hm-sk big"></div>
     <div class="hm-sk mid"></div>
     <div class="hm-sk row"></div><div class="hm-sk row"></div><div class="hm-sk row"></div>
   </div>
 {:else}
-  <div class="hm-top">
-    <Avatar letter="Я" color={me.color} />
-    {#if partner}<Avatar letter={(partner.display_name[0] ?? '?').toUpperCase()} color={partner.color} />{/if}
-  </div>
-  <ActionButton {stage} look={LOOKS[ctx]} {text} {score} label="Энергоснулся: записать банку"
+  <ActionButton {stage} label="Энергоснулся: записать банку"
     onpress={() => record(false)} onhold={() => record(true)} />
   <div class="hm-gap"></div>
   <WaterButton daypart={waterDaypart(clock.hour)} totalMl={today.water.total_ml} goalMl={today.water.goal_ml} onpress={() => go('water')} />
-  <p class="caption hm-sec">Лента</p>
+  <DayPick onpress={() => go('cans')} />
+  <p class="sec hm-sec">Лента</p>
   {#if today.feed.length}
     <Feed items={today.feed} couple={today.couple} meId={me.id} {meName} />
   {:else}

@@ -9,6 +9,7 @@ import Placeholder from './Placeholder.svelte';
 import More from './More.svelte';
 import Lab from './Lab.svelte';
 import Home from '../home/Home.svelte';
+import HeaderRight from '../home/HeaderRight.svelte';
 import WaterScreen from '../water/WaterScreen.svelte';
 
 export interface Screen {
@@ -18,14 +19,18 @@ export interface Screen {
   back?: string;
   component: Component<any>;
   props?: Record<string, unknown>;
+  /** Компонент в правой части шапки (колокольчик и аватары на главной). */
+  headerRight?: Component;
+  /** Полноэкранный экран: слева ✕ вместо «назад», по центру заголовок, панель вкладок и водный футер скрыты (ScreenWater). */
+  fullscreen?: boolean;
 }
 
 const ph = (id: string, title: string, note: string, reference: string): Screen =>
   ({ id, title, tab: id, component: Placeholder, props: { note, reference } });
 
 export const SCREENS: Screen[] = [
-  { id: 'home', title: 'Энергоська', tab: 'home', component: Home },
-  { id: 'water', title: 'Вода', tab: 'home', back: 'home', component: WaterScreen },
+  { id: 'home', title: 'Энергоська', tab: 'home', component: Home, headerRight: HeaderRight },
+  { id: 'water', title: 'Вода', tab: 'home', back: 'home', component: WaterScreen, fullscreen: true },
   ph('cans', 'Банки',
     'Каталог банок: сетка в 2 колонки, фото и состояние «фото скоро», «Витрина», фильтры, новая банка.',
     'ScreenCatalog, ScreenCatalogLoading, ScreenFilters, ScreenDrinkCard, ScreenNewDrink'),
@@ -42,15 +47,16 @@ export const SCREENS: Screen[] = [
 export const SCREEN_BY_ID: Record<string, Screen> = Object.fromEntries(SCREENS.map(s => [s.id, s]));
 
 /**
- * Вкладки нижней панели (порядок и состав из docs-src/docs/01-product.md: Главная, Банки, центральная молния, Цифры, Ещё).
+ * Вкладки нижней панели (docs-src/docs/01-product.md: Главная, Банки, центральная молния FAB, Цифры, Ещё). Иконки как в эталоне ScreenHome/preview.html.
  * Иконки: инлайн-SVG, линия 2px, скруглённые концы, цвет текста (правила проекта: без эмодзи и картинок).
  */
 export const TABS = [
-  { id: 'home', label: 'Главная', icon: '<path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>' },
-  { id: 'cans', label: 'Банки', icon: '<rect x="7" y="3" width="10" height="18" rx="3"/><path d="M7 8h10M7 16h10"/>' },
-  { id: 'add', label: 'Запись', icon: '<path d="M13 3L5 13h6l-1 8 8-10h-6z"/>' },
-  { id: 'stats', label: 'Цифры', icon: '<path d="M5 20V10M12 20V4M19 20v-7"/>' },
-  { id: 'more', label: 'Ещё', icon: '<path d="M5 12h.01M12 12h.01M19 12h.01"/>' },
+  { id: 'home', label: 'Главная', icon: '<path d="M4 11l8-7 8 7v9H4z"/>' },
+  { id: 'cans', label: 'Банки', icon: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>' },
+  { id: 'stats', label: 'Цифры', icon: '<path d="M4 20V11M10 20V4M16 20v-7M22 20H2"/>' },
+  { id: 'more', label: 'Ещё', icon: '<path d="M4 8h9M17 8h3M4 16h3M11 16h9"/><circle cx="15" cy="8" r="2"/><circle cx="9" cy="16" r="2"/>' },
 ];
+/** Центральная кнопка-молния (быстрая запись банки) стоит между второй и третьей вкладкой. */
+export const FAB = { id: 'add', label: 'Запись', after: 2, icon: '<path d="M13 2L4 14h6l-1 8 9-12h-6z" fill="currentColor"/>' };
 
 export const BACK_ICON = '<path d="M15 5l-7 7 7 7"/>';

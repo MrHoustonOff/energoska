@@ -1,11 +1,12 @@
 <!-- Банка/стакан «ВОДИЧКА»: вырезанный стикер с белой обводкой, открытая сверху полость, внутри вода с двухслойной волной.
      Уровень — transform (не высота). Без бликов и крышки (docs-src/AGENTS.md §8). -->
 <script lang="ts">
-  let { ml, width = 100, label = false, animated = true }: { ml: number; width?: number; label?: boolean; animated?: boolean } = $props();
+  /** full — объём, при котором стакан полон: большая банка 1000 мл, плитки и мини-стакан 500 мл (ScreenWater/preview.html). */
+  let { ml, width = 100, label = false, animated = true, full = 500 }: { ml: number; width?: number; label?: boolean; animated?: boolean; full?: number } = $props();
   const uid = $props.id();
   const BODY = 'M22 40 Q22 20 42 20 H78 Q98 20 98 40 V170 Q98 190 78 190 H42 Q22 190 22 170 Z';
   const WAVE = 'M-80 0 q20 -8 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 V220 H-80Z';
-  const y = $derived(190 - 165 * Math.min(1, Math.max(0, ml / 1000)));
+  const y = $derived(190 - 165 * Math.min(1, Math.max(0, ml / full)));
 </script>
 
 <svg class="wt-gl" width={width} height={Math.round(width * 1.67)} viewBox="0 0 120 200" aria-hidden="true">

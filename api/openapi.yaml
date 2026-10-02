@@ -240,6 +240,17 @@ paths:
               schema: { $ref: '#/components/schemas/Drink' }
         '409': { $ref: '#/components/responses/Problem' }
         '422': { $ref: '#/components/responses/Problem' }
+  /day-pick:
+    get:
+      tags: [drinks]
+      operationId: getDayPick
+      summary: «Банка дня» для карточки на главной (подбор и типы рекомендаций — блок «Банка дня», §4)
+      responses:
+        '200':
+          description: Выбор на сегодня; drink = null, если выбора нет
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DayPick' }
   /drinks/{id}:
     get:
       tags: [drinks]
@@ -417,7 +428,7 @@ paths:
       operationId: listFeed
       summary: Лента пары (новые сверху)
       description: |
-        Только факты прямых действий обоих участников пары: выпитый энергетик, порция воды, закрытие дневной нормы воды.
+        Только факты прямых действий обоих участников пары: выпитый напиток (энергетик или нет), порция воды, закрытие дневной нормы воды.
         Записи «выпил» с `over_limit` в ленту попадают как обычные (пометку «сверх лимита» лента не показывает).
         Курсор непрозрачный.
       parameters:
@@ -547,6 +558,7 @@ components:
         water_goal_ml: { type: integer, default: 2250 }
         couple_id: { $ref: '#/components/schemas/Uuid' }
         invite_code: { type: string, description: 'Личный код приглашения, например `EV-7429`' }
+        avatar_url: { type: string, nullable: true, description: 'Фото профиля; null — плейсхолдер' }
         created_at: { $ref: '#/components/schemas/Timestamp' }
     UserPatch:
       type: object
@@ -571,6 +583,7 @@ components:
         id: { $ref: '#/components/schemas/Uuid' }
         display_name: { type: string }
         color: { type: string }
+        avatar_url: { type: string, nullable: true }
     CoupleRequest:
       type: object
       required: [id, from]
@@ -609,8 +622,15 @@ components:
         volume_ml: { type: integer, minimum: 1 }
         sugar_g_per_100ml: { type: integer, minimum: 0, description: 'Сахар, десятые грамма на 100 мл; null — неизвестно', nullable: true }
         country: { type: string, enum: [BY, RU] }
+        photo_url: { type: string, nullable: true, description: 'Вырезанное фото банки (WebP); null — «фото скоро»' }
         created_by: { $ref: '#/components/schemas/Uuid' }
         created_at: { $ref: '#/components/schemas/Timestamp' }
+    DayPick:
+      type: object
+      required: [drink, tag]
+      properties:
+        drink: { allOf: [{ $ref: '#/components/schemas/Drink' }], nullable: true }
+        tag: { type: string, nullable: true, description: 'Плашка типа выбора, например «Даша по пятницам»' }
     DrinkCreate:
       type: object
       required: [id, name, brand, volume_ml, country]
@@ -705,6 +725,7 @@ components:
         at: { $ref: '#/components/schemas/Timestamp' }
         drink_id: { $ref: '#/components/schemas/Uuid' }
         drink_name: { type: string, description: 'Для kind=intake' }
+        is_energy: { type: boolean, description: 'Для kind=intake: энергетик ли (в лимит и счёт идут только энергетики)' }
         score: { type: integer, minimum: 0, maximum: 100, nullable: true, description: 'Для kind=intake: итог оценки автора этой банки, десятые; null — не оценивал' }
         ml: { type: integer, description: 'Для kind=water' }
         goal_ml: { type: integer, description: 'Для kind=water_goal: норма автора на тот момент' }

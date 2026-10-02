@@ -6,7 +6,7 @@ import { checkFields, coupleOf, currentUser, membersOf } from './ctx';
 import type { UserRow } from './db';
 import { isUuidV7, isValidTimezone } from '../../domain';
 
-const member = (u: UserRow) => ({ id: u.id, display_name: u.display_name, color: u.color });
+const member = (u: UserRow) => ({ id: u.id, display_name: u.display_name, color: u.color, avatar_url: u.avatar_url ?? null });
 const normalize = (code: string) => code.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
 function stateOf(c: Ctx, u: UserRow): CoupleState {

@@ -186,6 +186,14 @@ export function registerDataContract(setup: () => Harness) {
     });
   });
 
+  describe('банка дня на главной', () => {
+    it('без выбора: drink и tag равны null', async () => {
+      const a = setup().client();
+      await signUp(a, 'anna');
+      expect(await a.drinks.dayPick()).toEqual({ drink: null, tag: null });
+    });
+  });
+
   describe('лента пары', () => {
     it('видны факты обоих: энергетик с оценкой автора, вода, закрытие нормы; новые сверху', async () => {
       const h = setup(); const a = h.client(); const b = h.client();
@@ -203,18 +211,19 @@ export function registerDataContract(setup: () => Harness) {
       expect(feed.items[0]).toMatchObject({ user_id: ub.id, goal_ml: 500 });
       expect(await b.feed.list()).toEqual(feed);
     });
-    it('чужая пара не видна; не-энергетик в ленту не попадает; страницы без повторов', async () => {
+    it('чужая пара не видна; не-энергетик в ленте есть; страницы без повторов', async () => {
       const h = setup(); const a = h.client(); const z = h.client();
       await signUp(a, 'anna'); await signUp(z, 'zoya');
       const tea = await a.drinks.create(drinkReq({ name: 'Чай', is_energy: false }));
       await a.intakes.create({ id: id(), drink_id: tea.id, at: T });
-      for (let i = 0; i < 3; i++) await a.water.add({ id: id(), ml: 100 + i * 25, at: T });
+      for (let i = 0; i < 2; i++) await a.water.add({ id: id(), ml: 100 + i * 25, at: T });
       const p1 = await a.feed.list({ limit: 2 });
       expect(p1.items).toHaveLength(2);
       const p2 = await a.feed.list({ limit: 2, cursor: p1.next_cursor! });
       expect(p2.items).toHaveLength(1);
       expect(p2.next_cursor).toBeNull();
       expect(new Set([...p1.items, ...p2.items].map(i => i.id)).size).toBe(3);
+      expect([...p1.items, ...p2.items].some(i => i.kind === 'intake' && i.drink_name === 'Чай')).toBe(true);
       expect((await z.feed.list()).items).toEqual([]);
     });
   });

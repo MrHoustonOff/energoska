@@ -5,6 +5,7 @@
 <script lang="ts">
   import { onMount, untrack } from 'svelte';
   import './auth/auth.css';
+  import './home/fonts.css';
   import { session, initSession } from './auth/session.svelte';
   import AuthGate from './auth/AuthGate.svelte';
   import Splash from './auth/Splash.svelte';
