@@ -15,11 +15,17 @@
   import * as eventlog from './eventlog';
   import { SCREEN_BY_ID, TABS, FAB, BACK_ICON } from './screens';
 
-  // Стартуем с последнего открытого экрана (для разработки удобнее, чем всегда с главной).
-  const saved = store.get('screen', 'home');
+  // Стартуем с последнего открытого экрана или query ?screen= (удобно для разработки и тестов).
+  const qScreen = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('screen') : null;
+  const saved = qScreen && SCREEN_BY_ID[qScreen] ? qScreen : store.get('screen', 'home');
   let currentId = $state(SCREEN_BY_ID[saved] ? saved : 'home');
   let list: HTMLElement;
   let tabbar: HTMLElement;
+
+  $effect(() => {
+    const qTheme = new URLSearchParams(window.location.search).get('theme');
+    if (qTheme === 'dark' || qTheme === 'light') document.documentElement.setAttribute('data-theme', qTheme);
+  });
 
   const screen = $derived(SCREEN_BY_ID[currentId]);
   const Current = $derived(screen.component);

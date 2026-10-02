@@ -8,3 +8,4 @@ export * from './auth';
 export * from './lockout';
 export * from './home';
 export * from './energyContext';
+export * from './catalog';

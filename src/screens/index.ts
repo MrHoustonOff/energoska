@@ -28,15 +28,22 @@ export interface Screen {
 const ph = (id: string, title: string, note: string, reference: string): Screen =>
   ({ id, title, tab: id, component: Placeholder, props: { note, reference } });
 
+import Catalog from '../catalog/Catalog.svelte';
+import CatalogHeaderRight from '../catalog/CatalogHeaderRight.svelte';
+import DrinkCard from '../catalog/DrinkCard.svelte';
+import RatingScreen from '../catalog/RatingScreen.svelte';
+import NewDrink from '../catalog/NewDrink.svelte';
+import NewDrinkSaved from '../catalog/NewDrinkSaved.svelte';
+
 export const SCREENS: Screen[] = [
   { id: 'home', title: 'Энергоська', tab: 'home', component: Home, headerRight: HeaderRight },
   { id: 'water', title: 'Вода', tab: 'home', back: 'home', component: WaterScreen, fullscreen: true },
-  ph('cans', 'Банки',
-    'Каталог банок: сетка в 2 колонки, фото и состояние «фото скоро», «Витрина», фильтры, новая банка.',
-    'ScreenCatalog, ScreenCatalogLoading, ScreenFilters, ScreenDrinkCard, ScreenNewDrink'),
-  ph('add', 'Запись',
-    'Центральная кнопка-молния: быстрая запись банки, затем оценка (4 параметра, шаг 0.1).',
-    'ScreenRating, ActionButton, ScreenNewDrinkSaved'),
+  { id: 'cans', title: 'Банки', tab: 'cans', component: Catalog, headerRight: CatalogHeaderRight },
+  { id: 'drink-card', title: 'Витрина', tab: 'cans', back: 'cans', component: DrinkCard },
+  { id: 'rating', title: 'Оценка', tab: 'cans', back: 'drink-card', component: RatingScreen, fullscreen: true },
+  { id: 'new-drink', title: 'Новая банка', tab: 'cans', back: 'cans', component: NewDrink, fullscreen: true },
+  { id: 'new-drink-saved', title: 'Готово', tab: 'cans', component: NewDrinkSaved, fullscreen: true },
+  { id: 'add', title: 'Новая банка', tab: 'add', back: 'cans', component: NewDrink, fullscreen: true },
   ph('stats', 'Цифры',
     'Рекорды, графики, цена по магазинам, закреплённая сводка воды.',
     'ScreenStats, ScreenActiveChart, ScreenPriceSheet, ScreenWaterStats'),
