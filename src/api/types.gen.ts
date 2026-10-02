@@ -368,7 +368,7 @@ export interface components {
             id: components["schemas"]["Uuid"];
             /** @description IANA, например `Europe/Minsk` */
             timezone: string;
-            /** @description Час, с которого начинается новый день (0 = полночь) */
+            /** @description Час, с которого начинается новый день (решено: 4 = с 04:00) */
             day_boundary_hour: number;
             members: components["schemas"]["Member"][];
         };
@@ -413,6 +413,19 @@ export interface components {
             country: "BY" | "RU";
             created_by: components["schemas"]["Uuid"];
             created_at: components["schemas"]["Timestamp"];
+            /** @description Вырезанное фото банки; null — «фото скоро» (плитка бренда). Заполняет воркер фото, клиент это поле не отправляет */
+            photo?: components["schemas"]["DrinkPhoto"] | null;
+        };
+        DrinkPhoto: {
+            /** @description Основной цвет банки (для диска-стикера и плитки) */
+            dominant: string;
+            /** @description WebP с прозрачностью по высоте в px; обводка не вшита */
+            urls: {
+                h96: string;
+                h192: string;
+                h256: string;
+                h384: string;
+            };
         };
         DrinkCreate: {
             id: components["schemas"]["Uuid"];

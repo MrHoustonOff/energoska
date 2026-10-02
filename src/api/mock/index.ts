@@ -11,6 +11,7 @@ import { coupleApi } from './couple';
 import { drinksApi, intakesApi, ratingsApi, waterApi } from './data';
 import * as store from '../../store';
 import { seedAdmin } from './seed';
+import { ensureDemo } from './demo';  // MOCK-DEMO
 
 export interface MockOptions {
   /** Задержка каждого вызова, мс (имитация сети). По умолчанию 0. */
@@ -21,6 +22,8 @@ export interface MockOptions {
   now?: () => number;
   /** Создать тестовый аккаунт admin / admin, если его нет (только для разработки на моке; с настоящим бэкендом убрать). */
   seedAdmin?: boolean;
+  /** MOCK-DEMO: заполнить базу демо-данными из макета (src/api/mock/demo). Заменяет seedAdmin. Строка — id профиля (в тестах). */
+  demo?: boolean | string;
   /** Пока вернёт false, вызовы падают с ошибкой network (имитация «нет сети»). */
   online?: () => boolean;
 }
@@ -30,7 +33,8 @@ const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 export function createMockBackend(opts: MockOptions = {}) {
   const { db, save } = openDb(opts.persist ?? false);
   const now = opts.now ?? Date.now;
-  if (opts.seedAdmin) seedAdmin(db, save, now());
+  if (opts.demo) ensureDemo(db, save, now(), opts.persist ?? false, typeof opts.demo === 'string' ? opts.demo : undefined);  // MOCK-DEMO
+  else if (opts.seedAdmin) seedAdmin(db, save, now());
 
   function client(): Api {
     const tokenKey = 'mock.token';

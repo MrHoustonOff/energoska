@@ -2,6 +2,9 @@
 
 Источник правды: `api/openapi.yaml` (соглашения в его начале). Правила бизнеса: `src/domain/`. Мок: `src/api/mock/`. Контрактные тесты: `src/api/contract/`.
 
+## Поле Drink.photo (добавлено вместе с демо-данными)
+`photo: null | { dominant, urls: { h96, h192, h256, h384 } }`. `null` = «фото скоро». Клиент поле не отправляет, его заполнит воркер фото. Демо: `docs-src/docs/12-demo-data.md`.
+
 ## Как устроено
 ```
 api/openapi.yaml        контракт → npm run api:types → src/api/types.gen.ts (не править руками)
